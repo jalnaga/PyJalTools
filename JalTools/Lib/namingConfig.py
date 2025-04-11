@@ -12,11 +12,7 @@ import copy
 from typing import List, Dict, Any, Optional, Union
 
 # NamePart 클래스 임포트
-try:
-    from .namePart import NamePart
-except ImportError:
-    # 직접 실행할 때는 상대 경로 임포트가 작동하지 않음
-    from namePart import NamePart
+from .namePart import NamePart
 
 
 class NamingConfig:

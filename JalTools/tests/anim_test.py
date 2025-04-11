@@ -11,15 +11,16 @@ import sys
 import importlib
 from pymxs import runtime as rt
 
-# 현재 스크립트 경로를 추가하여 anim.py 모듈 임포트 가능하게 함
-lib_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if lib_dir not in sys.path:
-    sys.path.append(lib_dir)
+# JalTools 패키지를 임포트할 수 있도록 경로 설정
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
 
-import anim
-importlib.reload(anim)
+# JalTools.Lib에서 Anim 클래스 임포트
+from JalTools.Lib.anim import Anim
 
-jalAnim = anim.Anim()
+# Anim 인스턴스 생성
+jalAnim = Anim()
 
 # 테스트에 사용할 노드들 불러오기
 testObj    = rt.getNodeByName("testObj")
@@ -128,11 +129,18 @@ def test_material():
     except Exception as e:
         print("teapot 재질 테스트 중 오류:", e)
 
-# 테스트 함수 실행
-test_rotate_local()
-test_move_local()
-test_collapse_anim_transform()
-test_match_anim_transform()
-test_create_average_transforms()
-test_key_functions()
-test_material()
+# 테스트 실행 함수
+def run_tests():
+    print("===== Anim 모듈 테스트 시작 =====")
+    test_rotate_local()
+    test_move_local()
+    test_collapse_anim_transform()
+    test_match_anim_transform()
+    test_create_average_transforms()
+    test_key_functions()
+    test_material()
+    print("===== Anim 모듈 테스트 완료 =====")
+
+# 이 파일이 직접 실행될 때만 테스트 실행
+if __name__ == "__main__":
+    run_tests()

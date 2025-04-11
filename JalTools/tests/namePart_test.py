@@ -9,10 +9,13 @@ import sys
 import os
 import unittest
 
-# 부모 디렉토리를 시스템 경로에 추가
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# JalTools 패키지를 임포트할 수 있도록 경로 설정
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
 
-from namePart import NamePart
+# JalTools.Lib에서 NamePart 클래스 임포트
+from JalTools.Lib.namePart import NamePart
 
 
 class TestNamePart(unittest.TestCase):
