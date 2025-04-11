@@ -823,6 +823,47 @@ class Naming:
         
         return self._combine(returnNameArray, filChar)
 
+    def load_from_config_file(self, configPath=None):
+        """
+        설정 파일에서 설정 로드
+        
+        Args:
+            configPath: 설정 파일 경로 (기본값: self._configPath)
+            
+        Returns:
+            로드 성공 여부 (True/False)
+        """
+        # 경로가 없으면 인스턴스 생성 시 설정된 경로 사용
+        if not configPath:
+            configPath = self._configPath
+            
+        if not configPath:
+            print("설정 파일 경로가 제공되지 않았습니다.")
+            return False
+            
+        # NamingConfig 인스턴스 생성 및 설정 로드
+        config = NamingConfig()
+        if config.load(configPath):
+            # 설정을 Naming 인스턴스에 적용
+            result = config.apply_to_naming(self)
+            if result:
+                self._configPath = configPath  # 성공적으로 로드한 경로 저장
+            return result
+        else:
+            print(f"설정 파일 로드 실패: {configPath}")
+            return False
+    
+    def load_default_config(self):
+        """
+        기본 설정 로드 (현재는 아무 작업도 수행하지 않음)
+        
+        Returns:
+            항상 True 반환 (기본 설정은 __init__에서 이미 설정됨)
+        """
+        # 이 메소드는 현재 __init__에서 설정한 기본값을 그대로 사용하므로
+        # 아무 작업도 수행하지 않습니다.
+        return True
+    
     def set_index_as_nub(self, inStr):
         """
         이름에 넙(Nub) 부분을 추가하고 인덱스를 제거

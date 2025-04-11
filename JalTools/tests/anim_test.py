@@ -12,9 +12,13 @@ import importlib
 from pymxs import runtime as rt
 
 # JalTools 패키지를 임포트할 수 있도록 경로 설정
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
+
+# JalTools 모듈 리로드
+from JalTools.tests import reload_jaltools_modules
+reload_jaltools_modules()
 
 # JalTools.Lib에서 Anim 클래스 임포트
 from JalTools.Lib.anim import Anim
