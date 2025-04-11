@@ -7,7 +7,7 @@
 """
 
 from pymxs import runtime as rt
-from JalTools.Lib.naming import Naming
+from JalTools.lib.naming import Naming
 
 class Name:
     """

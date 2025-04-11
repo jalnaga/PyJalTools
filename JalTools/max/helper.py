@@ -8,7 +8,7 @@ Helper 모듈 - 헬퍼 객체 생성 및 관리 기능
 
 from pymxs import runtime as rt
 from .name import Name
-from JalTools.Lib import configPaths
+from JalTools.lib import configPaths
 
 
 class Helper:

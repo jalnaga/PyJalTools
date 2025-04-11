@@ -21,7 +21,7 @@ from JalTools.tests import reload_jaltools_modules
 reload_jaltools_modules()
 
 # JalTools.Lib에서 Helper 클래스 임포트
-from JalTools.Lib.helper import Helper
+from JalTools.max.helper import Helper
 
 # Helper 인스턴스 생성
 jalHelper = Helper()

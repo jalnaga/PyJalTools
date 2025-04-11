@@ -20,8 +20,7 @@ if root_dir not in sys.path:
 from JalTools.tests import reload_jaltools_modules
 reload_jaltools_modules()
 
-# JalTools.Lib에서 Anim 클래스 임포트
-from JalTools.Lib.anim import Anim
+from JalTools.max.anim import Anim
 
 # Anim 인스턴스 생성
 jalAnim = Anim()
