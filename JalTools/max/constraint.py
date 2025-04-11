@@ -24,12 +24,22 @@ class Constraint:
         
         Args:
             str_service: 문자열 처리 서비스 (선택적)
-            name_service: 이름 처리 서비스 (선택적)k
+            name_service: 이름 처리 서비스 (선택적)
             helper_service: 헬퍼 객체 관련 서비스 (선택적)
         """
-        self.str = str_service
-        self.name = name_service
-        self.helper = helper_service
+        # 서비스 인스턴스 설정 (외부에서 제공되지 않으면 새로 생성)
+        if name_service is None:
+            from JalTools.lib import configPaths
+            from .name import Name
+            self.name = Name(configPaths.get_naming_config_path())
+        else:
+            self.name = name_service
+            
+        if helper_service is None:
+            from .helper import Helper
+            self.helper = Helper(name_service=self.name)
+        else:
+            self.helper = helper_service
     
     def collapse(self, inObj):
         """

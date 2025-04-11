@@ -19,10 +19,21 @@ class Helper:
     pymxs 모듈을 통해 3ds Max의 기능을 직접 접근합니다.
     """
     
-    def __init__(self):
-        """초기화 함수"""
-        # Name 인스턴스 생성 (중앙 관리되는 설정 파일 경로 사용)
-        self.name = Name(configPaths.get_naming_config_path())
+    def __init__(self, name_service=None):
+        """
+        초기화 함수
+        
+        Args:
+            name_service: Name 서비스 인스턴스 (기본값: None)
+                          제공되지 않으면 새로 생성
+        """
+        # Name 서비스 사용 (외부에서 제공되지 않으면 새로 생성)
+        if name_service is None:
+            from JalTools.lib import configPaths
+            from .name import Name
+            self.name = Name(configPaths.get_naming_config_path())
+        else:
+            self.name = name_service
     
     def create_point(self, inName, size=2, boxToggle=False, crossToggle=True, pointColor=(14, 255, 2), pos=(0, 0, 0)):
         """
