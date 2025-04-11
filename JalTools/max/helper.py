@@ -217,7 +217,7 @@ class Helper:
                         size=helperSize, 
                         boxToggle=False, 
                         crossToggle=True, 
-                        point_color=(14, 255, 2), 
+                        pointColor=(14, 255, 2), 
                         pos=(0, 0, 0)
                     )
                     rt.setProperty(targetPoint, "transform", rt.getProperty(item, "transform"))
@@ -228,7 +228,7 @@ class Helper:
                         size=helperSize, 
                         boxToggle=True, 
                         crossToggle=False, 
-                        point_color=(14, 255, 2), 
+                        pointColor=(14, 255, 2), 
                         pos=(0, 0, 0)
                     )
                     rt.setProperty(genPoint, "transform", rt.getProperty(item, "transform"))
@@ -243,7 +243,7 @@ class Helper:
                         size=helperSize, 
                         boxToggle=boxToggle, 
                         crossToggle=crossToggle, 
-                        point_color=(14, 255, 2), 
+                        pointColor=(14, 255, 2), 
                         pos=(0, 0, 0)
                     )
                     rt.setProperty(genPint, "transform", rt.getProperty(item, "transform"))
@@ -288,8 +288,8 @@ class Helper:
                 )
                 
                 # 트랜스폼 및 부모 설정
-                rt.setProperty(genPoint, "transform", rt.getProperty(item.transform))
-                rt.setProperty(genPoint, "parent", rt.getProperty(item.parent))
+                rt.setProperty(genPoint, "transform", rt.getProperty(item, "transform"))
+                rt.setProperty(genPoint, "parent", rt.getProperty(item, "parent"))
                 rt.setProperty(item, "parent", genPoint)
                 
                 # 부모 헬퍼로 이름 변경
