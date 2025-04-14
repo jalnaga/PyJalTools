@@ -29,10 +29,9 @@ class Align:
         selection_count = rt.selection.count
         
         if selection_count > 1:
-            for i in range(selection_count - 1):
-                # 인덱스가 0부터 시작하는 Python과 달리 MAXScript는 1부터 시작하므로 i+1 사용
-                rt.selection[i].transform = rt.selection[selection_count].transform
-                rt.selection[i].pos = rt.selection[selection_count].center
+            for i in range(selection_count):
+                rt.setProperty(rt.selection[i], "transform", rt.selection[selection_count-1].transform)
+                rt.setProperty(rt.selection[i], "position", rt.selection[selection_count-1].center)
     
     def align_to_last_sel(self):
         """
@@ -43,9 +42,9 @@ class Align:
         selection_count = rt.selection.count
         
         if selection_count > 1:
-            for i in range(selection_count - 1):
+            for i in range(selection_count):
                 # 인덱스가 0부터 시작하는 Python과 달리 MAXScript는 1부터 시작하므로 i+1 사용
-                rt.selection[i].transform = rt.selection[selection_count].transform
+                rt.selection[i].transform = rt.selection[selection_count-1].transform
     
     def align_to_last_sel_pos(self):
         """
@@ -57,8 +56,7 @@ class Align:
         selection_count = rt.selection.count
         
         if selection_count > 1:
-            for i in range(selection_count - 1):
-                # 인덱스가 0부터 시작하는 Python과 달리 MAXScript는 1부터 시작하므로 i+1 사용
+            for i in range(selection_count):
                 # 임시 포인트 객체 생성
                 pos_dum_point = rt.Point()
                 # 위치와 회전 제약 컨트롤러 생성
@@ -66,15 +64,15 @@ class Align:
                 rot_const = rt.Orientation_Constraint()
                 
                 # 포인트에 컨트롤러 할당
-                pos_dum_point.position.controller = pos_const
-                pos_dum_point.rotation.controller = rot_const
+                rt.setPropertyController(pos_dum_point.controller, "Position", pos_const)
+                rt.setPropertyController(pos_dum_point.controller, "Rotation", rot_const)
                 
                 # 위치는 마지막 선택된 객체 기준, 회전은 현재 처리 중인 객체 기준
-                pos_const.appendTarget(rt.selection[selection_count], 100.0)
+                pos_const.appendTarget(rt.selection[selection_count-1], 100.0)
                 rot_const.appendTarget(rt.selection[i], 100.0)
                 
                 # 계산된 변환 행렬을 객체에 적용
-                rt.selection[i].transform = pos_dum_point.transform
+                rt.setProperty(rt.selection[i], "transform", pos_dum_point.transform)
                 
                 # 임시 객체 삭제
                 rt.delete(pos_dum_point)
@@ -89,7 +87,7 @@ class Align:
         selection_count = rt.selection.count
         
         if selection_count > 1:
-            for i in range(selection_count - 1):
+            for i in range(selection_count):
                 # 인덱스가 0부터 시작하는 Python과 달리 MAXScript는 1부터 시작하므로 i+1 사용
                 # 임시 포인트 객체 생성
                 rot_dum_point = rt.Point()
@@ -100,13 +98,15 @@ class Align:
                 # 포인트에 컨트롤러 할당
                 rot_dum_point.position.controller = pos_const
                 rot_dum_point.rotation.controller = rot_const
+                rt.setPropertyController(rot_dum_point.controller, "Position", pos_const)
+                rt.setPropertyController(rot_dum_point.controller, "Rotation", rot_const)
                 
                 # 위치는 현재 처리 중인 객체 기준, 회전은 마지막 선택된 객체 기준
                 pos_const.appendTarget(rt.selection[i], 100.0)
-                rot_const.appendTarget(rt.selection[selection_count], 100.0)
+                rot_const.appendTarget(rt.selection[selection_count-1], 100.0)
                 
                 # 계산된 변환 행렬을 객체에 적용
-                rt.selection[i].transform = rot_dum_point.transform
+                rt.setProperty(rt.selection[i], "transform", rot_dum_point.transform)
                 
                 # 임시 객체 삭제
                 rt.delete(rot_dum_point)

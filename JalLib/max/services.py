@@ -6,11 +6,11 @@
 3DS Max가 실행될 때 메모리에 한번만 로드되는 서비스 인스턴스들을 관리
 """
 
-from JalLib.lib import configPaths
+from JalLib.configPaths import get_naming_config_path
 from .name import Name
 
 # 기본 서비스 인스턴스 생성
-name_service = Name(configPaths.get_naming_config_path())
+name_service = Name(get_naming_config_path())
 
 # 순환 참조 방지를 위해 서비스들은 초기화를 미루고 함수를 통해 접근
 _helper_service = None

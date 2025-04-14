@@ -8,12 +8,19 @@ Align 클래스 테스트 - 3ds Max에서 객체 정렬 기능 테스트
 import sys
 import os
 import math
+import importlib
 from pymxs import runtime as rt
 
 # JalLib 패키지를 임포트할 수 있도록 경로 설정
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
+
+# 모듈 직접 리로드 - 매번 실행할 때마다 최신 코드 사용
+import JalLib
+import JalLib.max.align
+importlib.reload(JalLib)
+importlib.reload(JalLib.max.align)
 
 # JalLib 모듈 리로드
 from JalLib.tests import reload_jaltools_modules
@@ -69,8 +76,11 @@ def print_object_info(objects, message=""):
         print(f"{obj.name} - 위치: ({pos.x:.1f}, {pos.y:.1f}, {pos.z:.1f}), " + 
               f"회전: ({math.degrees(rot.x):.1f}°, {math.degrees(rot.y):.1f}°, {math.degrees(rot.z):.1f}°)")
 
-def run_test_align_to_last_sel_center(align, objects):
+def run_test_align_to_last_sel_center(align):
     """마지막 선택된 객체의 중심점으로 정렬 테스트"""
+    teapot, sphere, box, pyramid = create_test_objects()
+    objects = [teapot, sphere, box, pyramid]
+    
     # 객체 선택 - 마지막을 Pyramid로 설정
     rt.select(objects)
     
@@ -83,11 +93,12 @@ def run_test_align_to_last_sel_center(align, objects):
     # 테스트 후 정보 출력
     print_object_info(objects, "테스트 1 결과: 마지막 선택된 객체(Pyramid)의 중심점으로 정렬 후")
     
-    # 객체 다시 원래 위치로 복원
-    create_test_objects()
 
-def run_test_align_to_last_sel(align, objects):
+def run_test_align_to_last_sel(align):
     """마지막 선택된 객체의 트랜스폼으로 정렬 테스트"""
+    teapot, sphere, box, pyramid = create_test_objects()
+    objects = [teapot, sphere, box, pyramid]
+    
     # 객체 선택 - 마지막을 Pyramid로 설정
     rt.select(objects)
     
@@ -103,8 +114,11 @@ def run_test_align_to_last_sel(align, objects):
     # 객체 다시 원래 위치로 복원
     create_test_objects()
 
-def run_test_align_to_last_sel_pos(align, objects):
+def run_test_align_to_last_sel_pos(align):
     """마지막 선택된 객체의 위치로 정렬 (회전 유지) 테스트"""
+    teapot, sphere, box, pyramid = create_test_objects()
+    objects = [teapot, sphere, box, pyramid]
+    
     # 객체 선택 - 마지막을 Pyramid로 설정
     rt.select(objects)
     
@@ -120,8 +134,11 @@ def run_test_align_to_last_sel_pos(align, objects):
     # 객체 다시 원래 위치로 복원
     create_test_objects()
 
-def run_test_align_to_last_sel_rot(align, objects):
+def run_test_align_to_last_sel_rot(align):
     """마지막 선택된 객체의 회전으로 정렬 (위치 유지) 테스트"""
+    teapot, sphere, box, pyramid = create_test_objects()
+    objects = [teapot, sphere, box, pyramid]
+    
     # 객체 선택 - 마지막을 Pyramid로 설정
     rt.select(objects)
     
@@ -144,18 +161,11 @@ def main():
         # Align 클래스 인스턴스 생성
         align = Align()
         
-        # 테스트 객체 생성
-        teapot, sphere, box, pyramid = create_test_objects()
-        objects = [teapot, sphere, box, pyramid]
-        
-        # 초기 객체 정보 출력
-        print_object_info(objects, "초기 객체 위치 및 회전")
-        
         # 각 정렬 메소드 테스트 실행
-        run_test_align_to_last_sel_center(align, objects)
-        run_test_align_to_last_sel(align, objects)
-        run_test_align_to_last_sel_pos(align, objects)
-        run_test_align_to_last_sel_rot(align, objects)
+        run_test_align_to_last_sel_center(align)
+        run_test_align_to_last_sel(align)
+        run_test_align_to_last_sel_pos(align)
+        run_test_align_to_last_sel_rot(align)
         
         print("\n" + "*"*60)
         print("JalTools Align 클래스 테스트 완료")

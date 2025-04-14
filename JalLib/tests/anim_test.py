@@ -15,6 +15,11 @@ from pymxs import runtime as rt
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
+    
+import JalLib
+import JalLib.max.anim
+importlib.reload(JalLib)
+importlib.reload(JalLib.max.anim)
 
 # JalLib 모듈 리로드
 from JalLib.tests import reload_jaltools_modules
