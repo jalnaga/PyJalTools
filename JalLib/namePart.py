@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-NamePart 클래스 모듈 - Naming 모듈의 일부
-NamePart 클래스는 이름 부분을 관리하는 기능을 제공합니다.
-이름과 해당 부분에 대한 사전 선언된 값들을 관리합니다.
+namePart 모듈 - 이름의 각 부분을 표현하는 기능 제공
+이름 부분의 사전 정의된 값과 의미론적 매핑을 관리하는 클래스 구현
 """
+
+from typing import List, Dict, Any, Optional, Union
 
 class NamePart:
     """

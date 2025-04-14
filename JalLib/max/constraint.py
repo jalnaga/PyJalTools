@@ -29,7 +29,7 @@ class Constraint:
         """
         # 서비스 인스턴스 설정 (외부에서 제공되지 않으면 새로 생성)
         if name_service is None:
-            from JalTools.lib import configPaths
+            from JalLib import configPaths
             from .name import Name
             self.name = Name(configPaths.get_naming_config_path())
         else:
