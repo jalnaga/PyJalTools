@@ -188,19 +188,7 @@ class Naming:
         Returns:
             숫자가 포함되어 있으면 True, 아니면 False
         """
-        return bool(re.search(r'\d', inStr))
-
-    def _is_digit(self, inStr):
-        """
-        문자열이 숫자로만 이루어져 있는지 확인
-        
-        Args:
-            inStr: 확인할 문자열
-            
-        Returns:
-            숫자로만 이루어져 있으면 True, 아니면 False
-        """
-        return bool(re.match(r'^\d+$', inStr))
+        return any(char.isdigit() for char in inStr)
 
     def _split_to_array(self, inStr):
         """
@@ -519,7 +507,7 @@ class Naming:
         Returns:
             인덱스 문자이면 True, 아니면 False
         """
-        return self._is_digit(inChar)
+        return inChar.isdigit()
         
     def is_nub_char(self, inChar):
         """
@@ -606,6 +594,49 @@ class Naming:
             앞/뒤 부분 문자열
         """
         return self.get_name("FrontBack", inStr)
+    
+    def pick_name(self, inNamePart, inStr):
+        nameArray = self._split_to_array(inStr)
+        returnStr = ""
+        
+        # namePart 문자열 목록 가져오기
+        partObj = self.get_name_part(inNamePart)
+        if not partObj:
+            return returnStr
+        
+        partType = partObj.get_type()
+        if not partType:
+            return returnStr
+            
+        partValues = partObj.get_predefined_values()
+        if partType != NamePartType.INDEX and partType != NamePartType.REALNAME and not partValues:
+            return returnStr
+        
+        if partType == NamePartType.PREFIX:
+            for item in nameArray:
+                if item in partValues:
+                    returnStr = item
+                    break
+        
+        if partType == NamePartType.SUFFIX:
+            for i in range(len(nameArray) - 1, -1, -1):
+                if nameArray[i] in partValues:
+                    returnStr = nameArray[i]
+                    break
+                
+        if partType == NamePartType.INDEX:
+            if self.get_index_part_index() > self.get_real_name_part_index():
+                for i in range(len(nameArray) - 1, -1, -1):
+                    if self.is_index_char(nameArray[i]):
+                        returnStr = nameArray[i]
+                        break
+            else:
+                for item in nameArray:
+                    if self.is_index_char(item):
+                        returnStr = item
+                        break
+        
+        return returnStr
         
     def get_name(self, inNamePart, inStr):
         """
@@ -621,36 +652,38 @@ class Naming:
         nameArray = self._split_to_array(inStr)
         returnStr = ""
         
-        # namePart 인덱스와 RealName 인덱스 가져오기
-        partIndex = self.get_name_part_index(inNamePart)
-        realNameIndex = self.get_real_name_part_index()
+        partType = self.get_name_part(inNamePart).get_type()
         
-        # namePart가 유효하지 않으면 빈 문자열 반환
-        if partIndex < 0:
+        foundName = self.pick_name(inNamePart, inStr)
+        if foundName == "":
             return returnStr
+        foundIndex = nameArray.index(foundName)
         
-        # namePart 문자열 목록 가져오기
-        partObj = self.get_name_part(inNamePart)
-        if not partObj:
-            return returnStr
-            
-        partValues = partObj.get_predefined_values()
-        if not partValues:
-            return returnStr
+        if partType == NamePartType.PREFIX:
+            if foundIndex >= 0:
+                prevNameParts = self._nameParts[:foundIndex]
+                prevNames = [self.pick_name(part.get_name(), inStr) for part in prevNameParts]
+                prevNamesInNameArray = nameArray[:foundIndex]
+                for prevName in prevNames:
+                    if prevName in prevNamesInNameArray:
+                        prevNamesInNameArray.remove(prevName)
+                if len(prevNamesInNameArray) == 0 :
+                    returnStr = foundName
+        
+        if partType == NamePartType.SUFFIX:
+            if foundIndex >= 0:
+                nextNameParts = self._nameParts[foundIndex + 1:]
+                nextNames = [self.pick_name(part.get_name(), inStr) for part in nextNameParts]
+                nextNamesInNameArray = nameArray[foundIndex + 1:]
+                for nextName in nextNames:
+                    if nextName in nextNamesInNameArray:
+                        nextNamesInNameArray.remove(nextName)
+                if len(nextNamesInNameArray) == 0 :
+                    returnStr = foundName
+        
+        if partType == NamePartType.INDEX:
+            returnStr = self.pick_name(inNamePart, inStr)
                 
-        # namePart가 실제 이름 앞에 있는 경우 - 앞에서부터 검색
-        if partIndex < realNameIndex:
-            for item in nameArray:
-                if item in partValues:
-                    returnStr = item
-                    break
-        # namePart가 실제 이름 뒤에 있는 경우 - 뒤에서부터 검색
-        else:
-            for i in range(len(nameArray) - 1, -1, -1):  # 수정: 마지막 요소부터 첫번째 요소까지 검색
-                if nameArray[i] in partValues:
-                    returnStr = nameArray[i]
-                    break
-        
         return returnStr
 
     def get_index(self, inStr):
@@ -1079,7 +1112,7 @@ class Naming:
         if isinstance(inDigit, int):
             digitNum = inDigit
         elif isinstance(inDigit, str):
-            if self._is_digit(inDigit):
+            if inDigit.isdigit():
                 digitNum = int(inDigit)
                 
         # Python의 문자열 포맷팅을 사용하여 패딩
