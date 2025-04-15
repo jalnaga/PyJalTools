@@ -12,7 +12,7 @@ import importlib
 from pymxs import runtime as rt
 
 # JalLib 패키지를 임포트할 수 있도록 경로 설정
-root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..",))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
