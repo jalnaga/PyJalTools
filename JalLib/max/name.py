@@ -9,10 +9,10 @@
 from pymxs import runtime as rt
 from JalLib.naming import Naming
 
-class Name:
+class Name(Naming):
     """
     3ds Max 노드 이름 관리를 위한 클래스
-    Naming 클래스를 내부적으로 사용하며, Max 특화 기능 제공
+    Naming 클래스를 상속받으며, Max 특화 기능 제공
     """
     
     def __init__(self, configPath=None):
@@ -23,20 +23,8 @@ class Name:
             configPath: 설정 파일 경로 (기본값: None)
                         설정 파일이 제공되면 해당 파일에서 설정을 로드함
         """
-        # Naming 인스턴스 생성하여 내부적으로 사용
-        self.naming = Naming(configPath)
-    
-    def __getattr__(self, name):
-        """
-        Naming 클래스에 메소드 위임
-        
-        Args:
-            name: 요청된 속성/메소드 이름
-            
-        Returns:
-            Naming 인스턴스의 해당 속성/메소드
-        """
-        return getattr(self.naming, name)
+        # 부모 클래스 초기화
+        super().__init__(configPath)
     
     # pymxs 의존적인 메소드 구현
     
@@ -50,7 +38,7 @@ class Name:
         Returns:
             고유한 이름 문자열
         """
-        pattern_str = self.naming.replace_index(inStr, "*")
+        pattern_str = self.replace_index(inStr, "*")
         
         # pymxs를 사용하여 객체 이름을 패턴과 매칭하여 검색
         matched_objects = []
@@ -60,7 +48,7 @@ class Name:
             if rt.matchPattern(obj.name, pattern=pattern_str):
                 matched_objects.append(obj)
                 
-        return self.naming.replace_index(inStr, str(len(matched_objects) + 1))
+        return self.replace_index(inStr, str(len(matched_objects) + 1))
     
     def compare_name(self, inObjA, inObjB):
         """
@@ -102,10 +90,55 @@ class Name:
         Returns:
             미러링된 이름 문자열
         """
-        return_name = self.naming.gen_mirroring_name(inStr)
+        return_name = self.gen_mirroring_name(inStr)
         
         # 이름이 변경되지 않았다면 고유한 이름 생성
         if return_name == inStr:
             return_name = self.gen_unique_name(inStr)
             
         return return_name
+    
+    def get_parent_str(self):
+        """
+        부모 이름 문자열 반환
+        
+        Returns:
+            부모 이름 문자열
+        """
+        return self.get_name_part("Type").get_value_by_weight(inRank=5)
+    
+    def get_dummy_str(self):
+        """
+        더미 이름 문자열 반환
+        
+        Returns:
+            더미 이름 문자열
+        """
+        return self.get_name_part("Type").get_value_by_weight(inRank=10)
+    
+    def get_exposeTm_str(self):
+        """
+        ExposeTm 이름 문자열 반환
+        
+        Returns:
+            ExposeTm 이름 문자열
+        """
+        return self.get_name_part("Type").get_value_by_weight(inRank=15)
+    
+    def get_ik_str(self):
+        """
+        IK 이름 문자열 반환
+        
+        Returns:
+            IK 이름 문자열
+        """
+        return self.get_name_part("Type").get_value_by_weight(inRank=20)
+    
+    def get_target_str(self):
+        """
+        타겟 이름 문자열 반환
+        
+        Returns:
+            타겟 이름 문자열
+        """
+        return self.get_name_part("Type").get_value_by_weight(inRank=25)

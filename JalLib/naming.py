@@ -343,7 +343,7 @@ class Naming:
         """
         sidePart = self.get_name_part("Side")
         if sidePart:
-            return sidePart.get_value_by_weight(inRank=5)
+            return sidePart.get_value_by_min_weight()
         return ""
 
     def get_right_str(self):
@@ -355,7 +355,7 @@ class Naming:
         """
         sidePart = self.get_name_part("Side")
         if sidePart:
-            return sidePart.get_value_by_weight(inRank=10)
+            return sidePart.get_value_by_max_weight()
         return ""
 
     def get_front_str(self):
@@ -367,7 +367,7 @@ class Naming:
         """
         frontBackPart = self.get_name_part("FrontBack")
         if frontBackPart:
-            return frontBackPart.get_value_by_weight(inRank=5)
+            return frontBackPart.get_value_by_min_weight()
         return ""
 
     def get_back_str(self):
@@ -379,7 +379,7 @@ class Naming:
         """
         frontBackPart = self.get_name_part("FrontBack")
         if frontBackPart:
-            return frontBackPart.get_value_by_weight(inRank=10)
+            return frontBackPart.get_value_by_max_weight()
         return ""
 
     def get_base_part_index(self):
@@ -627,28 +627,25 @@ class Naming:
         
         # namePart 문자열 목록 가져오기
         partObj = self.get_name_part(inNamePart)
-        partValues = partObj.get_predefined_values() if partObj else []
+        if not partObj:
+            return returnStr
+            
+        partValues = partObj.get_predefined_values()
+        if not partValues:
+            return returnStr
                 
-        # namePart 문자열이 있는지 확인
-        found = False
-        for item in nameArray:
-            if item in partValues:
-                found = True
-                break
-                
-        if found:
-            if partIndex < realNameIndex:
-                # namePart가 실제 이름 앞에 있는 경우 - 앞에서부터 검색
-                for i in range(len(nameArray)):
-                    if nameArray[i] in partValues:
-                        returnStr = nameArray[i]
-                        break
-            else:
-                # namePart가 실제 이름 뒤에 있는 경우 - 뒤에서부터 검색
-                for i in range(len(nameArray) - 1, -1, -1):
-                    if nameArray[i] in partValues:
-                        returnStr = nameArray[i]
-                        break
+        # namePart가 실제 이름 앞에 있는 경우 - 앞에서부터 검색
+        if partIndex < realNameIndex:
+            for item in nameArray:
+                if item in partValues:
+                    returnStr = item
+                    break
+        # namePart가 실제 이름 뒤에 있는 경우 - 뒤에서부터 검색
+        else:
+            for i in range(len(nameArray) - 1, -1, -1):  # 수정: 마지막 요소부터 첫번째 요소까지 검색
+                if nameArray[i] in partValues:
+                    returnStr = nameArray[i]
+                    break
         
         return returnStr
 

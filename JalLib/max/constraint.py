@@ -149,7 +149,7 @@ class Constraint:
             activeNum = lst.getActive()
             
             # 리스트 내 모든 컨트롤러 검사
-            for i in range(1, constNum + 1):  # Maxscript는 1부터 시작
+            for i in range(constNum):
                 sub_controller = lst[i].controller
                 if rt.classOf(sub_controller) == rt.Position_Constraint:
                     returnConst = sub_controller
@@ -329,7 +329,7 @@ class Constraint:
             activeNum = lst.getActive()
             
             # 리스트 내 모든 컨트롤러 검사
-            for i in range(1, constNum + 1):  # Maxscript는 1부터 시작
+            for i in range(constNum):  # Maxscript는 1부터 시작
                 sub_controller = lst[i].controller
                 if rt.classOf(sub_controller) == rt.Orientation_Constraint:
                     returnConst = sub_controller
@@ -463,7 +463,7 @@ class Constraint:
             activeNum = lst.getActive()
             
             # 리스트 내 모든 컨트롤러 검사
-            for i in range(1, constNum + 1):  # Maxscript는 1부터 시작
+            for i in range(constNum):
                 sub_controller = lst[i].controller
                 if rt.classOf(sub_controller) == rt.LookAt_Constraint:
                     returnConst = sub_controller
@@ -604,9 +604,9 @@ Quat theAngle theAxis"""
         
         # 헬퍼 객체 이름 생성
         if self.name:
-            rotPointName = self.name.replace_type(inObj.name, self.name.get_dummyStr())
+            rotPointName = self.name.replace_type(inObj.name, self.name.get_dummy_str())
             rotMeasurePointName = self.name.increase_index(rotPointName, 1)
-            rotExpName = self.name.replace_type(inObj.name, self.name.get_exposeTMStr())
+            rotExpName = self.name.replace_type(inObj.name, self.name.get_exposeTm_str())
             rotExpName = self.name.replace_index(rotExpName, "0")
         else:
             # name 서비스가 없는 경우 기본 이름 사용
@@ -631,15 +631,10 @@ Quat theAngle theAxis"""
         rt.setProperty(rotMeasuerPoint, "transform", rt.getProperty(inObj, "transform"))
         rt.setProperty(rotExpPoint, "transform", rt.getProperty(inObj, "transform"))
         
-        # 위치 설정
-        rt.setProperty(rotPoint, "transform.position", rt.getProperty(inTarget, "transform.position"))
-        rt.setProperty(rotMeasuerPoint, "transform.position", rt.getProperty(inTarget, "transform.position"))
-        rt.setProperty(rotExpPoint, "transform.position", rt.getProperty(inTarget, "transform.position"))
-        
         # 부모 관계 설정
-        rt.setProperty(rotPoint, "parent", inTarget)
-        rt.setProperty(rotMeasuerPoint, "parent", rt.getProperty(inTarget, "parent"))
-        rt.setProperty(rotExpPoint, "parent", inTarget)
+        rotPoint.parent = inTarget
+        rotMeasuerPoint.parent = inTarget.parent
+        rotExpPoint.parent = inTarget
         
         # ExposeTm 설정
         rotExpPoint.exposeNode = rotPoint
@@ -678,31 +673,20 @@ eulerToQuat result
         targetObjArray = inTarget
         
         # 객체 이름 생성
-        if self.name and self.str:
+        if self.name:
             objName = self.name.get_string(oriObj.name)
             indexNum = self.name.get_index_as_digit(oriObj.name)
-            fChar = self.str.get_filteringChar(objName)
-            dummyName = self.name.add_prefix_to_realName(objName, self.name.get_dummyStr(), filteringChar=fChar)
+            dummyName = self.name.add_prefix_to_real_name(objName, self.name.get_dummy_str())
             
-            lookAtPointName = dummyName + fChar + str(indexNum)
-            lookAtMeasurePointName = dummyName + fChar + str(indexNum + 1)
-            lookAtExpPointName = dummyName + self.name.get_exposeTMStr() + fChar + "0"
-        else:
-            # name 서비스나 str 서비스가 없는 경우 기본 이름 사용
-            base_name = rt.getProperty(oriObj, "name")
-            lookAtPointName = f"dum_{base_name}"
-            lookAtMeasurePointName = f"dum_{base_name}_01"
-            lookAtExpPointName = f"exp_{base_name}_0"
+            lookAtPointName = self.name.replace_index(dummyName, str(indexNum))
+            lookAtMeasurePointName = self.name.replace_index(dummyName, str(indexNum+1))
+            lookAtExpPointName = dummyName + self.name.get_exposeTm_str()
+            lookAtExpPointName = self.name.replace_index(lookAtExpPointName, "0")
         
         # 헬퍼 객체 생성
         if self.helper:
             lookAtPoint = self.helper.create_point(lookAtPointName, size=2, boxToggle=True, crossToggle=False)
             lookAtMeasurePoint = self.helper.create_point(lookAtMeasurePointName, size=3, boxToggle=True, crossToggle=False)
-            lookAtExpPoint = rt.ExposeTm(name=lookAtExpPointName, size=3, box=False, cross=True, wirecolor=rt.Color(14, 255, 2))
-        else:
-            # 직접 헬퍼 객체 생성
-            lookAtPoint = rt.Point(name=lookAtPointName, size=2, box=True, cross=False)
-            lookAtMeasurePoint = rt.Point(name=lookAtMeasurePointName, size=3, box=True, cross=False)
             lookAtExpPoint = rt.ExposeTm(name=lookAtExpPointName, size=3, box=False, cross=True, wirecolor=rt.Color(14, 255, 2))
         
         # 초기 변환 설정
@@ -732,6 +716,25 @@ eulerToQuat result
         # 오일러 XYZ 컨트롤러 생성
         rotControl = rt.Euler_XYZ()
         
+        x_controller = rt.Float_Expression()
+        y_controller = rt.Float_Expression()
+        z_controller = rt.Float_Expression()
+        
+        # 스칼라 타겟 추가
+        x_controller.AddScalarTarget("rotX", rt.getPropertyController(lookAtExpPoint, "localEulerX"))
+        y_controller.AddScalarTarget("rotY", rt.getPropertyController(lookAtExpPoint, "localEulerY"))
+        z_controller.AddScalarTarget("rotZ", rt.getPropertyController(lookAtExpPoint, "localEulerZ"))
+        
+        # 표현식 설정
+        x_controller.SetExpression("rotX")
+        y_controller.SetExpression("rotY")
+        z_controller.SetExpression("rotZ")
+        
+        # 각 축별 회전에 Float_Expression 컨트롤러 할당
+        rt.setPropertyController(rotControl, "X_Rotation", x_controller)
+        rt.setPropertyController(rotControl, "Y_Rotation", y_controller)
+        rt.setPropertyController(rotControl, "Z_Rotation", z_controller)
+
         # 회전 컨트롤러 목록 확인 또는 생성
         rot_controller = rt.getPropertyController(oriObj.controller, "Rotation")
         if rt.classOf(rot_controller) != rt.Rotation_list:
@@ -745,25 +748,10 @@ eulerToQuat result
         rot_controller_num = rot_list.count
         rot_list.setname(rot_controller_num, "Script Rotation")
         
-        # 각 축별 회전에 Float_Expression 컨트롤러 할당
-        rt.setPropertyController(rotControl.X_Rotation, "controller", rt.Float_Expression())
-        rt.setPropertyController(rotControl.Y_Rotation, "controller", rt.Float_Expression())
-        rt.setPropertyController(rotControl.Z_Rotation, "controller", rt.Float_Expression())
-        
-        # 스칼라 타겟 추가
-        rotControl.X_Rotation.controller.AddScalarTarget("rotX", lookAtExpPoint.localEulerX.controller)
-        rotControl.Y_Rotation.controller.AddScalarTarget("rotY", lookAtExpPoint.localEulerY.controller)
-        rotControl.Z_Rotation.controller.AddScalarTarget("rotZ", lookAtExpPoint.localEulerZ.controller)
-        
-        # 표현식 설정
-        rotControl.X_Rotation.controller.SetExpression("rotX")
-        rotControl.Y_Rotation.controller.SetExpression("rotY")
-        rotControl.Z_Rotation.controller.SetExpression("rotZ")
-        
         # 컨트롤러 업데이트
-        rotControl.X_Rotation.controller.Update()
-        rotControl.Y_Rotation.controller.Update()
-        rotControl.Z_Rotation.controller.Update()
+        x_controller.Update()
+        y_controller.Update()
+        z_controller.Update()
     
     def assign_attachment(self, inPlacedObj, inSurfObj, bAlign=False, shiftAxis=(0, 0, 1), shiftAmount=3.0):
         """

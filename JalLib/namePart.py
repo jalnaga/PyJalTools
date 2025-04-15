@@ -281,6 +281,30 @@ class NamePart:
                 
         return maxDiffValue
     
+    def get_value_by_min_weight(self):
+        """
+        가중치가 가장 낮은 값을 반환합니다.
+        
+        Returns:
+            가중치가 가장 낮은 값, 없으면 빈 문자열
+        """
+        sorted_values = self.get_sorted_values_by_weight()
+        if sorted_values:
+            return sorted_values[-1]  # 마지막 값이 가중치가 가장 낮은 값
+        return ""
+    
+    def get_value_by_max_weight(self):
+        """
+        가중치가 가장 높은 값을 반환합니다.
+        
+        Returns:
+            가중치가 가장 높은 값, 없으면 빈 문자열
+        """
+        sorted_values = self.get_sorted_values_by_weight()
+        if sorted_values:
+            return sorted_values[0]  # 첫 번째 값이 가중치가 가장 높은 값
+        return ""
+    
     def to_dict(self):
         """
         NamePart 객체를 사전 형태로 변환합니다.
