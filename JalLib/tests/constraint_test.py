@@ -29,13 +29,12 @@ from JalLib.max.constraint import Constraint
 
 teapot = rt.teapot()
 teapot.name = "Teapot 01"
-teapot.position = rt.Point3(0, 0, 10)
-box = rt.box()
-box.name = "Box 01"
 sphere = rt.sphere()
 sphere.name = "Sphere 01"
+sphere.position = rt.Point3(0, 0, -50)
 pyramid = rt.pyramid()
 pyramid.name = "Pyramid 01"
+pyramid.position = rt.Point3(0, 0, 50)
 
 teapot.parent = sphere
 

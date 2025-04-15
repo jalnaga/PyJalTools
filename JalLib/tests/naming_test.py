@@ -37,6 +37,9 @@ class NamingTest(unittest.TestCase):
     def test_get_char_type(self):
         self.assertEqual(self.naming.convert_name_to_array("b_Dum_R_F_R_Skirt_Nub"), ["b", "Dum", "R", "F", "R_Skirt", "", "Nub"])
         self.assertEqual(self.naming.get_real_name("b_Dum_R_F_R_Skirt_Nub"), "R_Skirt")
+        namePart = self.naming.get_name_part("Type")
+        self.assertEqual(namePart.get_predefined_values(), ["P", "Dum", "Exp", "IK", "T"])
+        self.assertEqual(namePart.get_value_by_weight(1), "P")
 
 
 if __name__ == "__main__":

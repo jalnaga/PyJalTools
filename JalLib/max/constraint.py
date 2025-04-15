@@ -608,6 +608,10 @@ Quat theAngle theAxis"""
             rotMeasurePointName = self.name.increase_index(rotPointName, 1)
             rotExpName = self.name.replace_type(inObj.name, self.name.get_exposeTm_str())
             rotExpName = self.name.replace_index(rotExpName, "0")
+            
+            print(f"dumStr: {self.name.get_dummy_str()}")
+            print(f"exposeTmStr: {self.name.get_exposeTm_str()}")
+            print(f"rotPointName: {rotPointName}, rotMeasurePointName: {rotMeasurePointName}, rotExpName: {rotExpName}")
         else:
             # name 서비스가 없는 경우 기본 이름 사용
             base_name = rt.getProperty(inObj, "name")
