@@ -86,7 +86,7 @@ class NamePart:
         # 가중치는 5부터 시작해서 5씩 증가 (순서대로 내림차순 가중치)
         num_values = len(self._predefinedValues)
         for i in range(num_values):
-            weight_value = 5 * (num_values - i)  # 내림차순 가중치
+            weight_value = 5 * (i + 1)  # 내림차순 가중치
             self._weights.append(weight_value)
     
     def set_name(self, inName):
@@ -406,7 +406,7 @@ class NamePart:
             return True
         return False
     
-    def get_description(self, inValue):
+    def get_description_by_value(self, inValue):
         """
         특정 predefined value의 설명을 반환합니다.
         

@@ -39,7 +39,11 @@ class NamingTest(unittest.TestCase):
         self.assertEqual(self.naming.get_real_name("b_Dum_R_F_R_Skirt_Nub"), "R_Skirt")
         namePart = self.naming.get_name_part("Type")
         self.assertEqual(namePart.get_predefined_values(), ["P", "Dum", "Exp", "IK", "T"])
-        self.assertEqual(namePart.get_value_by_weight(1), "P")
+        self.assertEqual(namePart._weights, [5, 10, 15, 20, 25])
+        self.assertEqual(namePart.get_value_by_description("Dummy"), "Dum")
+        self.assertEqual(namePart.get_description_by_value("Dum"), "Dummy")
+        self.assertEqual(namePart.get_value_by_max_weight(), "T")
+        
 
 
 if __name__ == "__main__":

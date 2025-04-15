@@ -49,41 +49,56 @@ class NamingConfig:
     def _initialize_default_parts(self):
         """기본 NamePart 객체들 초기화"""
         # 기본 순서 정의 (명시적으로 순서를 저장)
-        default_order = ["Base", "Type", "Side", "FrontBack", "RealName", "Index", "Nub"]
-        self.part_order = default_order.copy()
+        self.part_order = []
         
         # Base 부분 (PREFIX 타입)
-        base_part = NamePart("Base", ["b", "Bip001"], {"b": 5, "Bip001": 10}, NamePartType.PREFIX)
+        base_part = NamePart("Base", NamePartType.PREFIX, 
+                             ["b", "Bip001"], 
+                             ["Skin Bone", "Biped"])
         self.name_parts.append(base_part)
         
         # Type 부분 (PREFIX 타입)
-        type_part = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"], 
-                             {"P": 5, "Dum": 10, "Exp": 15, "IK": 20, "T": 25}, 
-                             NamePartType.PREFIX)
+        type_part = NamePart("Type", NamePartType.PREFIX, 
+                             ["P", "Dum", "Exp", "IK", "T"], 
+                             ["Parent", "Dummy", "ExposeTM", "IK", "Target"])
         self.name_parts.append(type_part)
         
         # Side 부분 (PREFIX 타입)
-        side_part = NamePart("Side", ["L", "R"], {"L": 5, "R": 10}, NamePartType.PREFIX)
+        side_part = NamePart("Side", NamePartType.PREFIX,
+                             ["L", "R"], 
+                             ["Left", "Right"])
         self.name_parts.append(side_part)
         
         # FrontBack 부분 (PREFIX 타입)
-        front_back_part = NamePart("FrontBack", ["F", "B"], {"F": 5, "B": 10}, NamePartType.PREFIX)
-        self.name_parts.append(front_back_part)
+        frontBack_part = NamePart("FrontBack", NamePartType.PREFIX,
+                                 ["F", "B"], 
+                                 ["Front", "Back"])
+        self.name_parts.append(frontBack_part)
         
         # RealName 부분 (REALNAME 타입)
-        real_name_part = NamePart("RealName", [], {}, NamePartType.REALNAME)
-        self.name_parts.append(real_name_part)
+        realName_part = NamePart("RealName", NamePartType.REALNAME, [], [])
+        self.name_parts.append(realName_part)
         
         # Index 부분 (INDEX 타입)
-        index_part = NamePart("Index", [], {}, NamePartType.INDEX)
+        index_part = NamePart("Index", NamePartType.INDEX, [], [])
         self.name_parts.append(index_part)
         
         # Nub 부분 (SUFFIX 타입)
-        nub_part = NamePart("Nub", ["Nub"], {"Nub": 5}, NamePartType.SUFFIX)
+        nub_part = NamePart("Nub", NamePartType.SUFFIX,
+                             ["Nub"], 
+                             ["Nub"])
         self.name_parts.append(nub_part)
+        
+        self._update_part_order()  # 초기화 후 순서 업데이트
         
         # 타입 자동 업데이트
         self._update_part_types_based_on_order()
+    
+    def _update_part_order(self):
+        """
+        NamePart 순서 업데이트 - 기본적으로 NamePart 객체의 순서에 따라 업데이트
+        """
+        self.part_order = [part.get_name() for part in self.name_parts]
     
     def _get_real_name_index(self) -> int:
         """
@@ -93,7 +108,7 @@ class NamingConfig:
             RealName 파트의 인덱스, 없으면 -1
         """
         for i, part in enumerate(self.name_parts):
-            if part.get_name() == "RealName":
+            if part.get_type() == NamePartType.REALNAME:
                 return i
         return -1
     
@@ -114,25 +129,23 @@ class NamingConfig:
         
         # 각 파트의 타입을 순서에 따라 업데이트
         for i, part in enumerate(self.name_parts):
-            part_name = part.get_name()
+            partName = part.get_name()
             
             # RealName은 항상 REALNAME 타입
-            if part_name == "RealName":
+            if partName == "RealName":
                 part.set_type(NamePartType.REALNAME)
                 continue
                 
             # Index는 항상 INDEX 타입
-            if part_name == "Index":
+            if partName == "Index":
                 part.set_type(NamePartType.INDEX)
                 continue
             
             # RealName 앞의 파트는 PREFIX, 뒤의 파트는 SUFFIX
             if i < real_name_index:
-                if part.get_type() != NamePartType.PREFIX:
-                    part.set_type(NamePartType.PREFIX)
+                part.set_type(NamePartType.PREFIX)
             else:
-                if part.get_type() != NamePartType.SUFFIX and part.get_type() != NamePartType.INDEX:
-                    part.set_type(NamePartType.SUFFIX)
+                part.set_type(NamePartType.SUFFIX)
         
         return True
     
@@ -169,13 +182,16 @@ class NamingConfig:
                 return part
         return None
     
-    def add_part(self, name: str, part_type: NamePartType = NamePartType.UNDEFINED) -> bool:
+    def add_part(self, name: str, part_type: NamePartType = NamePartType.UNDEFINED, 
+                 values: Optional[List[str]] = None, descriptions: Optional[List[str]] = None) -> bool:
         """
         새 NamePart 객체 추가
         
         Args:
             name: 추가할 NamePart 이름
             part_type: NamePart 타입 (기본값: UNDEFINED)
+            values: 사전 정의된 값 목록 (기본값: None)
+            descriptions: 값에 대한 설명 목록 (기본값: None, 값과 동일하게 설정됨)
             
         Returns:
             추가 성공 여부 (True/False)
@@ -189,8 +205,10 @@ class NamingConfig:
             print(f"오류: '{name}' NamePart가 이미 존재합니다.")
             return False
         
-        # 새 NamePart 추가
-        new_part = NamePart(name, [], {}, part_type)
+        # 새 NamePart 객체 생성 - NamePart 클래스의 생성자 활용
+        new_part = NamePart(name, part_type, values or [], descriptions)
+        
+        # 리스트에 추가
         self.name_parts.append(new_part)
         
         # 순서 목록에 추가
@@ -338,13 +356,14 @@ class NamingConfig:
         
         return part.get_type()
     
-    def set_part_values(self, part_name: str, values: List[str]) -> bool:
+    def set_part_values(self, part_name: str, values: List[str], descriptions: Optional[List[str]] = None) -> bool:
         """
         특정 NamePart의 사전 정의 값 설정
         
         Args:
             part_name: NamePart 이름
             values: 설정할 사전 정의 값 리스트
+            descriptions: 설정할 설명 목록 (기본값: None, 값과 같은 설명 사용)
             
         Returns:
             설정 성공 여부 (True/False)
@@ -363,23 +382,35 @@ class NamingConfig:
             print(f"오류: {part_name} 부분의 사전 정의 값은 적어도 하나 이상 있어야 합니다.")
             return False
         
+        # 값 설정
         part.set_predefined_values(values)
         
-        # semantics 자동 설정 (5씩 증가)
-        semantics = {}
-        for i, value in enumerate(values, 1):
-            semantics[value] = i * 5  # 첫 번째 값: 5, 두 번째 값: 10, 세 번째 값: 15, ...
+        # 설명 설정 - 설명이 제공되지 않았다면 값을 설명으로 사용
+        if descriptions is None:
+            descriptions = values.copy()
         
-        part.set_semantic_mapping(semantics)
+        # 값과 설명의 길이가 다르면 조정
+        if len(descriptions) != len(values):
+            # 설명이 적으면 값으로 채우기
+            if len(descriptions) < len(values):
+                descriptions.extend(values[len(descriptions):])
+            # 설명이 많으면 잘라내기
+            else:
+                descriptions = descriptions[:len(values)]
+        
+        # 설명 설정
+        part.set_descriptions(descriptions)
+        
         return True
     
-    def add_part_value(self, part_name: str, value: str) -> bool:
+    def add_part_value(self, part_name: str, value: str, description: Optional[str] = None) -> bool:
         """
-        특정 NamePart에 사전 정의 값 추가 (semantics 자동 설정)
+        특정 NamePart에 사전 정의 값 추가
         
         Args:
             part_name: NamePart 이름
             value: 추가할 사전 정의 값
+            description: 추가할 값의 설명 (기본값: None, 값과 같은 설명 사용)
             
         Returns:
             추가 성공 여부 (True/False)
@@ -394,20 +425,21 @@ class NamingConfig:
             print(f"오류: {part_name} 부분은 {part.get_type().name} 타입이므로 사전 정의 값을 추가할 수 없습니다.")
             return False
         
-        # 값 추가
-        if part.add_predefined_value(value):
-            # 성공적으로 추가되었을 경우 semantics 자동 설정
-            # (기존 값 수) * 5 = 새 값의 semantics
-            current_values = part.get_predefined_values()
-            semantic_value = len(current_values) * 5  # 새로 추가된 값의 semantics
-            part.add_semantic_mapping(value, semantic_value)
-            return True
+        # 값이 이미 존재하는지 확인
+        if part.contains_value(value):
+            print(f"오류: '{value}'가 이미 {part_name} 부분의 사전 정의 값에 존재합니다.")
+            return False
         
-        return False
+        # description이 없으면 값을 설명으로 사용
+        if description is None:
+            description = value
+            
+        # NamePart 클래스의 add_predefined_value 메소드 직접 활용
+        return part.add_predefined_value(value, description)
     
     def remove_part_value(self, part_name: str, value: str) -> bool:
         """
-        특정 NamePart에서 사전 정의 값 제거
+        특정 NamePart에서 사전 정의 값과 해당 설명 제거
         
         Args:
             part_name: NamePart 이름
@@ -426,25 +458,26 @@ class NamingConfig:
             print(f"오류: {part_name} 부분은 {part.get_type().name} 타입이므로 사전 정의 값을 제거할 수 없습니다.")
             return False
         
-        # 값이 존재하는지 확인하고 제거
-        if part.contains_value(value):
-            # 마지막 값인지 확인
-            if part.get_value_count() <= 1:
-                print(f"오류: {part_name} 부분의 사전 정의 값은 적어도 하나 이상 있어야 합니다.")
-                return False
-            
-            return part.remove_predefined_value(value)
-        else:
+        # 값이 존재하는지 확인
+        if not part.contains_value(value):
             print(f"오류: '{value}'가 {part_name} 부분의 사전 정의 값에 존재하지 않습니다.")
             return False
+        
+        # 마지막 값인지 확인
+        if part.get_value_count() <= 1:
+            print(f"오류: {part_name} 부분의 사전 정의 값은 적어도 하나 이상 있어야 합니다.")
+            return False
+        
+        # NamePart 클래스의 remove_predefined_value 메소드 직접 활용
+        return part.remove_predefined_value(value)
     
-    def set_part_semantics(self, part_name: str, semantics: Dict[str, Union[str, int, float]]) -> bool:
+    def set_part_descriptions(self, part_name: str, descriptions: List[str]) -> bool:
         """
-        특정 NamePart의 의미론적 매핑 설정
+        특정 NamePart의 설명 목록 설정
         
         Args:
             part_name: NamePart 이름
-            semantics: 설정할 의미론적 매핑 딕셔너리
+            descriptions: 설정할 설명 목록
             
         Returns:
             설정 성공 여부 (True/False)
@@ -454,54 +487,42 @@ class NamingConfig:
             print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
             return False
         
-        # REALNAME이나 INDEX 타입은 의미론적 매핑 설정 불가
+        # REALNAME이나 INDEX 타입은 설명 설정 불가
         if part.is_realname() or part.is_index():
-            print(f"오류: {part_name} 부분은 {part.get_type().name} 타입이므로 의미론적 매핑을 설정할 수 없습니다.")
+            print(f"오류: {part_name} 부분은 {part.get_type().name} 타입이므로 설명을 설정할 수 없습니다.")
             return False
         
-        part.set_semantic_mapping(semantics)
+        # NamePart 클래스 메소드 활용하여 설명 설정
+        values = part.get_predefined_values()
+        
+        # 길이 맞추기
+        if len(descriptions) < len(values):
+            descriptions.extend([""] * (len(values) - len(descriptions)))
+        elif len(descriptions) > len(values):
+            descriptions = descriptions[:len(values)]
+            
+        # 각 값에 대한 설명 설정
+        for i, value in enumerate(values):
+            part.set_description(value, descriptions[i])
+            
         return True
     
-    def add_part_semantic(self, part_name: str, key: str, value: Union[str, int, float]) -> bool:
+    def get_part_descriptions(self, part_name: str) -> List[str]:
         """
-        특정 NamePart의 의미론적 매핑에 항목 추가
-        
-        Args:
-            part_name: NamePart 이름
-            key: 매핑할 키(값 이름)
-            value: 의미 또는 가중치
-            
-        Returns:
-            추가 성공 여부 (True/False)
-        """
-        part = self.get_part(part_name)
-        if not part:
-            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
-            return False
-        
-        # REALNAME이나 INDEX 타입은 의미론적 매핑 추가 불가
-        if part.is_realname() or part.is_index():
-            print(f"오류: {part_name} 부분은 {part.get_type().name} 타입이므로 의미론적 매핑을 추가할 수 없습니다.")
-            return False
-        
-        return part.add_semantic_mapping(key, value)
-    
-    def get_part_semantics(self, part_name: str) -> Dict[str, Union[str, int, float]]:
-        """
-        특정 NamePart의 의미론적 매핑 가져오기
+        특정 NamePart의 설명 목록 가져오기
         
         Args:
             part_name: NamePart 이름
             
         Returns:
-            의미론적 매핑 딕셔너리
+            설명 목록
         """
         part = self.get_part(part_name)
         if not part:
             print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
-            return {}
+            return []
         
-        return part.get_semantic_mapping()
+        return part.get_descriptions()
     
     def get_part_values(self, part_name: str) -> List[str]:
         """
@@ -648,6 +669,7 @@ class NamingConfig:
                 
                 # 순서에 따라 타입 업데이트
                 self._update_part_types_based_on_order()
+                self._update_part_order()  # 순서 업데이트
                 return True
             else:
                 print(f"설정 파일을 찾을 수 없습니다: {load_path}")
@@ -717,55 +739,3 @@ class NamingConfig:
         # 순서에 따라 타입 업데이트
         self._update_part_types_based_on_order()
         return True
-
-
-# 메인 함수: namingConfig.json 파일 생성 예제
-def main():
-    """namingConfig.json 파일 생성 예제"""
-    config = NamingConfig()
-    
-    # 설정 예시
-    config.set_padding_num(3)
-    
-    # Base 부분 설정 (PREFIX 타입)
-    config.set_part_type("Base", NamePartType.PREFIX)
-    config.set_part_values("Base", ["b", "Bip001"])
-    # semantics는 자동으로 설정됨: {"b": 5, "Bip001": 10}
-    
-    # Type 부분 설정 (PREFIX 타입)
-    config.set_part_type("Type", NamePartType.PREFIX)
-    config.set_part_values("Type", ["P", "Dum", "Exp", "IK", "T"])
-    # semantics는 자동으로 설정됨: {"P": 5, "Dum": 10, "Exp": 15, "IK": 20, "T": 25}
-    
-    # Side 부분 설정 (PREFIX 타입)
-    config.set_part_type("Side", NamePartType.PREFIX)
-    config.set_part_values("Side", ["L", "R"])
-    # semantics는 자동으로 설정됨: {"L": 5, "R": 10}
-    
-    # FrontBack 부분 설정 (PREFIX 타입)
-    config.set_part_type("FrontBack", NamePartType.PREFIX)
-    config.set_part_values("FrontBack", ["F", "B"])
-    # semantics는 자동으로 설정됨: {"F": 5, "B": 10}
-    
-    # RealName 부분 설정 (REALNAME 타입)
-    config.set_part_type("RealName", NamePartType.REALNAME)
-    
-    # Index 부분 설정 (INDEX 타입)
-    config.set_part_type("Index", NamePartType.INDEX)
-    
-    # Nub 부분 설정 (SUFFIX 타입)
-    config.set_part_type("Nub", NamePartType.SUFFIX)
-    config.set_part_values("Nub", ["Nub"])
-    # semantics는 자동으로 설정됨: {"Nub": 5}
-    
-    # JSON 파일 저장
-    success = config.save()
-    if success:
-        print(f"namingConfig.json 파일이 성공적으로 생성되었습니다: {config.config_file_path}")
-    else:
-        print("namingConfig.json 파일 생성에 실패했습니다.")
-
-
-# 스크립트가 직접 실행될 때만 메인 함수 호출
-if __name__ == "__main__":
-    main()

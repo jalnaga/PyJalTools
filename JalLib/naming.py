@@ -36,27 +36,36 @@ class Naming:
         # 기본 namePart 초기화 (각 부분에 사전 정의 값 직접 설정)
         self._nameParts = []
         
-        # Base 부분 - "b"는 기본값으로 더 높은 가중치 부여
-        basePart = NamePart("Base", ["b", "Bip001"], {"b": 5, "Bip001": 10}, NamePartType.PREFIX)
+        # Base 부분 (PREFIX 타입)
+        basePart = NamePart("Base", NamePartType.PREFIX, 
+                             ["b", "Bip001"], 
+                             ["Skin Bone", "Biped"])
         
-        # Type 부분 - 각 유형에 가중치 부여
-        typePart = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"], 
-                          {"P": 5, "Dum": 10, "Exp": 15, "IK": 20, "T": 25}, NamePartType.PREFIX)
+        # Type 부분 (PREFIX 타입)
+        typePart = NamePart("Type", NamePartType.PREFIX, 
+                             ["P", "Dum", "Exp", "IK", "T"], 
+                             ["Parent", "Dummy", "ExposeTM", "IK", "Target"])
         
-        # Side 부분 - 의미론적 매핑 및 가중치
-        sidePart = NamePart("Side", ["L", "R"], {"L": 5, "R": 10}, NamePartType.PREFIX)
+        # Side 부분 (PREFIX 타입)
+        sidePart = NamePart("Side", NamePartType.PREFIX,
+                             ["L", "R"], 
+                             ["Left", "Right"])
         
-        # FrontBack 부분 - 의미론적 매핑 및 가중치
-        frontBackPart = NamePart("FrontBack", ["F", "B"], {"F": 5, "B": 10}, NamePartType.PREFIX)
+        # FrontBack 부분 (PREFIX 타입)
+        frontBackPart = NamePart("FrontBack", NamePartType.PREFIX,
+                                 ["F", "B"], 
+                                 ["Front", "Back"])
         
         # RealName 부분 (REALNAME 타입)
-        realNamePart = NamePart("RealName", [], {}, NamePartType.REALNAME)
+        realNamePart = NamePart("RealName", NamePartType.REALNAME, [], [])
         
         # Index 부분 (INDEX 타입)
-        indexPart = NamePart("Index", [], {}, NamePartType.INDEX)
+        indexPart = NamePart("Index", NamePartType.INDEX, [], [])
         
         # Nub 부분 (SUFFIX 타입)
-        nubPart = NamePart("Nub", ["Nub"], {"Nub": 5}, NamePartType.SUFFIX)
+        nubPart = NamePart("Nub", NamePartType.SUFFIX,
+                             ["Nub"], 
+                             ["Nub"])
         
         # 기본 순서대로 설정
         self._nameParts = [basePart, typePart, sidePart, frontBackPart, realNamePart, indexPart, nubPart]
