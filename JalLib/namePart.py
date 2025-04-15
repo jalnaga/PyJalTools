@@ -3,7 +3,7 @@
 
 """
 namePart 모듈 - 이름의 각 부분을 표현하는 기능 제공
-이름 부분의 사전 정의된 값과 의미론적 매핑을 관리하는 클래스 구현
+이름 부분의 사전 정의된 값과 가중치 매핑을 관리하는 클래스 구현
 """
 
 from typing import List, Dict, Any, Optional, Union
@@ -31,33 +31,63 @@ class NamePart:
     이름과 해당 부분에 대한 사전 선언된 값들을 관리합니다.
     """
     
-    def __init__(self, inName="", inPredefinedValues=None, inSemanticMapping=None, inType=NamePartType.UNDEFINED):
+    def __init__(self, inName="", inType=NamePartType.UNDEFINED, inPredefinedValues=None, inDescriptions=None):
         """
         NamePart 클래스 초기화
         
         Args:
             inName: 이름 부분의 이름 (예: "Base", "Type", "Side" 등)
             inPredefinedValues: 사전 선언된 값 목록 (기본값: None, 빈 리스트로 초기화)
-            inSemanticMapping: 의미론적 매핑 또는 가중치 딕셔너리
-                           (예: {"L": "left", "R": "right"}, {"P": 10, "Dum": 5})
             inType: NamePart의 타입 (NamePartType 열거형 값)
+            inDescriptions: 사전 선언된 값들의 설명 목록 (기본값: None, 빈 리스트로 초기화)
         """
         self._name = inName
         self._predefinedValues = inPredefinedValues if inPredefinedValues is not None else []
-        self._semanticMappings = inSemanticMapping if inSemanticMapping is not None else {}
+        self._weights = []
         self._type = inType
+        self._descriptions = inDescriptions if inDescriptions is not None else [""] * len(self._predefinedValues)
+        
+        # 길이 일치 확인
+        if len(self._descriptions) < len(self._predefinedValues):
+            # 설명이 부족한 경우 빈 문자열로 채움
+            self._descriptions.extend([""] * (len(self._predefinedValues) - len(self._descriptions)))
+        elif len(self._descriptions) > len(self._predefinedValues):
+            # 설명이 더 많은 경우 초과분 제거
+            self._descriptions = self._descriptions[:len(self._predefinedValues)]
         
         # 타입에 따른 기본 값 설정
         self._initialize_type_defaults()
+        self._update_weights()
     
     def _initialize_type_defaults(self):
         """타입에 따른 기본 설정을 초기화합니다."""
         if self._type == NamePartType.INDEX:
             # Index 타입은 숫자만 처리하므로 predefined values는 사용하지 않음
             self._predefinedValues = []
+            self._descriptions = []
+            self._weights = []
         elif self._type == NamePartType.REALNAME:
             # RealName 타입은 predefined values를 사용하지 않음
             self._predefinedValues = []
+            self._descriptions = []
+            self._weights = []
+    
+    def _update_weights(self):
+        """
+        predefined values의 순서에 따라 자동으로 가중치를 설정합니다.
+        값들은 5부터 시작해서 5씩 증가하는 가중치를 갖습니다.
+        """
+        # REALNAME이나 INDEX 타입인 경우 weights를 사용하지 않음
+        if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
+            self._weights = []
+            return
+            
+        self._weights = []
+        # 가중치는 5부터 시작해서 5씩 증가 (순서대로 내림차순 가중치)
+        num_values = len(self._predefinedValues)
+        for i in range(num_values):
+            weight_value = 5 * (num_values - i)  # 내림차순 가중치
+            self._weights.append(weight_value)
     
     def set_name(self, inName):
         """
@@ -86,6 +116,7 @@ class NamePart:
         """
         self._type = inType
         self._initialize_type_defaults()
+        self._update_weights()
     
     def get_type(self):
         """
@@ -132,12 +163,13 @@ class NamePart:
         """
         return self._type == NamePartType.INDEX
     
-    def add_predefined_value(self, inValue):
+    def add_predefined_value(self, inValue, inDescription=""):
         """
         사전 선언된 값 목록에 새 값을 추가합니다.
         
         Args:
             inValue: 추가할 값
+            inDescription: 추가할 값에 대한 설명 (기본값: 빈 문자열)
             
         Returns:
             추가 성공 여부 (이미 존재하는 경우 False)
@@ -148,6 +180,8 @@ class NamePart:
             
         if inValue not in self._predefinedValues:
             self._predefinedValues.append(inValue)
+            self._descriptions.append(inDescription)
+            self._update_weights()  # 가중치 자동 업데이트
             return True
         return False
     
@@ -162,22 +196,42 @@ class NamePart:
             제거 성공 여부 (존재하지 않는 경우 False)
         """
         if inValue in self._predefinedValues:
+            index = self._predefinedValues.index(inValue)
             self._predefinedValues.remove(inValue)
+            self._descriptions.pop(index)
+            if index < len(self._weights):
+                self._weights.pop(index)
+            self._update_weights()  # 가중치 자동 업데이트
             return True
         return False
     
-    def set_predefined_values(self, inValues):
+    def set_predefined_values(self, inValues, inDescriptions=None):
         """
         사전 선언된 값 목록을 설정합니다.
         
         Args:
             inValues: 설정할 값 목록
+            inDescriptions: 설정할 값들의 설명 목록 (기본값: None, 빈 문자열로 초기화)
         """
         # REALNAME이나 INDEX 타입인 경우 predefined values를 사용하지 않음
         if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
             return
             
         self._predefinedValues = inValues.copy() if inValues else []
+        
+        # 설명 세팅
+        if inDescriptions:
+            self._descriptions = inDescriptions.copy()
+            # 길이 일치 확인
+            if len(self._descriptions) < len(self._predefinedValues):
+                self._descriptions.extend([""] * (len(self._predefinedValues) - len(self._descriptions)))
+            elif len(self._descriptions) > len(self._predefinedValues):
+                self._descriptions = self._descriptions[:len(self._predefinedValues)]
+        else:
+            self._descriptions = [""] * len(self._predefinedValues)
+        
+        # 가중치 자동 업데이트
+        self._update_weights()
     
     def get_predefined_values(self):
         """
@@ -236,120 +290,19 @@ class NamePart:
             return
             
         self._predefinedValues.clear()
+        self._descriptions.clear()
+        self._weights.clear()  # 가중치도 초기화
     
-    # 새로 추가된 메서드들 - 시맨틱 매핑 관련
-    
-    def set_semantic_mapping(self, inMapping):
-        """
-        의미론적 매핑 또는 가중치를 설정합니다.
-        
-        Args:
-            inMapping: 의미 또는 가중치의 딕셔너리
-                   (예: {"L": "left", "R": "right"} 또는 {"P": 10, "Dum": 5})
-        """
-        # REALNAME이나 INDEX 타입인 경우 semantic mapping을 사용하지 않음
-        if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
-            return
-            
-        self._semanticMappings = inMapping.copy() if inMapping else {}
-    
-    def get_semantic_mapping(self):
-        """
-        의미론적 매핑 또는 가중치를 반환합니다.
-        
-        Returns:
-            의미론적 매핑 또는 가중치 딕셔너리
-        """
-        return self._semanticMappings.copy()
-    
-    def add_semantic_mapping(self, inKey, inValue):
-        """
-        의미론적 매핑 또는 가중치에 항목을 추가합니다.
-        
-        Args:
-            inKey: 매핑할 값 또는 이름
-            inValue: 의미 또는 가중치 값
-            
-        Returns:
-            추가 성공 여부
-        """
-        # REALNAME이나 INDEX 타입인 경우 semantic mapping을 사용하지 않음
-        if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
-            return False
-            
-        if inKey:
-            self._semanticMappings[inKey] = inValue
-            return True
-        return False
-    
-    def get_value_by_semantic(self, inSemantic):
-        """
-        특정 의미에 해당하는 값을 반환합니다.
-        
-        Args:
-            inSemantic: 찾고자 하는 의미 (예: "left", "right", "primary")
-            
-        Returns:
-            해당 의미에 매핑된 값, 없으면 빈 문자열
-        """
-        for key, value in self._semanticMappings.items():
-            if value == inSemantic and key in self._predefinedValues:
-                return key
-        return ""
+    # 가중치 매핑 관련 메서드들
     
     def get_value_by_weight(self, inRank=0):
-        """
-        가중치 순위에 따른 값을 반환합니다.
+        returnStr = ""
+        if len(self._predefinedValues) != len(self._weights) or len(self._predefinedValues) <= 0:
+            return returnStr
+        foundIndex = self._weights.index(inRank)
+        returnStr = self._predefinedValues[foundIndex] if foundIndex >= 0 else self._predefinedValues[0]
         
-        Args:
-            inRank: 가중치 순위 (0: 가장 높은 가중치, 1: 두 번째 가중치, 등)
-            
-        Returns:
-            해당 순위의 가중치를 가진 값, 없으면 빈 문자열
-        """
-        weightedValues = []
-        
-        # 가중치가 숫자인 항목만 처리
-        for value in self._predefinedValues:
-            if value in self._semanticMappings and isinstance(self._semanticMappings[value], (int, float)):
-                weightedValues.append((value, self._semanticMappings[value]))
-        
-        # 가중치가 없는 값들에는 기본 가중치 0 할당
-        for value in self._predefinedValues:
-            if value not in self._semanticMappings or not isinstance(self._semanticMappings[value], (int, float)):
-                weightedValues.append((value, 0))
-        
-        # 가중치 내림차순 정렬 (높은 값이 더 중요)
-        weightedValues.sort(key=lambda x: x[1], reverse=True)
-        
-        if 0 <= inRank < len(weightedValues):
-            return weightedValues[inRank][0]
-        return ""
-    
-    def get_sorted_values_by_weight(self):
-        """
-        가중치에 따라 정렬된 값 목록을 반환합니다.
-        
-        Returns:
-            가중치 내림차순으로 정렬된 값 목록
-        """
-        weightedValues = []
-        
-        # 가중치가 숫자인 항목만 처리
-        for value in self._predefinedValues:
-            if value in self._semanticMappings and isinstance(self._semanticMappings[value], (int, float)):
-                weightedValues.append((value, self._semanticMappings[value]))
-        
-        # 가중치가 없는 값들에는 기본 가중치 0 할당
-        for value in self._predefinedValues:
-            if value not in self._semanticMappings or not isinstance(self._semanticMappings[value], (int, float)):
-                weightedValues.append((value, 0))
-        
-        # 가중치 내림차순 정렬 (높은 값이 더 중요)
-        weightedValues.sort(key=lambda x: x[1], reverse=True)
-        
-        # 값만 반환
-        return [item[0] for item in weightedValues]
+        return returnStr
     
     def get_most_different_weight_value(self, inValue):
         """
@@ -361,29 +314,25 @@ class NamePart:
         Returns:
             가중치 차이가 가장 큰 값, 없으면 빈 문자열
         """
-        if not self._predefinedValues or len(self._predefinedValues) <= 1:
+        if len(self._predefinedValues) != len(self._weights) or len(self._predefinedValues) <= 0:
             return ""
             
         if inValue not in self._predefinedValues:
             return ""
             
         # 값의 가중치 가져오기
-        currentWeight = 0
-        if inValue in self._semanticMappings and isinstance(self._semanticMappings[inValue], (int, float)):
-            currentWeight = self._semanticMappings[inValue]
+        index = self._predefinedValues.index(inValue)
+        currentWeight = self._weights[index]
             
         maxDiff = -1
         maxDiffValue = ""
         
         # 가중치 차이가 가장 큰 값 찾기
-        for predValue in self._predefinedValues:
+        for i, predValue in enumerate(self._predefinedValues):
             if predValue == inValue:
                 continue
                 
-            predWeight = 0
-            if predValue in self._semanticMappings and isinstance(self._semanticMappings[predValue], (int, float)):
-                predWeight = self._semanticMappings[predValue]
-                
+            predWeight = self._weights[i] if i < len(self._weights) else 0
             diff = abs(currentWeight - predWeight)
             if diff > maxDiff:
                 maxDiff = diff
@@ -398,10 +347,9 @@ class NamePart:
         Returns:
             가중치가 가장 낮은 값, 없으면 빈 문자열
         """
-        sorted_values = self.get_sorted_values_by_weight()
-        if sorted_values:
-            return sorted_values[-1]  # 마지막 값이 가중치가 가장 낮은 값
-        return ""
+        if len(self._predefinedValues) != len(self._weights) or len(self._predefinedValues) <= 0:
+            return ""
+        return self._predefinedValues[0]
     
     def get_value_by_max_weight(self):
         """
@@ -410,10 +358,9 @@ class NamePart:
         Returns:
             가중치가 가장 높은 값, 없으면 빈 문자열
         """
-        sorted_values = self.get_sorted_values_by_weight()
-        if sorted_values:
-            return sorted_values[0]  # 첫 번째 값이 가중치가 가장 높은 값
-        return ""
+        if len(self._predefinedValues) != len(self._weights) or len(self._predefinedValues) <= 0:
+            return ""
+        return self._predefinedValues[-1]
     
     def validate_value(self, inValue):
         """
@@ -440,6 +387,87 @@ class NamePart:
         # 정의되지 않은 타입이면 기존 동작대로 처리
         return True
     
+    # 추가: 설명 관련 메서드들
+    
+    def set_description(self, inValue, inDescription):
+        """
+        특정 predefined value의 설명을 설정합니다.
+        
+        Args:
+            inValue: 설명을 설정할 값
+            inDescription: 설정할 설명
+            
+        Returns:
+            설정 성공 여부 (값이 존재하지 않는 경우 False)
+        """
+        if inValue in self._predefinedValues:
+            index = self._predefinedValues.index(inValue)
+            self._descriptions[index] = inDescription
+            return True
+        return False
+    
+    def get_description(self, inValue):
+        """
+        특정 predefined value의 설명을 반환합니다.
+        
+        Args:
+            inValue: 설명을 가져올 값
+            
+        Returns:
+            해당 값의 설명, 값이 존재하지 않으면 빈 문자열
+        """
+        if inValue in self._predefinedValues:
+            index = self._predefinedValues.index(inValue)
+            return self._descriptions[index]
+        return ""
+    
+    def get_descriptions(self):
+        """
+        모든 설명을 반환합니다.
+        
+        Returns:
+            설명 목록
+        """
+        return self._descriptions.copy()
+    
+    def get_value_by_description(self, inDescription):
+        """
+        특정 설명에 해당하는 값을 반환합니다.
+        
+        Args:
+            inDescription: 찾을 설명
+            
+        Returns:
+            해당 설명의 값, 없으면 빈 문자열
+        """
+        if inDescription in self._descriptions:
+            index = self._descriptions.index(inDescription)
+            return self._predefinedValues[index]
+        return ""
+    
+    def get_value_with_description(self, inIndex):
+        """
+        지정된 인덱스의 값과 설명을 튜플로 반환합니다.
+        
+        Args:
+            inIndex: 값의 인덱스
+            
+        Returns:
+            (값, 설명) 튜플, 인덱스가 범위를 벗어나면 (None, None)
+        """
+        if 0 <= inIndex < len(self._predefinedValues):
+            return (self._predefinedValues[inIndex], self._descriptions[inIndex])
+        return (None, None)
+    
+    def get_values_with_descriptions(self):
+        """
+        모든 값과 설명의 튜플 리스트를 반환합니다.
+        
+        Returns:
+            (값, 설명) 튜플의 리스트
+        """
+        return list(zip(self._predefinedValues, self._descriptions))
+    
     def to_dict(self):
         """
         NamePart 객체를 사전 형태로 변환합니다.
@@ -450,8 +478,9 @@ class NamePart:
         return {
             "name": self._name,
             "predefinedValues": self._predefinedValues.copy(),
-            "semanticMapping": self._semanticMappings.copy(),
-            "type": self._type.name if hasattr(self._type, 'name') else str(self._type)
+            "weights": self._weights.copy(),  # 가중치를 리스트 형태로 직접 전달
+            "type": self._type.name if hasattr(self._type, 'name') else str(self._type),
+            "descriptions": self._descriptions.copy()
         }
     
     @staticmethod
@@ -473,10 +502,13 @@ class NamePart:
             except KeyError:
                 part_type = NamePartType.UNDEFINED
                 
-            return NamePart(
+            result = NamePart(
                 inData["name"],
                 inData.get("predefinedValues", []),
-                inData.get("semanticMapping", {}),
-                part_type
+                None,  # 가중치는 자동으로 설정되므로 None 전달
+                part_type,
+                inData.get("descriptions", [])
             )
+            
+            return result
         return NamePart()
