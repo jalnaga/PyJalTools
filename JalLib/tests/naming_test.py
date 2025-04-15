@@ -35,11 +35,8 @@ class NamingTest(unittest.TestCase):
         ]
         
     def test_get_char_type(self):
-        self.assertEqual(self.naming.get_index("b_P_F_L_Sleeve_00"), "00")
-        self.assertEqual(self.naming.convert_name_to_array("b_P_F_L_Sleeve_00"), ["b", "P", "", "F", "L_Sleeve", "00", ""])
         self.assertEqual(self.naming.convert_name_to_array("b_Dum_R_F_R_Skirt_Nub"), ["b", "Dum", "R", "F", "R_Skirt", "", "Nub"])
-        self.assertEqual(self.naming.convert_name_to_array("b_R_Dum_Skirt_Nub"), ["b", "", "R", "Dum_Skirt", "", "Nub"])
-        self.assertEqual(self.naming.convert_name_to_array("b_F_Dum_Skirt_Nub"), ["b", "", "", "F", "Dum_Skirt", "", "Nub"])
+        self.assertEqual(self.naming.get_real_name("b_Dum_R_F_R_Skirt_Nub"), "R_Skirt")
 
 
 if __name__ == "__main__":

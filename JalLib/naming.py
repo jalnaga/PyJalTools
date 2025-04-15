@@ -714,17 +714,17 @@ class Naming:
         nonRealNameArray = []
         for part in self._nameParts:
             partName = part.get_name()
-            if partName != "RealName":
+            partType = part.get_type()
+            if partType != NamePartType.REALNAME:
                 foundName = self.get_name(partName, inStr)
                 nonRealNameArray.append(foundName)
         
-        # 이름 배열에서 실제 이름이 아닌 부분 제외
-        for item in nameArray:
-            if item not in nonRealNameArray:
-                realNameArray.append(item)
+        for item in nonRealNameArray:
+            if item in nameArray:
+                nameArray.remove(item)
                 
         # 구분자로 결합
-        return self._combine(realNameArray, filChar)
+        return self._combine(nameArray, filChar)
 
     def convert_name_to_array(self, inStr):
         """
