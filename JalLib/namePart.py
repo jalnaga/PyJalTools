@@ -7,6 +7,23 @@ namePart 모듈 - 이름의 각 부분을 표현하는 기능 제공
 """
 
 from typing import List, Dict, Any, Optional, Union
+from enum import Enum, auto
+
+class NamePartType(Enum):
+    """
+    이름 부분(name part)의 유형을 정의하는 열거형 클래스.
+    
+    - PREFIX: RealName 앞에 오는 부분, 사전 정의 값 필수
+    - SUFFIX: RealName 뒤에 오는 부분, 사전 정의 값 필수
+    - REALNAME: 실제 이름 부분, 자유 텍스트 가능
+    - INDEX: 숫자만 허용되는 부분
+    - UNDEFINED: 정의되지 않은 타입 (기본값)
+    """
+    PREFIX = auto()
+    SUFFIX = auto()
+    REALNAME = auto()
+    INDEX = auto()
+    UNDEFINED = auto()
 
 class NamePart:
     """
@@ -14,7 +31,7 @@ class NamePart:
     이름과 해당 부분에 대한 사전 선언된 값들을 관리합니다.
     """
     
-    def __init__(self, inName="", inPredefinedValues=None, inSemanticMapping=None):
+    def __init__(self, inName="", inPredefinedValues=None, inSemanticMapping=None, inType=NamePartType.UNDEFINED):
         """
         NamePart 클래스 초기화
         
@@ -23,10 +40,24 @@ class NamePart:
             inPredefinedValues: 사전 선언된 값 목록 (기본값: None, 빈 리스트로 초기화)
             inSemanticMapping: 의미론적 매핑 또는 가중치 딕셔너리
                            (예: {"L": "left", "R": "right"}, {"P": 10, "Dum": 5})
+            inType: NamePart의 타입 (NamePartType 열거형 값)
         """
         self._name = inName
         self._predefinedValues = inPredefinedValues if inPredefinedValues is not None else []
-        self._semanticMappings = inSemanticMapping if inSemanticMapping is not None else 5
+        self._semanticMappings = inSemanticMapping if inSemanticMapping is not None else {}
+        self._type = inType
+        
+        # 타입에 따른 기본 값 설정
+        self._initialize_type_defaults()
+    
+    def _initialize_type_defaults(self):
+        """타입에 따른 기본 설정을 초기화합니다."""
+        if self._type == NamePartType.INDEX:
+            # Index 타입은 숫자만 처리하므로 predefined values는 사용하지 않음
+            self._predefinedValues = []
+        elif self._type == NamePartType.REALNAME:
+            # RealName 타입은 predefined values를 사용하지 않음
+            self._predefinedValues = []
     
     def set_name(self, inName):
         """
@@ -46,6 +77,61 @@ class NamePart:
         """
         return self._name
     
+    def set_type(self, inType):
+        """
+        이름 부분의 타입을 설정합니다.
+        
+        Args:
+            inType: 설정할 타입 (NamePartType 열거형 값)
+        """
+        self._type = inType
+        self._initialize_type_defaults()
+    
+    def get_type(self):
+        """
+        이름 부분의 타입을 반환합니다.
+        
+        Returns:
+            이름 부분의 타입 (NamePartType 열거형 값)
+        """
+        return self._type
+    
+    def is_prefix(self):
+        """
+        이름 부분이 PREFIX 타입인지 확인합니다.
+        
+        Returns:
+            PREFIX 타입이면 True, 아니면 False
+        """
+        return self._type == NamePartType.PREFIX
+    
+    def is_suffix(self):
+        """
+        이름 부분이 SUFFIX 타입인지 확인합니다.
+        
+        Returns:
+            SUFFIX 타입이면 True, 아니면 False
+        """
+        return self._type == NamePartType.SUFFIX
+    
+    def is_realname(self):
+        """
+        이름 부분이 REALNAME 타입인지 확인합니다.
+        
+        Returns:
+            REALNAME 타입이면 True, 아니면 False
+        """
+        return self._type == NamePartType.REALNAME
+    
+    def is_index(self):
+        """
+        이름 부분이 INDEX 타입인지 확인합니다.
+        
+        Returns:
+            INDEX 타입이면 True, 아니면 False
+        """
+        return self._type == NamePartType.INDEX
+    
     def add_predefined_value(self, inValue):
         """
         사전 선언된 값 목록에 새 값을 추가합니다.
@@ -56,6 +142,10 @@ class NamePart:
         Returns:
             추가 성공 여부 (이미 존재하는 경우 False)
         """
+        # REALNAME이나 INDEX 타입인 경우 predefined values를 사용하지 않음
+        if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
+            return False
+            
         if inValue not in self._predefinedValues:
             self._predefinedValues.append(inValue)
             return True
@@ -83,6 +173,10 @@ class NamePart:
         Args:
             inValues: 설정할 값 목록
         """
+        # REALNAME이나 INDEX 타입인 경우 predefined values를 사용하지 않음
+        if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
+            return
+            
         self._predefinedValues = inValues.copy() if inValues else []
     
     def get_predefined_values(self):
@@ -104,6 +198,10 @@ class NamePart:
         Returns:
             값이 존재하면 True, 아니면 False
         """
+        # INDEX 타입인 경우 숫자인지 확인
+        if self._type == NamePartType.INDEX:
+            return isinstance(inValue, str) and inValue.isdigit()
+            
         return inValue in self._predefinedValues
     
     def get_value_at_index(self, inIndex):
@@ -133,6 +231,10 @@ class NamePart:
         """
         모든 사전 선언된 값을 제거합니다.
         """
+        # REALNAME이나 INDEX 타입인 경우 아무것도 하지 않음
+        if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
+            return
+            
         self._predefinedValues.clear()
     
     # 새로 추가된 메서드들 - 시맨틱 매핑 관련
@@ -145,6 +247,10 @@ class NamePart:
             inMapping: 의미 또는 가중치의 딕셔너리
                    (예: {"L": "left", "R": "right"} 또는 {"P": 10, "Dum": 5})
         """
+        # REALNAME이나 INDEX 타입인 경우 semantic mapping을 사용하지 않음
+        if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
+            return
+            
         self._semanticMappings = inMapping.copy() if inMapping else {}
     
     def get_semantic_mapping(self):
@@ -167,6 +273,10 @@ class NamePart:
         Returns:
             추가 성공 여부
         """
+        # REALNAME이나 INDEX 타입인 경우 semantic mapping을 사용하지 않음
+        if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
+            return False
+            
         if inKey:
             self._semanticMappings[inKey] = inValue
             return True
@@ -305,6 +415,31 @@ class NamePart:
             return sorted_values[0]  # 첫 번째 값이 가중치가 가장 높은 값
         return ""
     
+    def validate_value(self, inValue):
+        """
+        값이 이 NamePart 타입에 유효한지 검증합니다.
+        
+        Args:
+            inValue: 검증할 값
+            
+        Returns:
+            유효하면 True, 아니면 False
+        """
+        # INDEX 타입은 숫자 문자열만 유효
+        if self._type == NamePartType.INDEX:
+            return isinstance(inValue, str) and inValue.isdigit()
+            
+        # PREFIX와 SUFFIX 타입은 predefined values 중 하나여야 함
+        if (self._type == NamePartType.PREFIX or self._type == NamePartType.SUFFIX) and self._predefinedValues:
+            return inValue in self._predefinedValues
+            
+        # REALNAME 타입은 모든 문자열 유효
+        if self._type == NamePartType.REALNAME:
+            return isinstance(inValue, str)
+            
+        # 정의되지 않은 타입이면 기존 동작대로 처리
+        return True
+    
     def to_dict(self):
         """
         NamePart 객체를 사전 형태로 변환합니다.
@@ -315,7 +450,8 @@ class NamePart:
         return {
             "name": self._name,
             "predefinedValues": self._predefinedValues.copy(),
-            "semanticMapping": self._semanticMappings.copy()
+            "semanticMapping": self._semanticMappings.copy(),
+            "type": self._type.name if hasattr(self._type, 'name') else str(self._type)
         }
     
     @staticmethod
@@ -330,9 +466,17 @@ class NamePart:
             NamePart 객체
         """
         if isinstance(inData, dict) and "name" in inData:
+            # 타입 변환 (문자열 -> NamePartType 열거형)
+            type_str = inData.get("type", "UNDEFINED")
+            try:
+                part_type = NamePartType[type_str] if isinstance(type_str, str) else NamePartType.UNDEFINED
+            except KeyError:
+                part_type = NamePartType.UNDEFINED
+                
             return NamePart(
                 inData["name"],
                 inData.get("predefinedValues", []),
-                inData.get("semanticMapping", {})
+                inData.get("semanticMapping", {}),
+                part_type
             )
         return NamePart()

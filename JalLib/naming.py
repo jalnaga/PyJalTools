@@ -11,9 +11,8 @@ import re
 from typing import List, Dict, Any, Optional, Union, Tuple
 
 # NamePart와 NamingConfig 임포트
-from JalLib.namePart import NamePart
+from JalLib.namePart import NamePart, NamePartType
 from JalLib.namingConfig import NamingConfig
-
 
 class Naming:
     """
@@ -38,21 +37,26 @@ class Naming:
         self._nameParts = []
         
         # Base 부분 - "b"는 기본값으로 더 높은 가중치 부여
-        basePart = NamePart("Base", ["b", "Bip001"], {"b": 5, "Bip001": 10})
+        basePart = NamePart("Base", ["b", "Bip001"], {"b": 5, "Bip001": 10}, NamePartType.PREFIX)
         
         # Type 부분 - 각 유형에 가중치 부여
         typePart = NamePart("Type", ["P", "Dum", "Exp", "IK", "T"], 
-                          {"P": 5, "Dum": 10, "Exp": 15, "IK": 20, "T": 25})
+                          {"P": 5, "Dum": 10, "Exp": 15, "IK": 20, "T": 25}, NamePartType.PREFIX)
         
         # Side 부분 - 의미론적 매핑 및 가중치
-        sidePart = NamePart("Side", ["L", "R"], {"L": 5, "R": 10})
+        sidePart = NamePart("Side", ["L", "R"], {"L": 5, "R": 10}, NamePartType.PREFIX)
         
         # FrontBack 부분 - 의미론적 매핑 및 가중치
-        frontBackPart = NamePart("FrontBack", ["F", "B"], {"F": 5, "B": 10})
+        frontBackPart = NamePart("FrontBack", ["F", "B"], {"F": 5, "B": 10}, NamePartType.PREFIX)
         
-        realNamePart = NamePart("RealName")
-        indexPart = NamePart("Index")
-        nubPart = NamePart("Nub", ["Nub"], {"Nub": 5})
+        # RealName 부분 (REALNAME 타입)
+        realNamePart = NamePart("RealName", [], {}, NamePartType.REALNAME)
+        
+        # Index 부분 (INDEX 타입)
+        indexPart = NamePart("Index", [], {}, NamePartType.INDEX)
+        
+        # Nub 부분 (SUFFIX 타입)
+        nubPart = NamePart("Nub", ["Nub"], {"Nub": 5}, NamePartType.SUFFIX)
         
         # 기본 순서대로 설정
         self._nameParts = [basePart, typePart, sidePart, frontBackPart, realNamePart, indexPart, nubPart]
