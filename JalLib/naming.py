@@ -255,20 +255,6 @@ class Naming:
             
         return inFilChar.join(refinedArray)
 
-    def _find_and_replace(self, inStr, inTargetStr, inNewStr):
-        """
-        문자열 내 특정 부분을 다른 문자열로 대체
-        
-        Args:
-            inStr: 원본 문자열
-            inTargetStr: 대체할 대상 문자열
-            inNewStr: 새 문자열
-            
-        Returns:
-            대체된 문자열
-        """
-        return inStr.replace(inTargetStr, inNewStr)
-
     # ---- Name 관련 메서드들 ----
     
     # 사전 정의 값 편집 메서드 제거 (namingConfig를 통해서만 변경 가능)
