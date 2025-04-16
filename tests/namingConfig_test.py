@@ -26,4 +26,7 @@ from reload_modules import reload_jaltools_modules
 reload_jaltools_modules()
 
 jalNamingConfig = NamingConfig()
-jalNamingConfig.save()
+
+config_dir = os.path.join(os.path.dirname(__file__), "..", "JalLib", "max", "ConfigFiles")
+MaxNamingConfigFileName = os.path.join(config_dir, "3DSMaxNamingConfig.json")
+jalNamingConfig.save(file_path=MaxNamingConfigFileName)
