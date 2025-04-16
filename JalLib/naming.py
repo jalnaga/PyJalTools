@@ -258,7 +258,7 @@ class Naming:
         """
         return self._paddingNum
 
-    def get_name_part(self, inNamePart):
+    def get_name_part(self, inNamePartName):
         """
         namePart 이름으로 NamePart 객체 가져오기
         
@@ -269,11 +269,11 @@ class Naming:
             해당 NamePart 객체, 존재하지 않으면 None
         """
         for part in self._nameParts:
-            if part.get_name() == inNamePart:
+            if part.get_name() == inNamePartName:
                 return part
         return None
-        
-    def get_name_part_index(self, inNamePart):
+     
+    def get_name_part_index(self, inNamePartName):
         """
         namePart 이름으로 인덱스 가져오기
         
@@ -284,16 +284,85 @@ class Naming:
             해당 NamePart의 인덱스, 존재하지 않으면 -1
         """
         for i, part in enumerate(self._nameParts):
-            if part.get_name() == inNamePart:
+            if part.get_name() == inNamePartName:
                 return i
         return -1
 
-    def pick_name(self, inNamePart, inStr):
+    def get_name_part_predefined_values(self, inNamePartName):
+        """
+        namePart의 사전 정의 값 가져오기
+        
+        Args:
+            namePart: 가져올 NamePart의 이름 ("Prefix", "RealName", "Suffix", "Index" 등)
+            
+        Returns:
+            해당 NamePart의 사전 정의 값 리스트, 존재하지 않으면 빈 리스트
+        """
+        partObj = self.get_name_part(inNamePartName)
+        if partObj:
+            return partObj.get_predefined_values()
+        return []
+    
+    def is_in_name_part_predefined_values(self, inNamePartName, inStr):
+        """
+        지정된 namePart에 해당하는 부분이 문자열에 포함되어 있는지 확인
+        
+        Args:
+            namePart: 확인할 namePart 이름 ("Base", "Type", "Side" 등)
+            inStr: 확인할 문자열
+            
+        Returns:
+            포함되어 있으면 True, 아니면 False
+        """
+        partObj = self.get_name_part(inNamePartName)
+        if not partObj:
+            return False
+        
+        partType = partObj.get_type()
+        if not partType:
+            return False
+            
+        partValues = partObj.get_predefined_values()
+        
+        if partType == NamePartType.PREFIX or partType == NamePartType.SUFFIX:
+            return any(item in inStr for item in partValues)
+        
+        return False
+
+    def get_name_part_value_by_description(self, inNamePartName, inDescription):
+        """
+        지정된 namePart에 해당하는 부분을 문자열에서 추출
+        
+        Args:
+            namePart: 추출할 namePart 이름 ("Base", "Type", "Side" 등)
+            inDescription: predefined value에서 찾기위한 description 문자열
+            
+        Returns:
+            지정된 namePart에 해당하는 문자열
+        """
+        partObj = self.get_name_part(inNamePartName)
+        if not partObj:
+            return ""
+        
+        partType = partObj.get_type()
+        if not partType:
+            return ""
+            
+        partValues = partObj.get_predefined_values()
+        
+        if partType == NamePartType.PREFIX or partType == NamePartType.SUFFIX:
+            foundIndex = partObj._descriptions.index(inDescription)
+            if foundIndex >= 0:
+                return partValues[foundIndex]
+        
+        return ""
+
+    def pick_name(self, inNamePartName, inStr):
         nameArray = self._split_to_array(inStr)
         returnStr = ""
         
         # namePart 문자열 목록 가져오기
-        partObj = self.get_name_part(inNamePart)
+        partObj = self.get_name_part(inNamePartName)
         if not partObj:
             return returnStr
         
@@ -331,7 +400,7 @@ class Naming:
         
         return returnStr
         
-    def get_name(self, inNamePart, inStr):
+    def get_name(self, inNamePartName, inStr):
         """
         지정된 namePart에 해당하는 부분을 문자열에서 추출
         
@@ -345,9 +414,9 @@ class Naming:
         nameArray = self._split_to_array(inStr)
         returnStr = ""
         
-        partType = self.get_name_part(inNamePart).get_type()
+        partType = self.get_name_part(inNamePartName).get_type()
         
-        foundName = self.pick_name(inNamePart, inStr)
+        foundName = self.pick_name(inNamePartName, inStr)
         if foundName == "":
             return returnStr
         foundIndex = nameArray.index(foundName)
@@ -375,7 +444,7 @@ class Naming:
                     returnStr = foundName
         
         if partType == NamePartType.INDEX:
-            returnStr = self.pick_name(inNamePart, inStr)
+            returnStr = self.pick_name(inNamePartName, inStr)
                 
         return returnStr
     
@@ -517,6 +586,19 @@ class Naming:
         returnDict["RealName"] = realNameStr
         
         return returnDict
+    
+    def has_name_part(self, inStr, inPart):
+        """
+        문자열에 특정 namePart가 포함되어 있는지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            inPart: 확인할 namePart 이름 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
+            
+        Returns:
+            포함되어 있으면 True, 아니면 False
+        """
+        return self.get_name(inPart, inStr) != ""
     
     def add_prefix_to_name_part(self, inStr, inPart, inPrefix):
         """
@@ -826,7 +908,7 @@ class Naming:
         nameArray = self.convert_name_to_array(inStr)
         return self._combine(nameArray, inNewFilChar)
 
-    def replace_name_in_name_part(self, inStr, inNamePart, inNewName):
+    def replace_name_part(self, inStr, inNamePart, inNewName):
         """
         이름의 특정 부분을 새 이름으로 변경
         
@@ -843,6 +925,25 @@ class Naming:
         
         if partIndex >= 0:
             nameArray[partIndex] = inNewName
+        
+        return self._combine(nameArray, self._get_filtering_char(inStr))
+
+    def remove_name_part(self, inStr, inNamePart):
+        """
+        이름의 특정 부분 제거
+        
+        Args:
+            inStr: 처리할 이름 문자열
+            inNamePart: 제거할 부분 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
+            
+        Returns:
+            수정된 이름 문자열
+        """
+        nameArray = self.convert_name_to_array(inStr)
+        partIndex = self.get_name_part_index(inNamePart)
+        
+        if partIndex >= 0:
+            nameArray[partIndex] = ""
         
         return self._combine(nameArray, self._get_filtering_char(inStr))
 
