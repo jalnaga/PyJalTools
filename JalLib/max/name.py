@@ -470,7 +470,7 @@ class Name(Naming):
         return return_name
     
     # Type name Part에서 Description으로 지정된 predefined value를 가져오는 메소드들
-    def get_parent_str(self):
+    def get_parent_value(self):
         """
         부모 이름 문자열 반환
         
@@ -479,7 +479,7 @@ class Name(Naming):
         """
         return self.get_name_part_value_by_description("Type", "Parent")
 
-    def get_dummy_str(self):
+    def get_dummy_value(self):
         """
         더미 이름 문자열 반환
         
@@ -488,7 +488,7 @@ class Name(Naming):
         """
         return self.get_name_part_value_by_description("Type", "Dummy")
 
-    def get_exposeTm_str(self):
+    def get_exposeTm_value(self):
         """
         ExposeTm 이름 문자열 반환
         
@@ -497,7 +497,7 @@ class Name(Naming):
         """
         return self.get_name_part_value_by_description("Type", "ExposeTM")
 
-    def get_ik_str(self):
+    def get_ik_value(self):
         """
         IK 이름 문자열 반환
         
@@ -506,7 +506,7 @@ class Name(Naming):
         """
         return self.get_name_part_value_by_description("Type", "IK")
 
-    def get_target_str(self):
+    def get_target_value(self):
         """
         타겟 이름 문자열 반환
         
