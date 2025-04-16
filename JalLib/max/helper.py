@@ -7,9 +7,6 @@ Helper 모듈 - 헬퍼 객체 생성 및 관리 기능
 """
 
 from pymxs import runtime as rt
-from .name import Name
-from JalLib import configPaths
-
 
 class Helper:
     """
@@ -19,21 +16,14 @@ class Helper:
     pymxs 모듈을 통해 3ds Max의 기능을 직접 접근합니다.
     """
     
-    def __init__(self, name_service=None):
+    def __init__(self, name_service):
         """
         초기화 함수
         
         Args:
-            name_service: Name 서비스 인스턴스 (기본값: None)
-                          제공되지 않으면 새로 생성
+            name_service: Name 서비스 인스턴스
         """
-        # Name 서비스 사용 (외부에서 제공되지 않으면 새로 생성)
-        if name_service is None:
-            from JalLib import configPaths
-            from .name import Name
-            self.name = Name(configPaths.get_naming_config_path())
-        else:
-            self.name = name_service
+        self.name = name_service
     
     def create_point(self, inName, size=2, boxToggle=False, crossToggle=True, pointColor=(14, 255, 2), pos=(0, 0, 0)):
         """

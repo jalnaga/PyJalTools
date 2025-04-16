@@ -12,9 +12,9 @@ print(f"JalLib root_dir: {root_dir}")
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
-import JalLib
+import JalLib.max.header
 import JalLib.max.bone
-importlib.reload(JalLib)
+importlib.reload(JalLib.max.header)
 importlib.reload(JalLib.max.bone)
 
 # tests 디렉토리를 sys.path에 추가
@@ -25,7 +25,7 @@ if tests_dir not in sys.path:
 from reload_modules import reload_jaltools_modules
 reload_jaltools_modules()
 
-jalBone = JalLib.max.bone.Bone()
+jalBone = JalLib.max.header.jalBone
 
 skinBone = rt.getNodeByName("b_Dum_Point_01")
 oriBone = rt.getNodeByName("Bip001 Bone 01")

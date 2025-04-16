@@ -7,8 +7,6 @@
 """
 
 from pymxs import runtime as rt
-from .name import Name
-from .helper import Helper
 
 
 class Constraint:
@@ -18,28 +16,16 @@ class Constraint:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, str_service=None, name_service=None, helper_service=None):
+    def __init__(self, name_service, helper_service):
         """
         클래스 초기화.
         
         Args:
-            str_service: 문자열 처리 서비스 (선택적)
-            name_service: 이름 처리 서비스 (선택적)
-            helper_service: 헬퍼 객체 관련 서비스 (선택적)
+            name_service: 이름 처리 서비스
+            helper_service: 헬퍼 객체 관련 서비스
         """
-        # 서비스 인스턴스 설정 (외부에서 제공되지 않으면 새로 생성)
-        if name_service is None:
-            from JalLib import configPaths
-            from .name import Name
-            self.name = Name(configPaths.get_naming_config_path())
-        else:
-            self.name = name_service
-            
-        if helper_service is None:
-            from .helper import Helper
-            self.helper = Helper(name_service=self.name)
-        else:
-            self.helper = helper_service
+        self.name = name_service
+        self.helper = helper_service
     
     def collapse(self, inObj):
         """

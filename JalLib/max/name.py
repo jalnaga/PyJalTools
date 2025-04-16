@@ -8,6 +8,7 @@
 
 from pymxs import runtime as rt
 from JalLib.naming import Naming
+from JalLib.namePart import NamePart, NamePartType
 
 class Name(Naming):
     """
@@ -23,8 +24,53 @@ class Name(Naming):
             configPath: 설정 파일 경로 (기본값: None)
                         설정 파일이 제공되면 해당 파일에서 설정을 로드함
         """
-        # 부모 클래스 초기화
-        super().__init__(configPath)
+        # 기본 설정값
+        self._paddingNum = 2
+        self._configPath = configPath
+        
+        # 기본 namePart 초기화 (각 부분에 사전 정의 값 직접 설정)
+        self._nameParts = []
+        
+        # Base 부분 (PREFIX 타입)
+        basePart = NamePart("Base", NamePartType.PREFIX, 
+                             ["b", "Bip001"], 
+                             ["Skin Bone", "Biped"])
+        
+        # Type 부분 (PREFIX 타입)
+        typePart = NamePart("Type", NamePartType.PREFIX, 
+                             ["P", "Dum", "Exp", "IK", "T"], 
+                             ["Parent", "Dummy", "ExposeTM", "IK", "Target"])
+        
+        # Side 부분 (PREFIX 타입)
+        sidePart = NamePart("Side", NamePartType.PREFIX,
+                             ["L", "R"], 
+                             ["Left", "Right"])
+        
+        # FrontBack 부분 (PREFIX 타입)
+        frontBackPart = NamePart("FrontBack", NamePartType.PREFIX,
+                                 ["F", "B"], 
+                                 ["Front", "Back"])
+        
+        # RealName 부분 (REALNAME 타입)
+        realNamePart = NamePart("RealName", NamePartType.REALNAME, [], [])
+        
+        # Index 부분 (INDEX 타입)
+        indexPart = NamePart("Index", NamePartType.INDEX, [], [])
+        
+        # Nub 부분 (SUFFIX 타입)
+        nubPart = NamePart("Nub", NamePartType.SUFFIX,
+                             ["Nub"], 
+                             ["Nub"])
+        
+        # 기본 순서대로 설정
+        self._nameParts = [basePart, typePart, sidePart, frontBackPart, realNamePart, indexPart, nubPart]
+        
+        # 설정 파일이 제공된 경우 로드
+        if configPath:
+            self.load_from_config_file(configPath)
+        else:
+            # 기본 JSON 설정 파일 로드 시도
+            self.load_default_config()
     
     # pymxs 의존적인 메소드 구현
     
@@ -90,7 +136,7 @@ class Name(Naming):
         Returns:
             미러링된 이름 문자열
         """
-        return_name = self.gen_mirroring_name(inStr)
+        return_name = super.gen_mirroring_name(inStr)
         
         # 이름이 변경되지 않았다면 고유한 이름 생성
         if return_name == inStr:
