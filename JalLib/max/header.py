@@ -11,6 +11,8 @@ import os
 from .name import Name
 from .anim import Anim
 from .align import Align
+from .layer import Layer
+from .link import Link
 
 from .helper import Helper
 from .constraint import Constraint
@@ -22,6 +24,8 @@ NAME_CONFIG_FILE = os.path.join(CONFIG_DIR, "3DSMaxNamingConfig.json")
 jalName = Name(configPath=NAME_CONFIG_FILE)
 jalAnim = Anim()
 jalAlign = Align()
+jalLayer = Layer()
+jalLink = Link()
 
 jalHelper = Helper(name_service=jalName)
 jalConstraint = Constraint(name_service=jalName, helper_service=jalHelper)
