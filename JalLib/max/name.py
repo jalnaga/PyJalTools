@@ -39,7 +39,7 @@ class Name(Naming):
             # Base 부분 (PREFIX 타입)
             basePart = NamePart("Base", NamePartType.PREFIX, 
                              ["b", "Bip001"], 
-                             ["Skin Bone", "Biped"])
+                             ["SkinBone", "Biped"])
             # Type 부분 (PREFIX 타입)
             typePart = NamePart("Type", NamePartType.PREFIX, 
                              ["P", "Dum", "Exp", "IK", "T"], 
