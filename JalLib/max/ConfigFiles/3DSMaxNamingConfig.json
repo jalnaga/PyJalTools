@@ -1,23 +1,86 @@
 {
     "paddingNum": 2,
     "partOrder": [
-        "Prefix",
+        "Base",
+        "Type",
+        "Side",
+        "FrontBack",
         "RealName",
         "Index",
-        "Suffix"
+        "Nub"
     ],
     "nameParts": [
         {
-            "name": "Prefix",
+            "name": "Base",
             "predefinedValues": [
-                "Pr"
+                "b",
+                "Bip001"
             ],
             "weights": [
-                5
+                5,
+                10
             ],
             "type": "PREFIX",
             "descriptions": [
-                "Prefix"
+                "Skin Bone",
+                "Biped"
+            ]
+        },
+        {
+            "name": "Type",
+            "predefinedValues": [
+                "P",
+                "Dum",
+                "Exp",
+                "IK",
+                "T"
+            ],
+            "weights": [
+                5,
+                10,
+                15,
+                20,
+                25
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Parent",
+                "Dummy",
+                "ExposeTM",
+                "IK",
+                "Target"
+            ]
+        },
+        {
+            "name": "Side",
+            "predefinedValues": [
+                "L",
+                "R"
+            ],
+            "weights": [
+                5,
+                10
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Left",
+                "Right"
+            ]
+        },
+        {
+            "name": "FrontBack",
+            "predefinedValues": [
+                "F",
+                "B"
+            ],
+            "weights": [
+                5,
+                10
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Front",
+                "Back"
             ]
         },
         {
@@ -35,16 +98,16 @@
             "descriptions": []
         },
         {
-            "name": "Suffix",
+            "name": "Nub",
             "predefinedValues": [
-                "Su"
+                "Nub"
             ],
             "weights": [
                 5
             ],
             "type": "SUFFIX",
             "descriptions": [
-                "Suffix"
+                "Nub"
             ]
         }
     ]

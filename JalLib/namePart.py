@@ -504,10 +504,9 @@ class NamePart:
                 
             result = NamePart(
                 inData["name"],
-                inData.get("predefinedValues", []),
-                None,  # 가중치는 자동으로 설정되므로 None 전달
-                part_type,
-                inData.get("descriptions", [])
+                part_type,  # 두 번째 인자로 타입 전달
+                inData.get("predefinedValues", []),  # 세 번째 인자로 predefinedValues 전달
+                inData.get("descriptions", [])  # 네 번째 인자로 descriptions 전달
             )
             
             return result

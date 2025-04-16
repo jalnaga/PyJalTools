@@ -67,7 +67,7 @@ class Name(Naming):
         
         # 설정 파일이 제공된 경우 로드
         if configPath:
-            self.load_from_config_file(configPath)
+            self.load_from_config_file(configPath=configPath)
         else:
             # 기본 JSON 설정 파일 로드 시도
             self.load_default_config()

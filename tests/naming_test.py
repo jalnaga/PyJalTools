@@ -41,9 +41,12 @@ class NamingTest(unittest.TestCase):
         """각 테스트 케이스 실행 전 초기화"""
         # 각 테스트 케이스마다 모듈 다시 로드
         importlib.reload(JalLib.naming)
+        config_dir =  os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "JalLib", "max", "ConfigFiles"))
+        print(f"Config dir: {config_dir}")
+        MaxNamingConfigFileName = os.path.abspath(os.path.join(config_dir, "3DSMaxNamingConfig.json"))
+        print(f"MaxNamingConfigFileName: {MaxNamingConfigFileName}")
         
-        self.name = Name()  # 설정 파일 없이 기본 설정으로 초기화
-        
+        self.name = Name(configPath=MaxNamingConfigFileName)
         # 테스트에 사용할 이름 샘플
         self.test_names = [
             "Bip001 L Forearm",      # 공백 구분
