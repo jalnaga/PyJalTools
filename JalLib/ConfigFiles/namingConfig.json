@@ -1,0 +1,51 @@
+{
+    "paddingNum": 2,
+    "partOrder": [
+        "Prefix",
+        "RealName",
+        "Index",
+        "Suffix"
+    ],
+    "nameParts": [
+        {
+            "name": "Prefix",
+            "predefinedValues": [
+                "Pr"
+            ],
+            "weights": [
+                5
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Prefix"
+            ]
+        },
+        {
+            "name": "RealName",
+            "predefinedValues": [],
+            "weights": [],
+            "type": "REALNAME",
+            "descriptions": []
+        },
+        {
+            "name": "Index",
+            "predefinedValues": [],
+            "weights": [],
+            "type": "INDEX",
+            "descriptions": []
+        },
+        {
+            "name": "Suffix",
+            "predefinedValues": [
+                "Su"
+            ],
+            "weights": [
+                5
+            ],
+            "type": "SUFFIX",
+            "descriptions": [
+                "Suffix"
+            ]
+        }
+    ]
+}

@@ -41,7 +41,8 @@ class NamingConfig:
         
         # 스크립트 디렉토리 기준 기본 경로 설정
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        self.default_file_path = os.path.join(script_dir, self.default_file_name)
+        config_dir = os.path.join(script_dir, "ConfigFiles")
+        self.default_file_path = os.path.join(config_dir, self.default_file_name)
         
         # 기본 NamePart 초기화
         self._initialize_default_parts()
@@ -51,43 +52,20 @@ class NamingConfig:
         # 기본 순서 정의 (명시적으로 순서를 저장)
         self.part_order = []
         
-        # Base 부분 (PREFIX 타입)
-        base_part = NamePart("Base", NamePartType.PREFIX, 
-                             ["b", "Bip001"], 
-                             ["Skin Bone", "Biped"])
-        self.name_parts.append(base_part)
-        
-        # Type 부분 (PREFIX 타입)
-        type_part = NamePart("Type", NamePartType.PREFIX, 
-                             ["P", "Dum", "Exp", "IK", "T"], 
-                             ["Parent", "Dummy", "ExposeTM", "IK", "Target"])
-        self.name_parts.append(type_part)
-        
-        # Side 부분 (PREFIX 타입)
-        side_part = NamePart("Side", NamePartType.PREFIX,
-                             ["L", "R"], 
-                             ["Left", "Right"])
-        self.name_parts.append(side_part)
-        
-        # FrontBack 부분 (PREFIX 타입)
-        frontBack_part = NamePart("FrontBack", NamePartType.PREFIX,
-                                 ["F", "B"], 
-                                 ["Front", "Back"])
-        self.name_parts.append(frontBack_part)
+        # Prefix 부분 (PREFIX 타입)
+        prefixPart = NamePart("Prefix", NamePartType.PREFIX, ["Pr"], ["Prefix"])
         
         # RealName 부분 (REALNAME 타입)
-        realName_part = NamePart("RealName", NamePartType.REALNAME, [], [])
-        self.name_parts.append(realName_part)
+        realNamePart = NamePart("RealName", NamePartType.REALNAME, [], [])
         
         # Index 부분 (INDEX 타입)
-        index_part = NamePart("Index", NamePartType.INDEX, [], [])
-        self.name_parts.append(index_part)
+        indexPart = NamePart("Index", NamePartType.INDEX, [], [])
         
-        # Nub 부분 (SUFFIX 타입)
-        nub_part = NamePart("Nub", NamePartType.SUFFIX,
-                             ["Nub"], 
-                             ["Nub"])
-        self.name_parts.append(nub_part)
+        # Suffix 부분 (SUFFIX 타입)
+        suffixPart = NamePart("Suffix", NamePartType.SUFFIX, ["Su"], ["Suffix"])
+        
+        # 기본 순서대로 설정
+        self.name_parts = [prefixPart, realNamePart, indexPart, suffixPart]
         
         self._update_part_order()  # 초기화 후 순서 업데이트
         
