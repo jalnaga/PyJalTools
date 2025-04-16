@@ -21,31 +21,47 @@ class NamingConfig:
     NamePart 객체 리스트를 관리하고 JSON 파일로 저장/불러오기 기능 제공.
     """
     
-    def __init__(self):
-        """클래스 초기화 및 기본 설정값 정의"""
+    def __init__(self, padding_num: int = 2, name_parts: Optional[List[NamePart]] = None, 
+                 config_file_path: str = "", default_file_name: str = "namingConfig.json", 
+                 required_parts: Optional[List[str]] = None):
+        """
+        클래스 초기화 및 기본 설정값 정의
+        
+        Args:
+            padding_num: 인덱스 패딩 자릿수 (기본값: 2)
+            name_parts: 초기 NamePart 객체 리스트 (기본값: None, 기본 파트로 초기화)
+            config_file_path: 설정 파일 경로 (기본값: 빈 문자열)
+            default_file_name: 기본 파일명 (기본값: "namingConfig.json")
+            required_parts: 필수 namePart 목록 (기본값: ["RealName"])
+        """
         # NamePart 객체 리스트
-        self.name_parts = []
+        self.name_parts = name_parts or []
         
         # 추가 설정
-        self.padding_num = 2
+        self.padding_num = padding_num
         
         # NamePart 순서 정보 저장
         self.part_order = []
         
         # 필수 namePart 정의 (삭제 불가능)
-        self.required_parts = ["RealName"]
+        self.required_parts = required_parts or ["RealName"]
         
         # 설정 파일 경로 및 기본 파일명
-        self.config_file_path = ""
-        self.default_file_name = "namingConfig.json"
+        self.config_file_path = config_file_path
+        self.default_file_name = default_file_name
         
         # 스크립트 디렉토리 기준 기본 경로 설정
         script_dir = os.path.dirname(os.path.abspath(__file__))
         config_dir = os.path.join(script_dir, "ConfigFiles")
         self.default_file_path = os.path.join(config_dir, self.default_file_name)
         
-        # 기본 NamePart 초기화
-        self._initialize_default_parts()
+        # name_parts가 제공되지 않은 경우에만 기본 NamePart 초기화
+        if not self.name_parts:
+            self._initialize_default_parts()
+        else:
+            # 제공된 name_parts가 있는 경우 순서 업데이트 및 타입 자동 업데이트
+            self._update_part_order()
+            self._update_part_types_based_on_order()
     
     def _initialize_default_parts(self):
         """기본 NamePart 객체들 초기화"""
