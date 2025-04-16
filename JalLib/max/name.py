@@ -64,240 +64,338 @@ class Name(Naming):
             self._nameParts = [basePart, typePart, sidePart, frontBackPart, realNamePart, indexPart, nubPart]
     
     # NamePart 직접 액세스 메소드들
-    
-    def get_Base_str(self):
-        """
-        Base 이름 문자열 반환
-        
-        Returns:
-            Base 이름 문자열, 없으면 빈 문자열
-        """
-        basePart = self.get_name_part("Base")
-        if basePart:
-            return basePart.get_value_by_min_weight()
-        return ""
-    
+    # get_<NamePart 이름>_values 메소드들
     def get_Base_values(self):
         """
-        Base 이름 부분의 모든 사전 정의 값 반환
+        Base 부분의 사전 정의 값 목록 반환
         
         Returns:
-            Base 값 목록, 없으면 빈 리스트
+            Base 부분의 사전 정의 값 목록
         """
-        basePart = self.get_name_part("Base")
-        if basePart:
-            return basePart.get_predefined_values()
-        return []
-    
-    def is_Base_char(self, inChar):
-        """
-        문자가 Base 값인지 확인
-        
-        Args:
-            inChar: 확인할 문자
-            
-        Returns:
-            Base 값이면 True, 아니면 False
-        """
-        basePart = self.get_name_part("Base")
-        if basePart:
-            return inChar in basePart.get_predefined_values()
-        return False
-    
-    def get_Type_str(self):
-        """
-        Type 이름 문자열 반환
-        
-        Returns:
-            Type 이름 문자열, 없으면 빈 문자열
-        """
-        typePart = self.get_name_part("Type")
-        if typePart:
-            return typePart.get_value_by_min_weight()
-        return ""
+        return self.get_name_part_predefined_values("Base")
     
     def get_Type_values(self):
         """
-        Type 이름 부분의 모든 사전 정의 값 반환
+        Type 부분의 사전 정의 값 목록 반환
         
         Returns:
-            Type 값 목록, 없으면 빈 리스트
+            Type 부분의 사전 정의 값 목록
         """
-        typePart = self.get_name_part("Type")
-        if typePart:
-            return typePart.get_predefined_values()
-        return []
-    
-    def is_Type_char(self, inChar):
-        """
-        문자가 Type 값인지 확인
-        
-        Args:
-            inChar: 확인할 문자
-            
-        Returns:
-            Type 값이면 True, 아니면 False
-        """
-        typePart = self.get_name_part("Type")
-        if typePart:
-            return inChar in typePart.get_predefined_values()
-        return False
-    
-    def get_Side_str(self):
-        """
-        Side 이름 문자열 반환
-        
-        Returns:
-            Side 이름 문자열, 없으면 빈 문자열
-        """
-        sidePart = self.get_name_part("Side")
-        if sidePart:
-            return sidePart.get_value_by_min_weight()
-        return ""
+        return self.get_name_part_predefined_values("Type")
     
     def get_Side_values(self):
         """
-        Side 이름 부분의 모든 사전 정의 값 반환
+        Side 부분의 사전 정의 값 목록 반환
         
         Returns:
-            Side 값 목록, 없으면 빈 리스트
+            Side 부분의 사전 정의 값 목록
         """
-        sidePart = self.get_name_part("Side")
-        if sidePart:
-            return sidePart.get_predefined_values()
-        return []
-    
-    def is_Side_char(self, inChar):
-        """
-        문자가 Side 값인지 확인
-        
-        Args:
-            inChar: 확인할 문자
-            
-        Returns:
-            Side 값이면 True, 아니면 False
-        """
-        sidePart = self.get_name_part("Side")
-        if sidePart:
-            return inChar in sidePart.get_predefined_values()
-        return False
-    
-    def get_FrontBack_str(self):
-        """
-        FrontBack 이름 문자열 반환
-        
-        Returns:
-            FrontBack 이름 문자열, 없으면 빈 문자열
-        """
-        frontBackPart = self.get_name_part("FrontBack")
-        if frontBackPart:
-            return frontBackPart.get_value_by_min_weight()
-        return ""
+        return self.get_name_part_predefined_values("Side")
     
     def get_FrontBack_values(self):
         """
-        FrontBack 이름 부분의 모든 사전 정의 값 반환
+        FrontBack 부분의 사전 정의 값 목록 반환
         
         Returns:
-            FrontBack 값 목록, 없으면 빈 리스트
+            FrontBack 부분의 사전 정의 값 목록
         """
-        frontBackPart = self.get_name_part("FrontBack")
-        if frontBackPart:
-            return frontBackPart.get_predefined_values()
-        return []
-    
-    def is_FrontBack_char(self, inChar):
-        """
-        문자가 FrontBack 값인지 확인
-        
-        Args:
-            inChar: 확인할 문자
-            
-        Returns:
-            FrontBack 값이면 True, 아니면 False
-        """
-        frontBackPart = self.get_name_part("FrontBack")
-        if frontBackPart:
-            return inChar in frontBackPart.get_predefined_values()
-        return False
-    
-    def get_RealName_str(self, inStr):
-        """
-        문자열에서 RealName 부분 추출
-        
-        Args:
-            inStr: 처리할 문자열
-            
-        Returns:
-            RealName 부분 문자열
-        """
-        return self.get_name("RealName", inStr)
-    
-    def get_Index_str(self, inStr):
-        """
-        문자열에서 Index 부분 추출
-        
-        Args:
-            inStr: 처리할 문자열
-            
-        Returns:
-            Index 부분 문자열
-        """
-        return self.get_name("Index", inStr)
-    
-    def is_Index_char(self, inChar):
-        """
-        문자가 Index 값인지 확인
-        
-        Args:
-            inChar: 확인할 문자
-            
-        Returns:
-            숫자로만 구성되어 있으면 True, 아니면 False
-        """
-        return inChar.isdigit()
-    
-    def get_Nub_str(self):
-        """
-        Nub 이름 문자열 반환
-        
-        Returns:
-            Nub 이름 문자열, 없으면 빈 문자열
-        """
-        nubPart = self.get_name_part("Nub")
-        if nubPart:
-            return nubPart.get_value_by_min_weight()
-        return ""
+        return self.get_name_part_predefined_values("FrontBack")
     
     def get_Nub_values(self):
         """
-        Nub 이름 부분의 모든 사전 정의 값 반환
+        Nub 부분의 사전 정의 값 목록 반환
         
         Returns:
-            Nub 값 목록, 없으면 빈 리스트
+            Nub 부분의 사전 정의 값 목록
         """
-        nubPart = self.get_name_part("Nub")
-        if nubPart:
-            return nubPart.get_predefined_values()
-        return []
+        return self.get_name_part_predefined_values("Nub")
     
-    def is_Nub(self, inStr):
+    # is_<NamePart 이름> 메소드들
+    def is_Base(self, inStr):
         """
-        문자열이 Nub 값인지 확인
+        문자열이 Base 부분의 사전 정의 값인지 확인
         
         Args:
             inStr: 확인할 문자열
             
         Returns:
-            Nub 값이면 True, 아니면 False
+            Base 부분의 사전 정의 값이면 True, 아니면 False
         """
-        nubPart = self.get_name_part("Nub")
-        if nubPart:
-            nubValues = nubPart.get_predefined_values()
-            return self.get_nub(inStr) in nubValues
-        return False
+        return self.is_in_name_part_predefined_values("Base", inStr)
     
-    # 기존 특화 메소드들
+    def is_Type(self, inStr):
+        """
+        문자열이 Type 부분의 사전 정의 값인지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            Type 부분의 사전 정의 값이면 True, 아니면 False
+        """
+        return self.is_in_name_part_predefined_values("Type", inStr)
+    
+    def is_Side(self, inStr):
+        """
+        문자열이 Side 부분의 사전 정의 값인지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            Side 부분의 사전 정의 값이면 True, 아니면 False
+        """
+        return self.is_in_name_part_predefined_values("Side", inStr)
+    
+    def is_FrontBack(self, inStr):
+        """
+        문자열이 FrontBack 부분의 사전 정의 값인지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            FrontBack 부분의 사전 정의 값이면 True, 아니면 False
+        """
+        return self.is_in_name_part_predefined_values("FrontBack", inStr)
+    
+    def is_Nub(self, inStr):
+        """
+        문자열이 Nub 부분의 사전 정의 값인지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            Nub 부분의 사전 정의 값이면 True, 아니면 False
+        """
+        return self.is_in_name_part_predefined_values("Nub", inStr)
+    
+    # has_<NamePart 이름> 메소드들
+    def has_Base(self, inStr):
+        """
+        문자열에 Base 부분의 사전 정의 값이 포함되어 있는지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            Base 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
+        """
+        return self.has_name_part(inStr, "Base")
+    
+    def has_Type(self, inStr):
+        """
+        문자열에 Type 부분의 사전 정의 값이 포함되어 있는지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            Type 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
+        """
+        return self.has_name_part(inStr, "Type")
+    
+    def has_Side(self, inStr):
+        """
+        문자열에 Side 부분의 사전 정의 값이 포함되어 있는지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            Side 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
+        """
+        return self.has_name_part(inStr, "Side")
+    
+    def has_FrontBack(self, inStr):
+        """
+        문자열에 FrontBack 부분의 사전 정의 값이 포함되어 있는지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            FrontBack 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
+        """
+        return self.has_name_part(inStr, "FrontBack")
+    
+    def has_Nub(self, inStr):
+        """
+        문자열에 Nub 부분의 사전 정의 값이 포함되어 있는지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            Nub 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
+        """
+        return self.has_name_part(inStr, "Nub")
+    
+    # replace_<NamePart 이름> 메소드들
+    def replace_Base(self, inStr, inNewName):
+        """
+        문자열의 Base 부분을 새 이름으로 변경
+        
+        Args:
+            inStr: 처리할 문자열
+            inNewName: 새 이름
+            
+        Returns:
+            변경된 문자열
+        """
+        return self.replace_name_part(inStr, "Base", inNewName)
+    
+    def replace_Type(self, inStr, inNewName):
+        """
+        문자열의 Type 부분을 새 이름으로 변경
+        
+        Args:
+            inStr: 처리할 문자열
+            inNewName: 새 이름
+            
+        Returns:
+            변경된 문자열
+        """
+        return self.replace_name_part(inStr, "Type", inNewName)
+    
+    def replace_Side(self, inStr, inNewName):
+        """
+        문자열의 Side 부분을 새 이름으로 변경
+        
+        Args:
+            inStr: 처리할 문자열
+            inNewName: 새 이름
+            
+        Returns:
+            변경된 문자열
+        """
+        return self.replace_name_part(inStr, "Side", inNewName)
+    
+    def replace_FrontBack(self, inStr, inNewName):
+        """
+        문자열의 FrontBack 부분을 새 이름으로 변경
+        
+        Args:
+            inStr: 처리할 문자열
+            inNewName: 새 이름
+            
+        Returns:
+            변경된 문자열
+        """
+        return self.replace_name_part(inStr, "FrontBack", inNewName)
+    
+    def replace_RealName(self, inStr, inNewName):
+        """
+        문자열의 RealName 부분을 새 이름으로 변경
+        
+        Args:
+            inStr: 처리할 문자열
+            inNewName: 새 이름
+            
+        Returns:
+            변경된 문자열
+        """
+        return self.replace_name_part(inStr, "RealName", inNewName)
+    
+    def replace_Index(self, inStr, inNewName):
+        """
+        문자열의 Index 부분을 새 이름으로 변경
+        
+        Args:
+            inStr: 처리할 문자열
+            inNewName: 새 이름 (숫자 문자열)
+            
+        Returns:
+            변경된 문자열
+        """
+        return self.replace_name_part(inStr, "Index", inNewName)
+    
+    def replace_Nub(self, inStr, inNewName):
+        """
+        문자열의 Nub 부분을 새 이름으로 변경
+        
+        Args:
+            inStr: 처리할 문자열
+            inNewName: 새 이름
+            
+        Returns:
+            변경된 문자열
+        """
+        return self.replace_name_part(inStr, "Nub", inNewName)
+    
+    # remove_<NamePart 이름> 메소드들
+    def remove_Base(self, inStr):
+        """
+        문자열에서 Base 부분 제거
+        
+        Args:
+            inStr: 처리할 문자열
+            
+        Returns:
+            Base 부분이 제거된 문자열
+        """
+        return self.remove_name_part(inStr, "Base")
+    
+    def remove_Type(self, inStr):
+        """
+        문자열에서 Type 부분 제거
+        
+        Args:
+            inStr: 처리할 문자열
+            
+        Returns:
+            Type 부분이 제거된 문자열
+        """
+        return self.remove_name_part(inStr, "Type")
+    
+    def remove_Side(self, inStr):
+        """
+        문자열에서 Side 부분 제거
+        
+        Args:
+            inStr: 처리할 문자열
+            
+        Returns:
+            Side 부분이 제거된 문자열
+        """
+        return self.remove_name_part(inStr, "Side")
+    
+    def remove_FrontBack(self, inStr):
+        """
+        문자열에서 FrontBack 부분 제거
+        
+        Args:
+            inStr: 처리할 문자열
+            
+        Returns:
+            FrontBack 부분이 제거된 문자열
+        """
+        return self.remove_name_part(inStr, "FrontBack")
+    
+    def remove_Index(self, inStr):
+        """
+        문자열에서 Index 부분 제거
+        
+        Args:
+            inStr: 처리할 문자열
+            
+        Returns:
+            Index 부분이 제거된 문자열
+        """
+        return self.remove_name_part(inStr, "Index")
+    
+    def remove_Nub(self, inStr):
+        """
+        문자열에서 Nub 부분 제거
+        
+        Args:
+            inStr: 처리할 문자열
+            
+        Returns:
+            Nub 부분이 제거된 문자열
+        """
+        return self.remove_name_part(inStr, "Nub")
     
     # pymxs 의존적인 메소드 구현
     
@@ -371,6 +469,7 @@ class Name(Naming):
             
         return return_name
     
+    # Type name Part에서 Description으로 지정된 predefined value를 가져오는 메소드들
     def get_parent_str(self):
         """
         부모 이름 문자열 반환
@@ -378,8 +477,8 @@ class Name(Naming):
         Returns:
             부모 이름 문자열
         """
-        return self.get_name_part("Type").get_value_by_weight(inRank=5)
-    
+        return self.get_name_part_value_by_description("Type", "Parent")
+
     def get_dummy_str(self):
         """
         더미 이름 문자열 반환
@@ -387,8 +486,8 @@ class Name(Naming):
         Returns:
             더미 이름 문자열
         """
-        return self.get_name_part("Type").get_value_by_weight(inRank=10)
-    
+        return self.get_name_part_value_by_description("Type", "Dummy")
+
     def get_exposeTm_str(self):
         """
         ExposeTm 이름 문자열 반환
@@ -396,8 +495,8 @@ class Name(Naming):
         Returns:
             ExposeTm 이름 문자열
         """
-        return self.get_name_part("Type").get_value_by_weight(inRank=15)
-    
+        return self.get_name_part_value_by_description("Type", "ExposeTM")
+
     def get_ik_str(self):
         """
         IK 이름 문자열 반환
@@ -405,8 +504,8 @@ class Name(Naming):
         Returns:
             IK 이름 문자열
         """
-        return self.get_name_part("Type").get_value_by_weight(inRank=20)
-    
+        return self.get_name_part_value_by_description("Type", "IK")
+
     def get_target_str(self):
         """
         타겟 이름 문자열 반환
@@ -414,4 +513,4 @@ class Name(Naming):
         Returns:
             타겟 이름 문자열
         """
-        return self.get_name_part("Type").get_value_by_weight(inRank=25)
+        return self.get_name_part_value_by_description("Type", "Target")
