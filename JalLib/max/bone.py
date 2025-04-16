@@ -302,8 +302,7 @@ class Bone:
         newBone.transform = parentTrans
         
         # 로컬 좌표계에서 이동
-        with rt.coordsys(rt.Name("Local")):
-            rt.move(newBone, rt.Point3(parentBone.length, 0, 0))
+        self.anim.move_local(newBone, parentBone.length, 0, 0)
         
         newBone.parent = parentBone
         self.put_child_into_bone_assembly(newBone)
@@ -339,7 +338,6 @@ class Bone:
         if normals is None:
             normals = []
             
-        filteringChar = self.str.get_filteringChar(inName)
         tempBone = None
         newBone = None
         
@@ -357,7 +355,7 @@ class Bone:
                     newBone = rt.BoneSys.createBone(inPointArray[i].transform.position, inPointArray[i+1].transform.position, rt.Point3(0, -1, 0))
                 
                 newBone.boneFreezeLength = True
-                newBone.name = inName + filteringChar + str(boneNum)
+                newBone.name = self.name.replace_index(inName, str(boneNum))
                 newBone.height = size
                 newBone.width = size
                 newBone.frontfin = False
@@ -368,7 +366,7 @@ class Bone:
                 
                 if tempBone is not None:
                     tempTm = rt.copy(newBone.transform * rt.Inverse(tempBone.transform))
-                    localRot = rt.asEulerAngles(tempTm.rotation).x
+                    localRot = rt.quatToEuler(tempTm.rotation).x
                     
                     self.anim.rotate_local(newBone, -localRot, 0, 0)
                 
@@ -381,7 +379,8 @@ class Bone:
                         rt.delete(inPointArray[i])
             
             if parent:
-                parentNubPoint = self.helper.create_point(inName + filteringChar + "PNub", size=size, boxToggle=True, crossToggle=True)
+                parentNubPointName = self.name.replace_type(inName, self.name.get_parent_str())
+                parentNubPoint = self.helper.create_point(parentNubPointName, size=size, boxToggle=True, crossToggle=True)
                 parentNubPoint.transform = returnBoneArray[0].transform
                 returnBoneArray[0].parent = parentNubPoint
             
@@ -431,19 +430,12 @@ class Bone:
             생성된 스트레치 뼈대 배열
         """
         tempBone = []
-        returnArray = []
         tempBone = self.create_bone(inPointArray, inName, size=size)
         
         for i in range(len(tempBone) - 1):
-            tempBone[i].position.controller = rt.Position_Constraint()
-            tempBone[i].position.controller.AppendTarget(inPointArray[i], 100)
-            
-            tempBone[i].rotation.controller = rt.LookAt_Constraint()
-            tempBone[i].rotation.controller.appendTarget(inPointArray[i+1], 100)
-            tempBone[i].rotation.controller.lookat_vector_length = 0
-        
-        tempBone[len(tempBone) - 1].position.controller = rt.Position_Constraint()
-        tempBone[len(tempBone) - 1].position.controller.AppendTarget(inPointArray[len(inPointArray) - 1], 100)
+            self.const.assign_pos_const(tempBone[i], inPointArray[i])
+            self.const.assign_lookat(tempBone[i], inPointArray[i+1])
+        self.const.assign_pos_const(tempBone[-1], inPointArray[-1])
         
         return tempBone
     
@@ -637,12 +629,31 @@ class Bone:
         """
         rt.selectmore(inObj)
         
-        if inObj.children.count == 0 or inObj.children[0] is None:
-            return False
-        else:
+        for i in range(inObj.children.count):
+            if self.select_first_children(inObj.children[i]):
+                if inObj.children.count == 0 or inObj.children[0] is None:
+                    return True
+            else:
+                return False
+    
+    def get_every_children(self, inObj):
+        """
+        객체의 모든 자식들을 가져옴.
+        
+        Args:
+            inObj: 시작 객체
+            
+        Returns:
+            자식 객체 배열
+        """
+        children = []
+        
+        if inObj.children.count != 0 and inObj.children[0] is not None:
             for i in range(inObj.children.count):
-                self.select_first_children(inObj.children[i])
-            return True
+                children.append(inObj.children[i])
+                children.extend(self.get_every_children(inObj.children[i]))
+        
+        return children
     
     def select_every_children(self, inObj, includeSelf=False):
         """
@@ -655,21 +666,13 @@ class Bone:
         Returns:
             선택된 자식 객체 배열
         """
-        children = []
-        
-        # MAXScript의 execute 함수를 사용하여 모든 자식 가져오기
-        cmd = "$'" + inObj.name + "'/*/.../*"
-        children = rt.execute(cmd)
-        
-        # Python 배열로 변환
-        if not isinstance(children, list):
-            children = [children]
+        children = self.get_every_children(inObj)
         
         # 자신도 포함하는 경우
         if includeSelf:
             children.insert(0, inObj)
         
-        return children
+        rt.selectmore(children)
     
     def get_bone_end_position(self, inBone):
         """
@@ -700,11 +703,13 @@ class Bone:
         self.anim.save_xform(inOriBone)
         self.anim.set_xform(inOriBone)
         
-        inSkinBone.scale.controller = rt.scaleXYZ()
-        inSkinBone.controller = rt.link_constraint()
+        rt.setPropertyController(inSkinBone.controller, "Scale", rt.scaleXYZ())
+        
+        linkConst = rt.link_constraint()
+        inSkinBone.controller = linkConst
         
         self.anim.set_xform([inSkinBone], space="world")
-        inSkinBone.transform.controller.AddTarget(inOriBone, 0)
+        linkConst.addTarget(inOriBone, 0)
     
     def link_skin_bones(self, inSkinBoneArray, inOriBoneArray):
         """
@@ -741,14 +746,13 @@ class Bone:
             생성된 스킨 뼈대 배열
         """
         bones = []
-        oriBoneNames = [item.name for item in inBoneArray]
         skinBoneFilteringChar = "_"
         skinBonePushAmount = -0.02
         returnBones = []
         
         for i in range(len(inBoneArray)):
             skinBoneName = self.name.replace_base(inBoneArray[i].name, skinBoneBaseName)
-            skinBoneName = self.name.replace_filteringChar(skinBoneName, skinBoneFilteringChar)
+            skinBoneName = self.name.replace_filtering_char(skinBoneName, skinBoneFilteringChar)
             
             skinBone = self.create_nub_bone("b_TempSkin", 2)
             skinBone.name = skinBoneName
@@ -762,7 +766,7 @@ class Bone:
                 rt.collapseStack(snapShotObj)
                 
                 rt.addModifier(skinBone, rt.Edit_Poly())
-                rt.max.modify.mode()
+                rt.execute("max modify mode")
                 rt.modPanel.setCurrentObject(skinBone.modifiers[rt.Name("Edit_Poly")])
                 skinBone.modifiers[rt.Name("Edit_Poly")].Attach(snapShotObj, editPolyNode=skinBone)
             
@@ -776,7 +780,7 @@ class Bone:
             oriParentObj = inBoneArray[i].parent
             if oriParentObj is not None:
                 skinBoneParentObjName = self.name.replace_base(oriParentObj.name, skinBoneBaseName)
-                skinBoneParentObjName = self.name.replace_filteringChar(skinBoneParentObjName, skinBoneFilteringChar)
+                skinBoneParentObjName = self.name.replace_filtering_char(skinBoneParentObjName, skinBoneFilteringChar)
                 bones[i].parent = rt.getNodeByName(skinBoneParentObjName)
             else:
                 bones[i].parent = None
@@ -786,7 +790,7 @@ class Bone:
         
         if skipNub:
             for item in bones:
-                if not rt.matchPattern(item.name, pattern="*Nub"):
+                if not rt.matchPattern(item.name, pattern=("*" + self.name.get_nub_str())):
                     returnBones.append(item)
                 else:
                     rt.delete(item)

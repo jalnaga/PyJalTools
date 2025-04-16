@@ -5,6 +5,7 @@ import sys
 import os
 import math
 import importlib
+from pymxs import runtime as rt
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "JalLib", ".."))
 print(f"JalLib root_dir: {root_dir}")
@@ -23,3 +24,11 @@ if tests_dir not in sys.path:
 
 from reload_modules import reload_jaltools_modules
 reload_jaltools_modules()
+
+jalBone = JalLib.max.bone.Bone()
+
+skinBone = rt.getNodeByName("b_Dum_Point_01")
+oriBone = rt.getNodeByName("Bip001 Bone 01")
+oriBoneNub = rt.getNodeByName("Bip001 Bone Nub")
+
+jalBone.create_skin_bone([oriBone, oriBoneNub])

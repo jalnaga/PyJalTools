@@ -519,6 +519,8 @@ class Constraint:
         # 상대적 모드 설정
         targetRotConstraint.relative = keepInit
         
+        targetRotConstraint.lookat_vector_length = 0
+        
         return targetRotConstraint
     
     def assign_lookat_multi(self, inObj, inTargetArray, keepInit=False):
