@@ -72,6 +72,242 @@ class Name(Naming):
             # 기본 JSON 설정 파일 로드 시도
             self.load_default_config()
     
+    # NamePart 직접 액세스 메소드들
+    
+    def get_Base_str(self):
+        """
+        Base 이름 문자열 반환
+        
+        Returns:
+            Base 이름 문자열, 없으면 빈 문자열
+        """
+        basePart = self.get_name_part("Base")
+        if basePart:
+            return basePart.get_value_by_min_weight()
+        return ""
+    
+    def get_Base_values(self):
+        """
+        Base 이름 부분의 모든 사전 정의 값 반환
+        
+        Returns:
+            Base 값 목록, 없으면 빈 리스트
+        """
+        basePart = self.get_name_part("Base")
+        if basePart:
+            return basePart.get_predefined_values()
+        return []
+    
+    def is_Base_char(self, inChar):
+        """
+        문자가 Base 값인지 확인
+        
+        Args:
+            inChar: 확인할 문자
+            
+        Returns:
+            Base 값이면 True, 아니면 False
+        """
+        basePart = self.get_name_part("Base")
+        if basePart:
+            return inChar in basePart.get_predefined_values()
+        return False
+    
+    def get_Type_str(self):
+        """
+        Type 이름 문자열 반환
+        
+        Returns:
+            Type 이름 문자열, 없으면 빈 문자열
+        """
+        typePart = self.get_name_part("Type")
+        if typePart:
+            return typePart.get_value_by_min_weight()
+        return ""
+    
+    def get_Type_values(self):
+        """
+        Type 이름 부분의 모든 사전 정의 값 반환
+        
+        Returns:
+            Type 값 목록, 없으면 빈 리스트
+        """
+        typePart = self.get_name_part("Type")
+        if typePart:
+            return typePart.get_predefined_values()
+        return []
+    
+    def is_Type_char(self, inChar):
+        """
+        문자가 Type 값인지 확인
+        
+        Args:
+            inChar: 확인할 문자
+            
+        Returns:
+            Type 값이면 True, 아니면 False
+        """
+        typePart = self.get_name_part("Type")
+        if typePart:
+            return inChar in typePart.get_predefined_values()
+        return False
+    
+    def get_Side_str(self):
+        """
+        Side 이름 문자열 반환
+        
+        Returns:
+            Side 이름 문자열, 없으면 빈 문자열
+        """
+        sidePart = self.get_name_part("Side")
+        if sidePart:
+            return sidePart.get_value_by_min_weight()
+        return ""
+    
+    def get_Side_values(self):
+        """
+        Side 이름 부분의 모든 사전 정의 값 반환
+        
+        Returns:
+            Side 값 목록, 없으면 빈 리스트
+        """
+        sidePart = self.get_name_part("Side")
+        if sidePart:
+            return sidePart.get_predefined_values()
+        return []
+    
+    def is_Side_char(self, inChar):
+        """
+        문자가 Side 값인지 확인
+        
+        Args:
+            inChar: 확인할 문자
+            
+        Returns:
+            Side 값이면 True, 아니면 False
+        """
+        sidePart = self.get_name_part("Side")
+        if sidePart:
+            return inChar in sidePart.get_predefined_values()
+        return False
+    
+    def get_FrontBack_str(self):
+        """
+        FrontBack 이름 문자열 반환
+        
+        Returns:
+            FrontBack 이름 문자열, 없으면 빈 문자열
+        """
+        frontBackPart = self.get_name_part("FrontBack")
+        if frontBackPart:
+            return frontBackPart.get_value_by_min_weight()
+        return ""
+    
+    def get_FrontBack_values(self):
+        """
+        FrontBack 이름 부분의 모든 사전 정의 값 반환
+        
+        Returns:
+            FrontBack 값 목록, 없으면 빈 리스트
+        """
+        frontBackPart = self.get_name_part("FrontBack")
+        if frontBackPart:
+            return frontBackPart.get_predefined_values()
+        return []
+    
+    def is_FrontBack_char(self, inChar):
+        """
+        문자가 FrontBack 값인지 확인
+        
+        Args:
+            inChar: 확인할 문자
+            
+        Returns:
+            FrontBack 값이면 True, 아니면 False
+        """
+        frontBackPart = self.get_name_part("FrontBack")
+        if frontBackPart:
+            return inChar in frontBackPart.get_predefined_values()
+        return False
+    
+    def get_RealName_str(self, inStr):
+        """
+        문자열에서 RealName 부분 추출
+        
+        Args:
+            inStr: 처리할 문자열
+            
+        Returns:
+            RealName 부분 문자열
+        """
+        return self.get_name("RealName", inStr)
+    
+    def get_Index_str(self, inStr):
+        """
+        문자열에서 Index 부분 추출
+        
+        Args:
+            inStr: 처리할 문자열
+            
+        Returns:
+            Index 부분 문자열
+        """
+        return self.get_name("Index", inStr)
+    
+    def is_Index_char(self, inChar):
+        """
+        문자가 Index 값인지 확인
+        
+        Args:
+            inChar: 확인할 문자
+            
+        Returns:
+            숫자로만 구성되어 있으면 True, 아니면 False
+        """
+        return inChar.isdigit()
+    
+    def get_Nub_str(self):
+        """
+        Nub 이름 문자열 반환
+        
+        Returns:
+            Nub 이름 문자열, 없으면 빈 문자열
+        """
+        nubPart = self.get_name_part("Nub")
+        if nubPart:
+            return nubPart.get_value_by_min_weight()
+        return ""
+    
+    def get_Nub_values(self):
+        """
+        Nub 이름 부분의 모든 사전 정의 값 반환
+        
+        Returns:
+            Nub 값 목록, 없으면 빈 리스트
+        """
+        nubPart = self.get_name_part("Nub")
+        if nubPart:
+            return nubPart.get_predefined_values()
+        return []
+    
+    def is_Nub(self, inStr):
+        """
+        문자열이 Nub 값인지 확인
+        
+        Args:
+            inStr: 확인할 문자열
+            
+        Returns:
+            Nub 값이면 True, 아니면 False
+        """
+        nubPart = self.get_name_part("Nub")
+        if nubPart:
+            nubValues = nubPart.get_predefined_values()
+            return self.get_nub(inStr) in nubValues
+        return False
+    
+    # 기존 특화 메소드들
+    
     # pymxs 의존적인 메소드 구현
     
     def gen_unique_name(self, inStr):
@@ -136,7 +372,7 @@ class Name(Naming):
         Returns:
             미러링된 이름 문자열
         """
-        return_name = super.gen_mirroring_name(inStr)
+        return_name = super().gen_mirroring_name(inStr)
         
         # 이름이 변경되지 않았다면 고유한 이름 생성
         if return_name == inStr:

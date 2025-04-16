@@ -6,12 +6,32 @@ Naming 클래스를 위한 테스트 모듈
 get_char_type부터 get_nub 메소드까지에 대한 테스트 케이스 포함
 """
 
-import unittest
+import sys
+import os
+import math
 import importlib
-import JalLib.naming
-# 모듈 실행 시 JalLib.naming을 리로드
-importlib.reload(JalLib.naming)
-from JalLib.naming import Naming
+import unittest
+
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "JalLib", ".."))
+print(f"JalLib root_dir: {root_dir}")
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
+
+import JalLib
+import JalLib.max.header
+import JalLib.max.name
+importlib.reload(JalLib)
+importlib.reload(JalLib.max.header)
+importlib.reload(JalLib.max.name)
+from JalLib.max.name import Name
+
+# tests 디렉토리를 sys.path에 추가
+tests_dir = os.path.dirname(os.path.abspath(__file__))
+if tests_dir not in sys.path:
+    sys.path.append(tests_dir)
+
+from reload_modules import reload_jaltools_modules
+reload_jaltools_modules()
 
 
 class NamingTest(unittest.TestCase):
@@ -22,7 +42,7 @@ class NamingTest(unittest.TestCase):
         # 각 테스트 케이스마다 모듈 다시 로드
         importlib.reload(JalLib.naming)
         
-        self.naming = Naming()  # 설정 파일 없이 기본 설정으로 초기화
+        self.name = Name()  # 설정 파일 없이 기본 설정으로 초기화
         
         # 테스트에 사용할 이름 샘플
         self.test_names = [
@@ -34,10 +54,10 @@ class NamingTest(unittest.TestCase):
             "b_P_F_L_Sleeve_00"      # 복합적인 케이스
         ]
         
-    def test_get_char_type(self):
-        self.assertEqual(self.naming.convert_name_to_array("b_Dum_R_F_R_Skirt_Nub"), ["b", "Dum", "R", "F", "R_Skirt", "", "Nub"])
-        self.assertEqual(self.naming.get_real_name("b_Dum_R_F_R_Skirt_Nub"), "R_Skirt")
-        namePart = self.naming.get_name_part("Type")
+    def test(self):
+        self.assertEqual(self.name.convert_name_to_array("b_Dum_R_F_R_Skirt_Nub"), ["b", "Dum", "R", "F", "R_Skirt", "", "Nub"])
+        self.assertEqual(self.name.get_RealName("b_Dum_R_F_R_Skirt_Nub"), "R_Skirt")
+        namePart = self.name.get_name_part("Type")
         self.assertEqual(namePart.get_predefined_values(), ["P", "Dum", "Exp", "IK", "T"])
         self.assertEqual(namePart._weights, [5, 10, 15, 20, 25])
         self.assertEqual(namePart.get_value_by_description("Dummy"), "Dum")
