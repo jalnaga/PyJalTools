@@ -11,29 +11,33 @@ from .header import Header
 
 from .name import Name
 from .anim import Anim
-from .align import Align
 
 from .helper import Helper
 from .constraint import Constraint
 from .bone import Bone
-from .layer import Layer
-from .link import Link
-from .bip import Bip
-from .select import Select
+
 from .mirror import Mirror
+from .layer import Layer
+from .align import Align
+from .select import Select
+from .link import Link
+
+from .bip import Bip
+from .skin import Skin
 
 # 모듈 내보내기
 __all__ = [
     'Header',
     'Name',
     'Anim',
-    'Align',
     'Helper', 
     'Constraint',
     'Bone',
+    'Mirror',
     'Layer',
+    'Align',
+    'Select',
     'Link',
     'Bip',
-    'Select',
-    'Mirror'
+    'Skin'
 ]

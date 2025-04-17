@@ -10,15 +10,19 @@ import os
 
 from .name import Name
 from .anim import Anim
-from .align import Align
-from .layer import Layer
-from .link import Link
 
 from .helper import Helper
 from .constraint import Constraint
 from .bone import Bone
 
+from .mirror import Mirror
+from .layer import Layer
+from .align import Align
 from .select import Select
+from .link import Link
+
+from .bip import Bip
+from .skin import Skin
 
 class Header:
     """
@@ -34,12 +38,16 @@ class Header:
 
         self.name = Name(configPath=self.nameConfigDir)
         self.anim = Anim()
-        self.align = Align()
-        self.layer = Layer()
-        self.link = Link()
-
+        
         self.helper = Helper(name_service=self.name)
         self.constraint = Constraint(name_service=self.name, helper_service=self.helper)
         self.bone = Bone(name_service=self.name, anim_service=self.anim, helper_service=self.helper, constraint_service=self.constraint)
-
+        
+        self.mirror = Mirror(name_service=self.name, bone_service=self.bone)
+        self.layer = Layer()
+        self.align = Align()
         self.sel = Select(name_service=self.name, bone_service=self.bone)
+        self.link = Link()
+        
+        self.bip = Bip(name_service=self.name, bone_service=self.bone, anim_service=self.anim)
+        self.skin = Skin(name_service=self.name)
