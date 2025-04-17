@@ -31,7 +31,7 @@ class NamePart:
     이름과 해당 부분에 대한 사전 선언된 값들을 관리합니다.
     """
     
-    def __init__(self, inName="", inType=NamePartType.UNDEFINED, inPredefinedValues=None, inDescriptions=None):
+    def __init__(self, inName="", inType=NamePartType.UNDEFINED, inPredefinedValues=None, inDescriptions=None, inIsDirection=False):
         """
         NamePart 클래스 초기화
         
@@ -46,6 +46,7 @@ class NamePart:
         self._weights = []
         self._type = inType
         self._descriptions = inDescriptions if inDescriptions is not None else [""] * len(self._predefinedValues)
+        self._isDirection = inIsDirection if inIsDirection is True else False  # 방향성 여부 (기본값: False)
         
         # 길이 일치 확인
         if len(self._descriptions) < len(self._predefinedValues):
@@ -468,6 +469,15 @@ class NamePart:
         """
         return list(zip(self._predefinedValues, self._descriptions))
     
+    def is_direction(self):
+        """
+        방향성 여부를 반환합니다.
+        
+        Returns:
+            방향성 여부 (True/False)
+        """
+        return self._isDirection
+    
     def to_dict(self):
         """
         NamePart 객체를 사전 형태로 변환합니다.
@@ -480,7 +490,8 @@ class NamePart:
             "predefinedValues": self._predefinedValues.copy(),
             "weights": self._weights.copy(),  # 가중치를 리스트 형태로 직접 전달
             "type": self._type.name if hasattr(self._type, 'name') else str(self._type),
-            "descriptions": self._descriptions.copy()
+            "descriptions": self._descriptions.copy(),
+            "isDirection": self._isDirection
         }
     
     @staticmethod
@@ -506,7 +517,8 @@ class NamePart:
                 inData["name"],
                 part_type,  # 두 번째 인자로 타입 전달
                 inData.get("predefinedValues", []),  # 세 번째 인자로 predefinedValues 전달
-                inData.get("descriptions", [])  # 네 번째 인자로 descriptions 전달
+                inData.get("descriptions", []),  # 네 번째 인자로 descriptions 전달
+                inData.get("isDirection", False)  # 다섯 번째 인자로 isDirection 전달
             )
             
             return result

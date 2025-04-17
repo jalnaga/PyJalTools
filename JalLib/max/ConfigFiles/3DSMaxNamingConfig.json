@@ -24,7 +24,8 @@
             "descriptions": [
                 "SkinBone",
                 "Biped"
-            ]
+            ],
+            "isDirection": false
         },
         {
             "name": "Type",
@@ -49,7 +50,8 @@
                 "ExposeTM",
                 "IK",
                 "Target"
-            ]
+            ],
+            "isDirection": false
         },
         {
             "name": "Side",
@@ -65,7 +67,8 @@
             "descriptions": [
                 "Left",
                 "Right"
-            ]
+            ],
+            "isDirection": true
         },
         {
             "name": "FrontBack",
@@ -81,21 +84,24 @@
             "descriptions": [
                 "Front",
                 "Back"
-            ]
+            ],
+            "isDirection": true
         },
         {
             "name": "RealName",
             "predefinedValues": [],
             "weights": [],
             "type": "REALNAME",
-            "descriptions": []
+            "descriptions": [],
+            "isDirection": false
         },
         {
             "name": "Index",
             "predefinedValues": [],
             "weights": [],
             "type": "INDEX",
-            "descriptions": []
+            "descriptions": [],
+            "isDirection": false
         },
         {
             "name": "Nub",
@@ -108,7 +114,8 @@
             "type": "SUFFIX",
             "descriptions": [
                 "Nub"
-            ]
+            ],
+            "isDirection": false
         }
     ]
 }

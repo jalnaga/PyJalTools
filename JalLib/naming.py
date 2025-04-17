@@ -662,7 +662,7 @@ class Naming:
         Returns:
             수정된 이름 문자열
         """
-        return self.add_prefix_to_name_part(inStr, "RealName", inPrefix, "prefix")
+        return self.add_prefix_to_name_part(inStr, "RealName", inPrefix)
 
     def add_suffix_to_real_name(self, inStr, inSuffix):
         """
@@ -675,7 +675,7 @@ class Naming:
         Returns:
             수정된 이름 문자열
         """
-        return self.add_sufix_to_name_part(inStr, "RealName", inSuffix, "suffix")
+        return self.add_suffix_to_name_part(inStr, "RealName", inSuffix)
     
     def convert_digit_into_padding_string(self, inDigit, inPaddingNum=None):
         """
@@ -884,7 +884,7 @@ class Naming:
         for part in self._nameParts:
             partName = part.get_name()
             partType = part.get_type()
-            if partType != NamePartType.REALNAME or partType != NamePartType.INDEX:
+            if (partType != NamePartType.REALNAME or partType != NamePartType.INDEX) and part.is_direction():
                 partIndex = self.get_name_part_index(partName)
                 foundName = self.get_name(partName, inStr)
                 opositeName = part.get_most_different_weight_value(foundName)

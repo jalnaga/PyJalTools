@@ -47,11 +47,13 @@ class Name(Naming):
             # Side 부분 (PREFIX 타입)
             sidePart = NamePart("Side", NamePartType.PREFIX,
                              ["L", "R"], 
-                             ["Left", "Right"])
+                             ["Left", "Right"],
+                             True)
             # FrontBack 부분 (PREFIX 타입)
             frontBackPart = NamePart("FrontBack", NamePartType.PREFIX,
                                  ["F", "B"], 
-                                 ["Front", "Back"])
+                                 ["Front", "Back"],
+                                 True)
             # RealName 부분 (REALNAME 타입)
             realNamePart = NamePart("RealName", NamePartType.REALNAME, [], [])
             # Index 부분 (INDEX 타입)
@@ -409,7 +411,7 @@ class Name(Naming):
         Returns:
             고유한 이름 문자열
         """
-        pattern_str = self.replace_index(inStr, "*")
+        pattern_str = self.replace_Index(inStr, "*")
         
         # pymxs를 사용하여 객체 이름을 패턴과 매칭하여 검색
         matched_objects = []
@@ -419,7 +421,7 @@ class Name(Naming):
             if rt.matchPattern(obj.name, pattern=pattern_str):
                 matched_objects.append(obj)
                 
-        return self.replace_index(inStr, str(len(matched_objects) + 1))
+        return self.replace_Index(inStr, str(len(matched_objects) + 1))
     
     def compare_name(self, inObjA, inObjB):
         """
@@ -465,7 +467,10 @@ class Name(Naming):
         
         # 이름이 변경되지 않았다면 고유한 이름 생성
         if return_name == inStr:
-            return_name = self.gen_unique_name(inStr)
+            if self.has_Side(inStr) or self.has_FrontBack(inStr):
+                return_name = self.gen_unique_name(inStr)
+            else:
+                return_name = self.add_suffix_to_real_name(inStr, "Mirrored")
             
         return return_name
     

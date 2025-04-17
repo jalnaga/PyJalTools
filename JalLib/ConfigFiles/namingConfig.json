@@ -18,21 +18,24 @@
             "type": "PREFIX",
             "descriptions": [
                 "Prefix"
-            ]
+            ],
+            "isDirection": false
         },
         {
             "name": "RealName",
             "predefinedValues": [],
             "weights": [],
             "type": "REALNAME",
-            "descriptions": []
+            "descriptions": [],
+            "isDirection": false
         },
         {
             "name": "Index",
             "predefinedValues": [],
             "weights": [],
             "type": "INDEX",
-            "descriptions": []
+            "descriptions": [],
+            "isDirection": false
         },
         {
             "name": "Suffix",
@@ -45,7 +48,8 @@
             "type": "SUFFIX",
             "descriptions": [
                 "Suffix"
-            ]
+            ],
+            "isDirection": false
         }
     ]
 }
