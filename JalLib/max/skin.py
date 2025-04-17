@@ -2,49 +2,46 @@
 # -*- coding: utf-8 -*-
 
 """
-스킨 모듈 - 3ds Max용 스킨 관련 기능 제공
-원본 MAXScript의 skin.ms를 Python으로 변환하였으며, pymxs 모듈 기반으로 구현됨
+스킨 모듈 - 3ds Max용 고급 스킨 관련 기능 제공
+원본 MAXScript의 skin2.ms를 Python으로 변환하였으며, pymxs 모듈 기반으로 구현됨
 """
 
+import os
 from pymxs import runtime as rt
 
 
 class Skin:
     """
-    스킨 관련 기능을 제공하는 클래스.
-    MAXScript의 _Skin 구조체 개념을 Python으로 재구현한 클래스이며,
+    고급 스킨 관련 기능을 제공하는 클래스.
+    MAXScript의 ODC_Char_Skin 구조체 개념을 Python으로 재구현한 클래스이며,
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, name_service, prog_service=None):
+    def __init__(self):
         """
         클래스 초기화
-        
-        Args:
-            name_service: Name 서비스 인스턴스
-            prog_service: Progress 서비스 인스턴스 (선택 사항)
         """
-        self.name = name_service
+        self.skin_match_list = []
     
-    def has_skin(self, inObj=None):
+    def has_skin(self, obj=None):
         """
         객체에 스킨 모디파이어가 있는지 확인
         
         Args:
-            inObj: 확인할 객체 (기본값: 현재 선택된 객체)
+            obj: 확인할 객체 (기본값: 현재 선택된 객체)
             
         Returns:
             True: 스킨 모디파이어가 있는 경우
             False: 없는 경우
         """
-        if inObj is None:
+        if obj is None:
             if len(rt.selection) > 0:
-                inObj = rt.selection[0]
+                obj = rt.selection[0]
             else:
                 return False
         
         # 객체의 모든 모디파이어를 검사하여 Skin 모디파이어가 있는지 확인
-        for mod in inObj.modifiers:
+        for mod in obj.modifiers:
             if rt.classOf(mod) == rt.Skin:
                 return True
         return False
@@ -64,37 +61,37 @@ class Skin:
                 rt.classOf(inNode) == rt.BoneGeometry or 
                 rt.superClassOf(inNode) == rt.Helper)
     
-    def get_skin_mod(self, inObj=None):
+    def get_skin_mod(self, obj=None):
         """
         객체의 스킨 모디파이어 배열 반환
         
         Args:
-            inObj: 모디파이어를 가져올 객체 (기본값: 현재 선택된 객체)
+            obj: 모디파이어를 가져올 객체 (기본값: 현재 선택된 객체)
             
         Returns:
             스킨 모디파이어 배열
         """
-        if inObj is None:
+        if obj is None:
             if len(rt.selection) > 0:
-                inObj = rt.selection[0]
+                obj = rt.selection[0]
             else:
                 return []
         
-        return [mod for mod in inObj.modifiers if rt.classOf(mod) == rt.Skin]
+        return [mod for mod in obj.modifiers if rt.classOf(mod) == rt.Skin]
     
-    def bind_skin(self, inObj, inBoneArray):
+    def bind_skin(self, obj, bone_array):
         """
         객체에 스킨 모디파이어 바인딩
         
         Args:
-            inObj: 바인딩할 객체
-            inBoneArray: 바인딩할 본 배열
+            obj: 바인딩할 객체
+            bone_array: 바인딩할 본 배열
             
         Returns:
             True: 성공한 경우
             False: 실패한 경우
         """
-        if inObj is None or len(inBoneArray) < 1:
+        if obj is None or len(bone_array) < 1:
             print("Select at least 1 influence and an object.")
             return False
         
@@ -102,18 +99,18 @@ class Skin:
         rt.execute("max modify mode")
         
         # Check if the object is valid for skinning
-        if rt.superClassOf(inObj) != rt.GeometryClass:
-            print(f"{inObj.name} must be 'Edit_Mesh' or 'Edit_Poly'.")
+        if rt.superClassOf(obj) != rt.GeometryClass:
+            print(f"{obj.name} must be 'Edit_Mesh' or 'Edit_Poly'.")
             return False
         
         # Add skin modifier
         objmod = rt.Skin()
-        rt.addModifier(inObj, objmod)
-        rt.select(inObj)
+        rt.addModifier(obj, objmod)
+        rt.select(obj)
         
         # Add bones to skin modifier
         wgt = 1.0
-        for each in inBoneArray:
+        for each in bone_array:
             rt.skinOps.addBone(objmod, each, wgt)
         
         # Set skin modifier options
@@ -124,308 +121,540 @@ class Skin:
         objmod.bone_Limit = 8
         objmod.colorAllWeights = True
         objmod.showNoEnvelopes = True
+        
+        return True
     
-    def optimize_skin(self, inSkinMod, boneLimit=8, skinTolerance=0.01):
+    def optimize_skin(self, skin_mod, bone_limit=8, skin_tolerance=0.01):
         """
         스킨 모디파이어 최적화
         
         Args:
-            inSkinMod: 스킨 모디파이어
-            boneLimit: 본 제한 수 (기본값: 8)
-            skinTolerance: 스킨 가중치 허용 오차 (기본값: 0.01)
+            skin_mod: 스킨 모디파이어
+            bone_limit: 본 제한 수 (기본값: 8)
+            skin_tolerance: 스킨 가중치 허용 오차 (기본값: 0.01)
         """
         # 스킨 모디파이어 설정
-        inSkinMod.enableDQ = False
-        inSkinMod.enableDQ = False
-        inSkinMod.bone_Limit = boneLimit
-        inSkinMod.clearZeroLimit = skinTolerance
-        rt.skinOps.RemoveZeroWeights(inSkinMod)
-        inSkinMod.clearZeroLimit = 0
+        skin_mod.enableDQ = False
+        skin_mod.bone_Limit = bone_limit
+        skin_mod.clearZeroLimit = skin_tolerance
+        rt.skinOps.RemoveZeroWeights(skin_mod)
+        skin_mod.clearZeroLimit = 0
         
-        if rt.skinOps.getNumberBones(inSkinMod) > 1:
-            listOfBones = [i for i in range(1, rt.skinOps.GetNumberBones(inSkinMod) + 1)]
+        if rt.skinOps.getNumberBones(skin_mod) > 1:
+            list_of_bones = [i for i in range(1, rt.skinOps.GetNumberBones(skin_mod) + 1)]
             
-            for v in range(1, rt.skinOps.GetNumberVertices(inSkinMod) + 1):
-                for b in range(1, rt.skinOps.GetVertexWeightCount(inSkinMod, v) + 1):
-                    boneID = rt.skinOps.GetVertexWeightBoneID(inSkinMod, v, b)
-                    if boneID in listOfBones:
-                        listOfBones.remove(boneID)
+            for v in range(1, rt.skinOps.GetNumberVertices(skin_mod) + 1):
+                for b in range(1, rt.skinOps.GetVertexWeightCount(skin_mod, v) + 1):
+                    bone_id = rt.skinOps.GetVertexWeightBoneID(skin_mod, v, b)
+                    if bone_id in list_of_bones:
+                        list_of_bones.remove(bone_id)
             
-            for boneID in listOfBones:
-                rt.skinOps.SelectBone(inSkinMod, boneID)
-                rt.skinOps.removebone(inSkinMod, boneID)
+            # 역순으로 본 제거 (인덱스 변경 문제 방지)
+            for i in range(len(list_of_bones) - 1, -1, -1):
+                bone_id = list_of_bones[i]
+                rt.skinOps.SelectBone(skin_mod, bone_id)
+                rt.skinOps.removebone(skin_mod, bone_id)
                 
-            if rt.skinOps.getNumberBones(inSkinMod) > 1:
-                rt.skinOps.SelectBone(inSkinMod, 1)
+            if rt.skinOps.getNumberBones(skin_mod) > 1:
+                rt.skinOps.SelectBone(skin_mod, 1)
                 
-            print(f"Obj:{inSkinMod.node.name} Removed:{len(listOfBones)} Left:{rt.skinOps.GetNumberBones(skin_mod)}")
+            skin_mod_obj = rt.getCurrentSelection()[0]
+                
+            print(f"Obj:{skin_mod_obj.name} Removed:{len(list_of_bones)} Left:{rt.skinOps.GetNumberBones(skin_mod)}")
     
-    def optimize_skin_process(self, inObjs=None, optimAllSkinMod=False, boneLimit=8, skinTolerance=0.01):
+    def optimize_skin_process(self, objs=None, optim_all_skin_mod=False, bone_limit=8, skin_tolerance=0.01):
         """
         여러 객체의 스킨 최적화 프로세스
         
         Args:
-            inObjs: 최적화할 객체 배열 (기본값: 현재 선택된 객체들)
-            optimAllSkinMod: 모든 스킨 모디파이어 최적화 여부 (기본값: False)
-            boneLimit: 본 제한 수 (기본값: 8)
-            skinTolerance: 스킨 가중치 허용 오차 (기본값: 0.01)
+            objs: 최적화할 객체 배열 (기본값: 현재 선택된 객체들)
+            optim_all_skin_mod: 모든 스킨 모디파이어 최적화 여부 (기본값: False)
+            bone_limit: 본 제한 수 (기본값: 8)
+            skin_tolerance: 스킨 가중치 허용 오차 (기본값: 0.01)
         """
-        if inObjs is None:
-            inObjs = rt.selection
+        if objs is None:
+            objs = rt.selection
             
-        if not inObjs:
+        if not objs:
             return
             
-        rt.max.setModifierMode()
+        rt.execute("max modify mode")
         
-        for obj in inObjs:
+        for obj in objs:
             if self.has_skin(obj):
                 mod_id = [i+1 for i in range(len(obj.modifiers)) if rt.classOf(obj.modifiers[i]) == rt.Skin]
                 
-                if not optimAllSkinMod:
+                if not optim_all_skin_mod:
                     mod_id = [mod_id[0]]
                     
                 for each in mod_id:
                     rt.modPanel.setCurrentObject(obj.modifiers[each-1])
-                    self.optimize_skin(obj.modifiers[each-1], boneLimit=boneLimit, skinTolerance=skinTolerance)
+                    self.optimize_skin(obj.modifiers[each-1], bone_limit=bone_limit, skin_tolerance=skin_tolerance)
         
-        rt.select(inObjs)
-    
-    def sel_vert_from_bones(self, inSkinMod, threshold=0.01):
-        """
-        특정 본이 영향을 주는 버텍스 선택
-        
-        Args:
-            inSkinMod: 스킨 모디파이어
-            threshold: 가중치 임계값 (기본값: 0.01)
-            
-        Returns:
-            선택된 버텍스 배열
-        """
-        finalVerts2Sel = []
-        
-        if inSkinMod is not None:
-            selBone = rt.skinops.getSelectedBone(inSkinMod)
-            svc = rt.skinOps.GetNumberVertices(inSkinMod)
-            
-            for o in range(1, svc + 1):
-                lv = rt.skinOps.GetVertexWeightCount(inSkinMod, o)
-                
-                for k in range(1, lv + 1):
-                    if rt.skinOps.GetVertexWeightBoneID(inSkinMod, o, k) == selBone:
-                        if rt.skinOps.GetVertexWeight(inSkinMod, o, k) >= threshold:
-                            if o not in finalVerts2Sel:
-                                finalVerts2Sel.append(o)
-            
-            rt.skinOps.SelectVertices(inSkinMod, finalVerts2Sel)
-        
-        return finalVerts2Sel
-    
-    def make_rigid_skin(self, inSkinMode, inVertList):
-        """
-        버텍스에 대한 리지드 스킨 생성
-        
-        Args:
-            inSkinMode: 스킨 모디파이어
-            inVertList: 버텍스 리스트
-            
-        Returns:
-            [본 인덱스 배열, 가중치 배열]
-        """
-        weightArray = []
-        vertCount = 0
-        boneArray = []
-        fianlWeight = []
-        
-        for v in inVertList:
-            for curBone in range(1, rt.skinOps.GetVertexWeightCount(inSkinMode, v) + 1):
-                curID = rt.skinOps.GetVertexWeightBoneID(inSkinMode, v, curBone)
-                if curID not in weightArray:
-                    weightArray[curID] = 0
-                
-                curWeight = rt.skinOps.GetVertexWeight(inSkinMode, v, curBone)
-                weightArray[curID] += curWeight
-                vertCount += curWeight
-        
-        for i in weightArray:
-            if weightArray[i] > 0:
-                newVal = weightArray[i] / vertCount
-                if newVal > 0.01:
-                    boneArray.append(i)
-                    fianlWeight.append(newVal)
-        
-        return [boneArray, fianlWeight]
+        rt.select(objs)
     
     def load_skin(self, obj, file_path, load_bind_pose=False, keep_skin=False):
         """
-        파일에서 스킨 가중치 로드
+        스킨 데이터 로드
         
         Args:
-            obj: 스킨을 로드할 객체
+            obj: 로드할 객체
             file_path: 스킨 파일 경로
-            load_bind_pose: 바인드 포즈 로드 여부 (기본값: False)
-            keep_skin: 기존 스킨 유지 여부 (기본값: False)
+            load_bind_pose: 바인드 포즈 로드 여부
+            keep_skin: 기존 스킨 유지 여부
             
         Returns:
-            누락된 본 목록
+            누락된 본 배열
         """
-        if keep_skin is None:
+        # 기본값 설정
+        if keep_skin != True:
             keep_skin = False
-        
+            
+        # 객체 선택
         rt.select(obj)
         data = []
         missing_bones = []
         
-        # 파일 읽기
-        with open(file_path, 'r') as file:
-            for line in file:
-                data.append(eval(line))
+        # 파일 열기
+        try:
+            with open(file_path, 'r') as f:
+                for line in f:
+                    data.append(line.strip())
+        except:
+            return []
         
+        # 버텍스 수 확인
         if len(data) - 1 != obj.verts.count or obj.verts.count == 0:
             print("Bad number of verts")
-            return missing_bones
+            return []
         
-        # 기존 스킨 모디파이어 제거
-        for i in range(len(obj.modifiers)-1, -1, -1):
-            if rt.classOf(obj.modifiers[i]) == rt.Skin:
-                rt.deleteModifier(obj, i+1)
+        # 기존 스킨 모디파이어 처리
+        if not keep_skin:
+            for i in range(len(obj.modifiers) - 1, -1, -1):
+                if rt.classOf(obj.modifiers[i]) == rt.Skin:
+                    rt.deleteModifier(obj, i+1)
+                    
+        # 모디파이 모드 설정
+        rt.setCommandPanelTaskMode(rt.Name('modify'))
         
-        rt.setCommandPanelTaskMode(rt.Name("modify"))
+        # 새 스킨 모디파이어 생성
         new_skin = rt.Skin()
+        rt.addModifier(obj, new_skin, before=1 if keep_skin else 0)
         
-        before_param = 1 if keep_skin else 0
-        rt.addmodifier(obj, new_skin, before=before_param)
-        
+        # 스킨 이름 설정
         if keep_skin:
-            new_skin.name = "Skin_" + rt.getfilenamefile(file_path)
-        
+            new_skin.name = "Skin_" + os.path.splitext(os.path.basename(file_path))[0]
+            
+        # 현재 모디파이어 설정
         rt.modPanel.setCurrentObject(new_skin)
-        bone_names = data[0]  # 본 이름 목록
+        
+        tempData = [rt.execute(item) for item in data]
+        
+        # 본 데이터 처리
+        bones_data = rt.execute(tempData[0])
         hierarchy = []
         
-        for i in range(len(bone_names)):
-            my_bone = [obj for obj in rt.objects if obj.name == bone_names[i]]
+        for i in range(len(bones_data)):
+            # 본 이름으로 노드 찾기
+            my_bone = [node for node in rt.objects if node.name == bones_data[i]]
             
-            if not my_bone:
-                print(f"Missing bone: {bone_names[i]}")
-                tmp = rt.dummy(name=bone_names[i])
+            # 없는 본인 경우 더미 생성
+            if len(my_bone) == 0:
+                print(f"Missing bone: {bones_data[i]}")
+                tmp = rt.Dummy(name=bones_data[i])
                 my_bone = [tmp]
                 missing_bones.append(tmp)
-            
-            if len(my_bone) > 1 and hierarchy:
+                
+            # 계층 구조 확인
+            if len(my_bone) > 1 and len(hierarchy) != 0:
                 print(f"Multiple bones are named: {my_bone[0].name} ({len(my_bone)})")
                 good_bone = None
                 for o in my_bone:
                     if o in hierarchy:
                         good_bone = o
+                        break
                 if good_bone is not None:
                     my_bone = [good_bone]
-            
-            # 여러 본이 있는 경우 사용자가 선택할 수 있게 함 (Python GUI 필요)
-            if len(my_bone) > 1:
-                rt.unhide(my_bone)
-                rt.unfreeze(my_bone)
-                rt.select(my_bone)
-                
-                # pickObject는 맥스스크립트 기능으로 파이썬에서 다르게 처리해야 함
-                # 여기서는 첫 번째 본 사용
-                pick_bone = my_bone[0]  
-                if pick_bone is not None:
-                    my_bone[0] = pick_bone
-                rt.select(obj)
-            
+                    
+            # 사용할 본 결정
             my_bone = my_bone[0]
+            
+            # 계층에 추가
             if my_bone not in hierarchy:
                 hierarchy.append(my_bone)
-                # 계층 구조에 있는 모든 객체 추가
-                for hier_obj in hierarchy:
-                    for cur_child in hier_obj.children:
-                        if cur_child not in hierarchy:
-                            hierarchy.append(cur_child)
-                    if hier_obj.parent is not None and hier_obj.parent not in hierarchy:
-                        hierarchy.append(hier_obj.parent)
+                all_nodes = list(hierarchy)
+                
+                for node in all_nodes:
+                    # 자식 노드 추가
+                    for child in node.children:
+                        if child not in all_nodes:
+                            all_nodes.append(child)
+                    # 부모 노드 추가
+                    if node.parent is not None and node.parent not in all_nodes:
+                        all_nodes.append(node.parent)
+                        
+                    # 계층에 추가
+                    for node in all_nodes:
+                        if self.is_valid_bone(node) and node not in hierarchy:
+                            hierarchy.append(node)
+                            
+            # 본 추가
+            rt.skinOps.addBone(new_skin, my_bone, 1.0)
             
-            rt.setCommandPanelTaskMode(rt.Name("modify"))
-            rt.skinOps.addbone(new_skin, my_bone, 1)
-            
-            # 바인드 포즈 로드 옵션 처리
+            # 바인드 포즈 로드
             if load_bind_pose:
-                my_file_bp = file_path[:-4] + "bp"
+                bind_pose_file = os.path.splitext(file_path)[0] + "bp"
                 bind_poses = []
                 
-                if rt.doesFileExist(my_file_bp):
-                    with open(my_file_bp, 'r') as bp_file:
-                        for line in bp_file:
-                            bind_poses.append(eval(line))
-                
+                if os.path.exists(bind_pose_file):
+                    try:
+                        with open(bind_pose_file, 'r') as f:
+                            for line in f:
+                                bind_poses.append(rt.execute(line.strip()))
+                    except:
+                        pass
+                        
                 if i < len(bind_poses) and bind_poses[i] is not None:
                     rt.skinUtils.SetBoneBindTM(obj, my_bone, bind_poses[i])
         
-        # 버텍스 가중치 설정
+        # 가중치 데이터 처리
         for i in range(1, obj.verts.count + 1):
-            if i < len(data):
-                bone_id = []
-                bone_weight = []
-                good_bones = set()
-                all_bone_weight = [0] * len(bone_names)
+            bone_id = []
+            bone_weight = []
+            good_bones = []
+            all_bone_weight = [0] * len(bones_data)
+            
+            # 가중치 합산
+            for b in range(len(tempData[i][0])):
+                bone_index = tempData[i][0][b]
+                weight = tempData[i][1][b]
+                all_bone_weight[bone_index-1] += weight
+                good_bones.append(bone_index)
                 
-                for b in range(len(data[i][0])):
-                    if 0 <= data[i][0][b]-1 < len(all_bone_weight):
-                        all_bone_weight[data[i][0][b]-1] += data[i][1][b]
-                        good_bones.add(data[i][0][b])
+            # 가중치 적용
+            for b in good_bones:
+                bone_id.append(b)
+                bone_weight.append(all_bone_weight[b-1])
                 
-                for b in good_bones:
-                    bone_id.append(b)
-                    bone_weight.append(all_bone_weight[b-1])
+            # 가중치 설정
+            if len(bone_id) != 0:
+                rt.skinOps.SetVertexWeights(new_skin, i, bone_id[0], 1.0)  # Max 2014 sp5 hack
+                rt.skinOps.ReplaceVertexWeights(new_skin, i, bone_id, bone_weight)
                 
-                if bone_id:
-                    # Max 2014 sp5 hack
-                    rt.skinOps.SetVertexWeights(new_skin, i, bone_id[0], 1)
-                    rt.skinOps.ReplaceVertexWeights(new_skin, i, bone_id, bone_weight)
-        
         return missing_bones
     
-    def save_skin(self, obj, skin_mod, file_path):
+    def save_skin(self, obj=None, file_path=None):
         """
-        스킨 가중치를 파일로 저장
+        스킨 데이터 저장
+        MAXScript의 saveskin.ms 를 Python으로 변환한 함수
         
         Args:
-            obj: 스킨이 있는 객체
-            skin_mod: 스킨 모디파이어
-            file_path: 저장할 파일 경로
+            obj: 저장할 객체 (기본값: 현재 선택된 객체)
+            file_path: 저장할 파일 경로 (기본값: None, 자동 생성)
             
         Returns:
             저장된 파일 경로
         """
-        rt.select(obj)
-        rt.max.setModifierMode()
-        rt.modPanel.setCurrentObject(obj.modifiers[rt.Name("#Skin")])
+        # 현재 선택된 객체가 없는 경우 선택된 객체 사용
+        if obj is None:
+            if len(rt.selection) > 0:
+                obj = rt.selection[0]
+            else:
+                print("No object selected")
+                return None
+                
+        # 현재 스킨 모디파이어 가져오기
+        skin_mod = rt.modPanel.getCurrentObject()
         
-        if rt.classOf(obj.modifiers[rt.Name("#Skin")]) == rt.Skin and rt.skinOps.GetNumberBones(skin_mod) > 0:
-            bone_list = "["
-            for i in range(1, rt.skinOps.GetNumberBones(skin_mod) + 1):
+        # 스킨 모디파이어가 아니거나 본이 없는 경우 종료
+        if rt.classOf(skin_mod) != rt.Skin or rt.skinOps.GetNumberBones(skin_mod) <= 0:
+            print("Current modifier is not a Skin modifier or has no bones")
+            return None
+            
+        # 본 리스트 생성
+        bones_list = []
+        for i in range(1, rt.skinOps.GetNumberBones(skin_mod) + 1):
+            bones_list.append(rt.skinOps.GetBoneName(skin_mod, i, 1))
+        
+        # 스킨 데이터 생성
+        skin_data = "\"#(\\\"" + "\\\",\\\"".join(str(x) for x in bones_list) + "\\\")\"\n"
+            
+        # 버텍스별 가중치 데이터 수집
+        for v in range(1, rt.skinOps.GetNumberVertices(skin_mod) + 1):
+            bone_array = []
+            weight_array = []
+            
+            for b in range(1, rt.skinOps.GetVertexWeightCount(skin_mod, v) + 1):
+                bone_array.append(rt.skinOps.GetVertexWeightBoneID(skin_mod, v, b))
+                weight_array.append(rt.skinOps.GetVertexWeight(skin_mod, v, b))
+            
+            stringBoneArray = "#(" + ",".join(str(x) for x in bone_array) + ")"
+            stringWeightArray = "#(" + ",".join(str(w) for w in weight_array) + ")"
+            skin_data += ("#(" + stringBoneArray + ", " + stringWeightArray + ")\n")
+            
+        # 파일 경로가 지정되지 않은 경우 자동 생성
+        if file_path is None:
+            # animations 폴더 내 skindata 폴더 생성
+            animations_dir = rt.getDir(rt.Name('animations'))
+            skin_data_dir = os.path.join(animations_dir, "skindata")
+            
+            if not os.path.exists(skin_data_dir):
+                os.makedirs(skin_data_dir)
+                
+            # 파일명 생성 (객체명 + 버텍스수 + 면수)
+            file_name = f"{obj.name} [v{obj.mesh.verts.count}] [t{obj.mesh.faces.count}].skin"
+            file_path = os.path.join(skin_data_dir, file_name)
+            
+        print(f"Saving to: {file_path}")
+        
+        # 스킨 데이터 파일 저장
+        try:
+            with open(file_path, 'w') as f:
+                for data in skin_data:
+                    f.write(data)
+        except Exception as e:
+            print(f"Error saving skin data: {e}")
+            return None
+            
+        # 바인드 포즈 데이터 수집 및 저장
+        bind_poses = []
+        for i in range(1, rt.skinOps.GetNumberBones(skin_mod) + 1):
+            bone_name = rt.skinOps.GetBoneName(skin_mod, i, 1)
+            bone_node = rt.getNodeByName(bone_name)
+            bind_pose = rt.skinUtils.GetBoneBindTM(obj, bone_node)
+            bind_poses.append(bind_pose)
+            
+        # 바인드 포즈 파일 저장
+        bind_pose_file = file_path[:-4] + "bp"  # .skin -> .bp
+        try:
+            with open(bind_pose_file, 'w') as f:
+                for pose in bind_poses:
+                    f.write(str(pose) + '\n')
+        except Exception as e:
+            print(f"Error saving bind pose data: {e}")
+            
+        return file_path
+    
+    def get_bone_id(self, skin_mod, b_array, type=1, refresh=True):
+        """
+        스킨 모디파이어에서 본 ID 가져오기
+        
+        Args:
+            skin_mod: 스킨 모디파이어
+            b_array: 본 배열
+            type: 0=객체, 1=객체 이름
+            refresh: 인터페이스 업데이트 여부
+            
+        Returns:
+            본 ID 배열
+        """
+        bone_id = []
+        
+        if refresh:
+            rt.modPanel.setCurrentObject(skin_mod)
+            
+        for i in range(1, rt.skinOps.GetNumberBones(skin_mod) + 1):
+            if type == 0:
                 bone_name = rt.skinOps.GetBoneName(skin_mod, i, 1)
-                bone_list += f"\"{bone_name}\", "
-            
-            bone_list = bone_list[:-2] + "]" if len(bone_list) > 1 else bone_list + "]"
-            skin_data = [bone_list]
-            
-            # 초기화
-            for i in range(rt.skinOps.GetNumberVertices(skin_mod)):
-                skin_data.append(None)
-            
-            for v in range(1, rt.skinOps.GetNumberVertices(skin_mod) + 1):
-                bone_array = []
-                weight_array = []
+                id = b_array.index(bone_name) + 1 if bone_name in b_array else 0
+            elif type == 1:
+                bone = rt.getNodeByName(rt.skinOps.GetBoneName(skin_mod, i, 1))
+                id = b_array.index(bone) + 1 if bone in b_array else 0
                 
-                for b in range(1, rt.skinOps.GetVertexWeightCount(skin_mod, v) + 1):
-                    bone_array.append(rt.skinOps.GetVertexWeightBoneID(skin_mod, v, b))
-                    weight_array.append(rt.skinOps.GetVertexWeight(skin_mod, v, b))
+            if id != 0:
+                bone_id.append(i)
                 
-                skin_data[v] = [bone_array, weight_array]
+        return bone_id
+    
+    def get_bone_id_from_name(self, in_skin_mod, bone_name):
+        """
+        본 이름으로 본 ID 가져오기
+        
+        Args:
+            in_skin_mod: 스킨 모디파이어를 가진 객체
+            bone_name: 본 이름
             
-            with open(file_path, 'w') as file:
-                for item in skin_data:
-                    file.write(f"{item}\n")
+        Returns:
+            본 ID
+        """
+        for i in range(1, rt.skinOps.GetNumberBones(in_skin_mod) + 1):
+            if rt.skinOps.GetBoneName(in_skin_mod, i, 1) == bone_name:
+                return i
+        return None
+    
+    def get_bones_from_skin(self, objs, skin_mod_index):
+        """
+        스킨 모디파이어에서 사용된 본 배열 가져오기
+        
+        Args:
+            objs: 객체 배열
+            skin_mod_index: 스킨 모디파이어 인덱스
             
-            return file_path
+        Returns:
+            본 배열
+        """
+        inf_list = []
+        
+        for obj in objs:
+            if rt.isValidNode(obj):
+                deps = rt.refs.dependsOn(obj.modifiers[skin_mod_index])
+                for n in deps:
+                    if rt.isValidNode(n) and self.is_valid_bone(n):
+                        if n not in inf_list:
+                            inf_list.append(n)
+                            
+        return inf_list
+    
+    def find_skin_mod_id(self, obj):
+        """
+        객체에서 스킨 모디파이어 인덱스 찾기
+        
+        Args:
+            obj: 대상 객체
+            
+        Returns:
+            스킨 모디파이어 인덱스 배열
+        """
+        return [i+1 for i in range(len(obj.modifiers)) if rt.classOf(obj.modifiers[i]) == rt.Skin]
+    
+    def sel_vert_from_bones(self, skin_mod, threshold=0.01):
+        """
+        선택된 본에 영향 받는 버텍스 선택
+        
+        Args:
+            skin_mod: 스킨 모디파이어
+            threshold: 가중치 임계값 (기본값: 0.01)
+            
+        Returns:
+            선택된 버텍스 배열
+        """
+        verts_to_sel = []
+        
+        if skin_mod is not None:
+            le_bone = rt.skinOps.getSelectedBone(skin_mod)
+            svc = rt.skinOps.GetNumberVertices(skin_mod)
+            
+            for o in range(1, svc + 1):
+                lv = rt.skinOps.GetVertexWeightCount(skin_mod, o)
+                
+                for k in range(1, lv + 1):
+                    if rt.skinOps.GetVertexWeightBoneID(skin_mod, o, k) == le_bone:
+                        if rt.skinOps.GetVertexWeight(skin_mod, o, k) >= threshold:
+                            if o not in verts_to_sel:
+                                verts_to_sel.append(o)
+                                
+            rt.skinOps.SelectVertices(skin_mod, verts_to_sel)
+            
+        else:
+            print("You must have a skinned object selected")
+            
+        return verts_to_sel
+    
+    def make_rigid_skin(self, skin_mod, vert_list):
+        """
+        버텍스 가중치를 경직화(rigid) 처리
+        
+        Args:
+            skin_mod: 스킨 모디파이어
+            vert_list: 버텍스 리스트
+            
+        Returns:
+            [본 ID 배열, 가중치 배열]
+        """
+        weight_array = {}
+        vert_count = 0
+        bone_array = []
+        final_weight = []
+        
+        # 가중치 수집
+        for v in vert_list:
+            for cur_bone in range(1, rt.skinOps.GetVertexWeightCount(skin_mod, v) + 1):
+                cur_id = rt.skinOps.GetVertexWeightBoneID(skin_mod, v, cur_bone)
+                
+                if cur_id not in weight_array:
+                    weight_array[cur_id] = 0
+                    
+                cur_weight = rt.skinOps.GetVertexWeight(skin_mod, v, cur_bone)
+                weight_array[cur_id] += cur_weight
+                vert_count += cur_weight
+                
+        # 최종 가중치 계산
+        for i in weight_array:
+            if weight_array[i] > 0:
+                new_val = weight_array[i] / vert_count
+                if new_val > 0.01:
+                    bone_array.append(i)
+                    final_weight.append(new_val)
+                    
+        return [bone_array, final_weight]
+    
+    def transfert_skin_data(self, obj, source_bones, target_bones, vtx_list):
+        """
+        스킨 가중치 데이터 이전
+        
+        Args:
+            obj: 대상 객체
+            source_bones: 원본 본 배열
+            target_bones: 대상 본
+            vtx_list: 버텍스 리스트
+        """
+        skin_data = []
+        new_skin_data = []
+        
+        # 본 ID 가져오기
+        source_bones_id = [self.get_bone_id_from_name(obj, b.name) for b in source_bones]
+        target_bone_id = self.get_bone_id_from_name(obj, target_bones.name)
+        
+        bone_list = [n for n in rt.refs.dependsOn(obj.skin) if rt.isValidNode(n) and self.is_valid_bone(n)]
+        bone_id_map = {self.get_bone_id_from_name(obj, b.name): i for i, b in enumerate(bone_list)}
+        
+        # 스킨 데이터 수집
+        for vtx in vtx_list:
+            bone_array = []
+            weight_array = []
+            bone_weight = [0] * len(bone_list)
+            
+            for b in range(1, rt.skinOps.GetVertexWeightCount(obj.skin, vtx) + 1):
+                bone_idx = rt.skinOps.GetVertexWeightBoneID(obj.skin, vtx, b)
+                bone_weight[bone_id_map[bone_idx]] += rt.skinOps.GetVertexWeight(obj.skin, vtx, b)
+                
+            for b in range(len(bone_weight)):
+                if bone_weight[b] > 0:
+                    bone_array.append(b+1)
+                    weight_array.append(bone_weight[b])
+                    
+            skin_data.append([bone_array, weight_array])
+            new_skin_data.append([bone_array[:], weight_array[:]])
+            
+        # 스킨 데이터 이전
+        for b, source_bone_id in enumerate(source_bones_id):
+            vtx_id = []
+            vtx_weight = []
+            
+            # 원본 본의 가중치 추출
+            for vtx in range(len(skin_data)):
+                for i in range(len(skin_data[vtx][0])):
+                    if skin_data[vtx][0][i] == source_bone_id:
+                        vtx_id.append(vtx)
+                        vtx_weight.append(skin_data[vtx][1][i])
+                        
+            # 원본 본 영향력 제거
+            for vtx in range(len(vtx_id)):
+                for i in range(len(new_skin_data[vtx_id[vtx]][0])):
+                    if new_skin_data[vtx_id[vtx]][0][i] == source_bone_id:
+                        new_skin_data[vtx_id[vtx]][1][i] = 0.0
+                        
+            # 타겟 본에 영향력 추가
+            for vtx in range(len(vtx_id)):
+                id = new_skin_data[vtx_id[vtx]][0].index(target_bone_id) if target_bone_id in new_skin_data[vtx_id[vtx]][0] else -1
+                
+                if id == -1:
+                    new_skin_data[vtx_id[vtx]][0].append(target_bone_id)
+                    new_skin_data[vtx_id[vtx]][1].append(vtx_weight[vtx])
+                else:
+                    new_skin_data[vtx_id[vtx]][1][id] += vtx_weight[vtx]
+                    
+        # 스킨 데이터 적용
+        for i in range(len(vtx_list)):
+            rt.skinOps.ReplaceVertexWeights(obj.skin, vtx_list[i], 
+                                           skin_data[i][0], new_skin_data[i][1])

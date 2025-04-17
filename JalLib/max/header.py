@@ -50,4 +50,4 @@ class Header:
         self.link = Link()
         
         self.bip = Bip(name_service=self.name, bone_service=self.bone, anim_service=self.anim)
-        self.skin = Skin(name_service=self.name)
+        self.skin = Skin()
