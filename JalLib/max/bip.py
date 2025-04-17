@@ -199,72 +199,61 @@ class Bip:
             
         com = inBip.controller.rootNode
         
-        head = []
-        pelvis = []
-        lArm = []
-        lFingers = []
-        rArm = []
-        rFingers = []
-        lLeg = []
-        lToes = []
-        rLeg = []
-        rToes = []
-        neck = []
-        spine = []
-        tail = []
-        pony1 = []
-        pony2 = []
-        prop1 = []
-        prop2 = []
-        prop3 = []
+        # Define node categories with their corresponding index numbers
+        NODE_CATEGORIES = {
+            1: "lArm",
+            2: "rArm",
+            3: "lFingers",
+            4: "rFingers",
+            5: "lLeg",
+            6: "rLeg",
+            7: "lToes",
+            8: "rToes",
+            9: "spine",
+            10: "tail",
+            11: "head",
+            12: "pelvis",
+            17: "neck",
+            18: "pony1",
+            19: "pony2",
+            20: "prop1",
+            21: "prop2",
+            22: "prop3"
+        }
+        
+        # Initialize node collections dictionary
+        nodes = {category: [] for category in NODE_CATEGORIES.values()}
         
         nn = rt.biped.maxNumNodes(com)
         nl = rt.biped.maxNumLinks(com)
         
+        # Collect nodes by category
         for i in range(1, nn + 1):
+            if i not in NODE_CATEGORIES:
+                continue
+                
+            category = NODE_CATEGORIES[i]
             anode = rt.biped.getNode(com, i)
-            if anode:
-                for j in range(1, nl + 1):
-                    alink = rt.biped.getNode(com, i, link=j)
-                    if alink:
-                        if i == 1:
-                            lArm.append(alink)
-                        if i == 2:
-                            rArm.append(alink)
-                        if i == 3:
-                            lFingers.append(alink)
-                        if i == 4:
-                            rFingers.append(alink)
-                        if i == 5:
-                            lLeg.append(alink)
-                        if i == 6:
-                            rLeg.append(alink)
-                        if i == 7:
-                            lToes.append(alink)
-                        if i == 8:
-                            rToes.append(alink)
-                        if i == 9:
-                            spine.append(alink)
-                        if i == 10:
-                            tail.append(alink)
-                        if i == 11:
-                            head.append(alink)
-                        if i == 12:
-                            pelvis.append(alink)
-                        if i == 17:
-                            neck.append(alink)
-                        if i == 18:
-                            pony1.append(alink)
-                        if i == 19:
-                            pony2.append(alink)
-                        if i == 20:
-                            prop1.append(alink)
-                        if i == 21:
-                            prop2.append(alink)
-                        if i == 22:
-                            prop3.append(alink)
+            
+            if not anode:
+                continue
+                
+            for j in range(1, nl + 1):
+                alink = rt.biped.getNode(com, i, link=j)
+                if alink:
+                    nodes[category].append(alink)
         
-        bipNodeArray = head + pelvis + lArm + lFingers + lLeg + lToes + neck + rArm + rFingers + rLeg + rToes + spine + tail + pony1 + pony2 + prop1 + prop2 + prop3
+        # Define the order of categories in final array
+        ORDER = [
+            "head", "pelvis", "lArm", "lFingers", "lLeg", "lToes", "neck",
+            "rArm", "rFingers", "rLeg", "rToes", "spine", "tail", 
+            "pony1", "pony2", "prop1", "prop2", "prop3"
+        ]
+        
+        # Build final array in the desired order
+        bipNodeArray = []
+        for category in ORDER:
+            bipNodeArray.extend(nodes[category])
         
         return bipNodeArray
     
