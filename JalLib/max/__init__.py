@@ -7,7 +7,7 @@ JalTools 3DS 패키지
 """
 
 # 모듈 임포트
-from . import header
+from .header import Header
 
 from .name import Name
 from .anim import Anim
@@ -24,7 +24,7 @@ from .mirror import Mirror
 
 # 모듈 내보내기
 __all__ = [
-    'header',
+    'Header',
     'Name',
     'Anim',
     'Align',

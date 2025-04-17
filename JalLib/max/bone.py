@@ -652,7 +652,7 @@ class Bone:
         if includeSelf:
             children.insert(0, inObj)
         
-        rt.selectmore(children)
+        rt.select(children)
     
     def get_bone_end_position(self, inBone):
         """

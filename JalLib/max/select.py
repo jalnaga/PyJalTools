@@ -206,7 +206,7 @@ class Select:
         nameArray = [item.name for item in inArray]
         sortedNameArray = self.name.sort_by_index(nameArray)
         
-        sortedArray = inArray.copy()
+        sortedArray = [item for item in inArray]
         
         for i, sortedName in enumerate(sortedNameArray):
             foundIndex = nameArray.index(sortedName)

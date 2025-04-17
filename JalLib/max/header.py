@@ -20,17 +20,26 @@ from .bone import Bone
 
 from .select import Select
 
-CONFIG_DIR = os.path.join(os.path.dirname(__file__), "ConfigFiles")
-NAME_CONFIG_FILE = os.path.join(CONFIG_DIR, "3DSMaxNamingConfig.json")
+class Header:
+    """
+    JalLib.max 패키지의 헤더 모듈
+    3DS Max에서 사용하는 다양한 기능을 제공하는 클래스들을 초기화하고 관리합니다.
+    """
+    def __init__(self):
+        """
+        Header 클래스 초기화
+        """
+        self.configDir = os.path.join(os.path.dirname(__file__), "ConfigFiles")
+        self.nameConfigDir = os.path.join(self.configDir, "3DSMaxNamingConfig.json")
 
-jalName = Name(configPath=NAME_CONFIG_FILE)
-jalAnim = Anim()
-jalAlign = Align()
-jalLayer = Layer()
-jalLink = Link()
+        self.name = Name(configPath=self.nameConfigDir)
+        self.anim = Anim()
+        self.align = Align()
+        self.layer = Layer()
+        self.link = Link()
 
-jalHelper = Helper(name_service=jalName)
-jalConstraint = Constraint(name_service=jalName, helper_service=jalHelper)
-jalBone = Bone(name_service=jalName, anim_service=jalAnim, helper_service=jalHelper, constraint_service=jalConstraint)
+        self.helper = Helper(name_service=self.name)
+        self.constraint = Constraint(name_service=self.name, helper_service=self.helper)
+        self.bone = Bone(name_service=self.name, anim_service=self.anim, helper_service=self.helper, constraint_service=self.constraint)
 
-jalSel = Select(name_service=jalName, bone_service=jalBone)
+        self.sel = Select(name_service=self.name, bone_service=self.bone)
