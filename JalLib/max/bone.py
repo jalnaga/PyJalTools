@@ -6,6 +6,8 @@
 원본 MAXScript의 bone.ms를 Python으로 변환하였으며, pymxs 모듈 기반으로 구현됨
 """
 
+from dataclasses import dataclass
+
 from pymxs import runtime as rt
 from .name import Name
 from .anim import Anim
@@ -88,10 +90,10 @@ class Bone:
             계층 구조에 따라 정렬된 뼈대 배열
         """
         # BoneLevel 구조체 정의 (Python 클래스로 구현)
+        @dataclass
         class BoneLevel:
-            def __init__(self, index, level):
-                self.index = index
-                self.level = level
+            index: int
+            level: int
         
         # 뼈대 구조체 배열 초기화
         bones = []

@@ -8,6 +8,7 @@ NamePart 객체를 기반으로 조직화된 이름 생성 및 분석 기능 구
 
 import os
 import re
+from dataclasses import dataclass
 from typing import List, Dict, Any, Optional, Union, Tuple
 
 # NamePart와 NamingConfig 임포트
@@ -819,10 +820,10 @@ class Naming:
             return []
             
         # 정렬을 위한 보조 클래스 정의
+        @dataclass
         class IndexSorting:
-            def __init__(self, inOriIndex, inNewIndex):
-                self.oriIndex = inOriIndex
-                self.newIndex = inNewIndex
+            oriIndex: int
+            newIndex: int
                 
         # 각 이름의 인덱스를 추출하여 정렬 정보 생성
         structArray = []

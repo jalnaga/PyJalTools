@@ -119,7 +119,7 @@ class Select:
             rt.clearSelection()
             rt.select(filtered_sel)
     
-    def select_children(self, in_obj, include_self=False):
+    def select_children(self, inObj, includeSelf=False):
         """
         객체의 모든 자식을 선택
         
@@ -130,35 +130,23 @@ class Select:
         Returns:
             선택된 자식 객체 리스트
         """
-        # MAXScript의 $'name'/*/*/*..와 같은 표현식을 Python으로 구현
-        # 재귀적으로 모든 자식 객체 수집
-        children = []
-        
-        def collect_children(obj):
-            for child in obj.children:
-                children.append(child)
-                collect_children(child)
-        
-        collect_children(in_obj)
-        
-        if include_self:
-            children.insert(0, in_obj)
+        children = self.bone.select_every_children(inObj=inObj, includeSelf=includeSelf)
         
         return children
     
-    def distinguish_hierachy_objects(self, in_array):
+    def distinguish_hierachy_objects(self, inArray):
         """
         계층이 있는 객체와 없는 객체 구분
         
         Args:
-            in_array: 검사할 객체 배열
+            inArray: 검사할 객체 배열
             
         Returns:
             [계층이 없는 객체 배열, 계층이 있는 객체 배열]
         """
         return_array = [[], []]  # 첫 번째는 독립 객체, 두 번째는 계층 객체
         
-        for item in in_array:
+        for item in inArray:
             if item.parent is None and item.children.count == 0:
                 return_array[0].append(item)  # 부모와 자식이 없는 경우
             else:
@@ -166,136 +154,121 @@ class Select:
         
         return return_array
     
-    def get_nonLinked_objects(self, in_array):
+    def get_nonLinked_objects(self, inArray):
         """
         링크(계층구조)가 없는 독립 객체만 반환
         
         Args:
-            in_array: 검사할 객체 배열
+            inArray: 검사할 객체 배열
             
         Returns:
             독립적인 객체 배열
         """
-        return self.distinguish_hierachy_objects(in_array)[0]
+        return self.distinguish_hierachy_objects(inArray)[0]
     
-    def get_linked_objects(self, in_array):
+    def get_linked_objects(self, inArray):
         """
         링크(계층구조)가 있는 객체만 반환
         
         Args:
-            in_array: 검사할 객체 배열
+            inArray: 검사할 객체 배열
             
         Returns:
             계층 구조를 가진 객체 배열
         """
-        return self.distinguish_hierachy_objects(in_array)[1]
+        return self.distinguish_hierachy_objects(inArray)[1]
     
-    def sort_by_hierachy(self, in_array):
+    def sort_by_hierachy(self, inArray):
         """
         객체를 계층 구조에 따라 정렬
         
         Args:
-            in_array: 정렬할 객체 배열
+            inArray: 정렬할 객체 배열
             
         Returns:
             계층 순서대로 정렬된 객체 배열
         """
-        return self.bone.sort_bones_as_hierarchy(in_array)
+        return self.bone.sort_bones_as_hierarchy(inArray)
     
-    def sort_by_index(self, in_array):
+    def sort_by_index(self, inArray):
         """
         객체를 이름에 포함된 인덱스 번호에 따라 정렬
         
         Args:
-            in_array: 정렬할 객체 배열
+            inArray: 정렬할 객체 배열
             
         Returns:
             인덱스 순서대로 정렬된 객체 배열
         """
-        if len(in_array) == 0:
+        if len(inArray) == 0:
             return []
-            
-        # 인덱스 정보를 포함한 구조체 구현
-        class IndexSorting:
-            def __init__(self, ori_index, new_index):
-                self.ori_index = ori_index
-                self.new_index = new_index
         
-        sorted_array = []
-        struct_array = []
+        nameArray = [item.name for item in inArray]
+        sortedNameArray = self.name.sort_by_index(nameArray)
         
-        # 각 객체의 이름에서 인덱스 추출
-        for i in range(len(in_array)):
-            temp_index = self.name.get_index_as_digit(in_array[i].name)
-            if temp_index is False:
-                struct_array.append(IndexSorting(i, 0))
-            else:
-                struct_array.append(IndexSorting(i, temp_index))
+        sortedArray = inArray.copy()
         
-        # 추출된 인덱스에 따라 정렬
-        struct_array.sort(key=lambda x: x.new_index)
+        for i, sortedName in enumerate(sortedNameArray):
+            foundIndex = nameArray.index(sortedName)
+            sortedArray[i] = inArray[foundIndex]
         
-        # 정렬된 순서에 따라 원본 객체 배열 재구성
-        for i in range(len(in_array)):
-            sorted_array.append(in_array[struct_array[i].ori_index])
-        
-        return sorted_array
+        return sortedArray
     
-    def sort_objects(self, in_array):
+    def sort_objects(self, inArray):
         """
         객체를 적절한 방법으로 정렬 (독립 객체와 계층 객체 모두 고려)
         
         Args:
-            in_array: 정렬할 객체 배열
+            inArray: 정렬할 객체 배열
             
         Returns:
             정렬된 객체 배열
         """
-        return_array = []
+        returnArray = []
         
         # 독립 객체와 계층 객체 분류
-        alone_obj_array = self.get_nonLinked_objects(in_array)
-        hierachy_obj_array = self.get_linked_objects(in_array)
+        aloneObjArray = self.get_nonLinked_objects(inArray)
+        hierachyObjArray = self.get_linked_objects(inArray)
         
         # 각각의 방식으로 정렬
-        sorted_alone_obj_array = self.sort_by_index(alone_obj_array)
-        sorted_hierach_obj_array = self.sort_by_hierachy(hierachy_obj_array)
+        sortedAloneObjArray = self.sort_by_index(aloneObjArray)
+        sortedHierachyObjArray = self.sort_by_hierachy(hierachyObjArray)
         
         # 첫 인덱스 비교를 위한 초기화
-        first_index_of_alone_obj = 10000
-        first_index_of_hierachy_obj = 10000
+        firstIndexOfAloneObj = 10000
+        firstIndexOfHierachyObj = 10000
         is_alone_importer = False
         
         # 독립 객체의 첫 인덱스 확인
-        if len(sorted_alone_obj_array) > 0:
-            index_digit = self.name.get_index_as_digit(sorted_alone_obj_array[0].name)
+        if len(sortedAloneObjArray) > 0:
+            index_digit = self.name.get_index_as_digit(sortedAloneObjArray[0].name)
             if index_digit is False:
-                first_index_of_alone_obj = 0
+                firstIndexOfAloneObj = 0
             else:
-                first_index_of_alone_obj = index_digit
+                firstIndexOfAloneObj = index_digit
         
         # 계층 객체의 첫 인덱스 확인
-        if len(sorted_hierach_obj_array) > 0:
-            index_digit = self.name.get_index_as_digit(sorted_hierach_obj_array[0].name)
+        if len(sortedHierachyObjArray) > 0:
+            index_digit = self.name.get_index_as_digit(sortedHierachyObjArray[0].name)
             if index_digit is False:
-                first_index_of_hierachy_obj = 0
+                firstIndexOfHierachyObj = 0
             else:
-                first_index_of_hierachy_obj = index_digit
+                firstIndexOfHierachyObj = index_digit
         
         # 인덱스에 따라 순서 결정
-        if first_index_of_alone_obj < first_index_of_hierachy_obj:
+        if firstIndexOfAloneObj < firstIndexOfHierachyObj:
             is_alone_importer = True
             
         # 결정된 순서에 따라 배열 합치기    
         if is_alone_importer:
-            for item in sorted_alone_obj_array:
-                return_array.append(item)
-            for item in sorted_hierach_obj_array:
-                return_array.append(item)
+            for item in sortedAloneObjArray:
+                returnArray.append(item)
+            for item in sortedHierachyObjArray:
+                returnArray.append(item)
         else:
-            for item in sorted_hierach_obj_array:
-                return_array.append(item)
-            for item in sorted_alone_obj_array:
-                return_array.append(item)
+            for item in sortedHierachyObjArray:
+                returnArray.append(item)
+            for item in sortedAloneObjArray:
+                returnArray.append(item)
         
-        return return_array
+        return returnArray

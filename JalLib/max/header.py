@@ -18,6 +18,8 @@ from .helper import Helper
 from .constraint import Constraint
 from .bone import Bone
 
+from .select import Select
+
 CONFIG_DIR = os.path.join(os.path.dirname(__file__), "ConfigFiles")
 NAME_CONFIG_FILE = os.path.join(CONFIG_DIR, "3DSMaxNamingConfig.json")
 
@@ -30,3 +32,5 @@ jalLink = Link()
 jalHelper = Helper(name_service=jalName)
 jalConstraint = Constraint(name_service=jalName, helper_service=jalHelper)
 jalBone = Bone(name_service=jalName, anim_service=jalAnim, helper_service=jalHelper, constraint_service=jalConstraint)
+
+jalSel = Select(name_service=jalName, bone_service=jalBone)
