@@ -46,15 +46,14 @@ class Bip:
             Biped COM 이름 리스트
         """
         bips = self.get_bips()
-        bip_coms_name = []
+        bipComsName = []
         
         for obj in bips:
-            # appendIfUnique 구현
-            root_name = obj.controller.rootName
-            if root_name not in bip_coms_name:
-                bip_coms_name.append(root_name)
+            rootName = obj.controller.rootName
+            if rootName not in bipComsName:
+                bipComsName.append(rootName)
                 
-        return bip_coms_name
+        return bipComsName
     
     def get_coms(self):
         """
@@ -64,350 +63,342 @@ class Bip:
             Biped COM 객체 리스트
         """
         bips = self.get_bips()
-        bip_coms = []
+        bipComs = []
         
         for obj in bips:
-            # appendIfUnique 구현
-            root_node = obj.controller.rootNode
-            if root_node not in bip_coms:
-                bip_coms.append(root_node)
+            rootNode = obj.controller.rootNode
+            if rootNode not in bipComs:
+                bipComs.append(rootNode)
                 
-        return bip_coms
+        return bipComs
     
-    def is_biped_object(self, in_obj):
+    def is_biped_object(self, inObj):
         """
         객체가 Biped 관련 객체인지 확인
         
         Args:
-            in_obj: 확인할 객체
+            inObj: 확인할 객체
             
         Returns:
             Biped 관련 객체이면 True, 아니면 False
         """
-        return (rt.classOf(in_obj.controller) == rt.BipSlave_control or 
-                rt.classOf(in_obj.controller) == rt.Footsteps or 
-                rt.classOf(in_obj.controller) == rt.Vertical_Horizontal_Turn)
+        return (rt.classOf(inObj.controller) == rt.BipSlave_control or 
+                rt.classOf(inObj.controller) == rt.Footsteps or 
+                rt.classOf(inObj.controller) == rt.Vertical_Horizontal_Turn)
     
-    def get_com(self, in_bip):
+    def get_com(self, inBip):
         """
         Biped 객체의 COM(Center of Mass) 반환
         
         Args:
-            in_bip: COM을 찾을 Biped 객체
+            inBip: COM을 찾을 Biped 객체
             
         Returns:
             Biped의 COM 객체 또는 None
         """
-        if self.is_biped_object(in_bip):
-            return in_bip.controller.rootNode
+        if self.is_biped_object(inBip):
+            return inBip.controller.rootNode
         return None
     
-    def get_all(self, in_bip):
+    def get_all(self, inBip):
         """
         Biped와 관련된 모든 객체 반환
         
         Args:
-            in_bip: 기준 Biped 객체
+            inBip: 기준 Biped 객체
             
         Returns:
             Biped 관련 모든 객체 리스트
         """
-        return_val = []
+        returnVal = []
         
-        if self.is_biped_object(in_bip):
-            root = self.get_com(in_bip)
-            all_nodes = [root]
-            return_val = [root]
+        if self.is_biped_object(inBip):
+            root = self.get_com(inBip)
+            allNodes = [root]
+            returnVal = [root]
             
-            for obj in all_nodes:
+            for obj in allNodes:
                 for child in obj.children:
-                    # appendIfUnique 구현
-                    if child not in all_nodes:
-                        all_nodes.append(child)
-                    if self.is_biped_object(child) and child not in return_val:
-                        return_val.append(child)
+                    if child not in allNodes:
+                        allNodes.append(child)
+                    if self.is_biped_object(child) and child not in returnVal:
+                        returnVal.append(child)
                 
                 if obj.parent is not None:
-                    if obj.parent not in all_nodes:
-                        all_nodes.append(obj.parent)
-                    if self.is_biped_object(obj.parent) and obj.parent not in return_val:
-                        return_val.append(obj.parent)
+                    if obj.parent not in allNodes:
+                        allNodes.append(obj.parent)
+                    if self.is_biped_object(obj.parent) and obj.parent not in returnVal:
+                        returnVal.append(obj.parent)
         
-        return return_val
+        return returnVal
     
-    def get_nodes(self, in_bip):
+    def get_nodes(self, inBip):
         """
         Biped의 실제 노드만 반환 (더미나 Footstep은 제외)
         
         Args:
-            in_bip: 기준 Biped 객체
+            inBip: 기준 Biped 객체
             
         Returns:
             Biped의 노드 객체 리스트
         """
-        return_val = []
+        returnVal = []
         
-        if self.is_biped_object(in_bip):
-            root = self.get_com(in_bip)
-            all_nodes = [root]
-            return_val = [root]
+        if self.is_biped_object(inBip):
+            root = self.get_com(inBip)
+            allNodes = [root]
+            returnVal = [root]
             
-            for obj in all_nodes:
+            for obj in allNodes:
                 for child in obj.children:
                     if rt.classOf(child) != rt.Dummy and rt.classOf(child.controller) != rt.Footsteps:
-                        if child not in all_nodes:
-                            all_nodes.append(child)
-                        if self.is_biped_object(child) and child not in return_val:
-                            return_val.append(child)
+                        if child not in allNodes:
+                            allNodes.append(child)
+                        if self.is_biped_object(child) and child not in returnVal:
+                            returnVal.append(child)
                 
                 if obj.parent is not None:
                     if rt.classOf(obj.parent) != rt.Dummy and rt.classOf(obj.parent.controller) != rt.Footsteps:
-                        if obj.parent not in all_nodes:
-                            all_nodes.append(obj.parent)
-                        if self.is_biped_object(obj.parent) and obj.parent not in return_val:
-                            return_val.append(obj.parent)
+                        if obj.parent not in allNodes:
+                            allNodes.append(obj.parent)
+                        if self.is_biped_object(obj.parent) and obj.parent not in returnVal:
+                            returnVal.append(obj.parent)
         
-        return return_val
+        return returnVal
     
-    def get_dummy_and_footstep(self, in_bip):
+    def get_dummy_and_footstep(self, inBip):
         """
         Biped의 더미와 Footstep 객체만 반환
         
         Args:
-            in_bip: 기준 Biped 객체
+            inBip: 기준 Biped 객체
             
         Returns:
             더미와 Footstep 객체 리스트
         """
-        return_val = []
+        returnVal = []
         
-        if self.is_biped_object(in_bip):
-            bip_array = self.get_all(in_bip)
-            return_val = [item for item in bip_array if rt.classOf(item) == rt.Dummy or rt.classOf(item.controller) == rt.Footsteps]
+        if self.is_biped_object(inBip):
+            bipArray = self.get_all(inBip)
+            returnVal = [item for item in bipArray if rt.classOf(item) == rt.Dummy or rt.classOf(item.controller) == rt.Footsteps]
         
-        return return_val
+        return returnVal
     
-    def get_nodes_by_skeleton_order(self, in_bip):
+    def get_nodes_by_skeleton_order(self, inBip):
         """
         스켈레톤 순서대로 Biped 노드 반환
         
         Args:
-            in_bip: 기준 Biped 객체
+            inBip: 기준 Biped 객체
             
         Returns:
             순서대로 정렬된 Biped 노드 리스트
         """
-        if rt.classOf(in_bip) != rt.Biped_Object:
+        if rt.classOf(inBip) != rt.Biped_Object:
             return []
             
-        com = in_bip.controller.rootNode
+        com = inBip.controller.rootNode
         
-        # 각 바이패드 부위 노드 가져오기
-        head = rt.biped.getNode(com, rt.Name("head"))
-        hips = rt.biped.getNode(com, rt.Name("pelvis"))
-        l_arm = rt.biped.getNode(com, rt.Name("larm"), link=2)
-        l_clavicle = rt.biped.getNode(com, rt.Name("larm"), link=1)
-        l_foot = rt.biped.getNode(com, rt.Name("lleg"), link=3)
-        l_toe = rt.biped.getNode(com, rt.Name("ltoes"), link=1)
-        l_forearm = rt.biped.getNode(com, rt.Name("larm"), link=3)
-        l_hand = rt.biped.getNode(com, rt.Name("larm"), link=4)
-        l_hand_index = rt.biped.getNode(com, rt.Name("lfingers"), link=5)
-        l_hand_index1 = rt.biped.getNode(com, rt.Name("lfingers"), link=6)
-        l_hand_index2 = rt.biped.getNode(com, rt.Name("lfingers"), link=7)
-        l_hand_index3 = rt.biped.getNode(com, rt.Name("lfingers"), link=8)
-        l_hand_middle = rt.biped.getNode(com, rt.Name("lfingers"), link=9)
-        l_hand_middle1 = rt.biped.getNode(com, rt.Name("lfingers"), link=10)
-        l_hand_middle2 = rt.biped.getNode(com, rt.Name("lfingers"), link=11)
-        l_hand_middle3 = rt.biped.getNode(com, rt.Name("lfingers"), link=12)
-        l_hand_pinky = rt.biped.getNode(com, rt.Name("lfingers"), link=17)
-        l_hand_pinky1 = rt.biped.getNode(com, rt.Name("lfingers"), link=18)
-        l_hand_pinky2 = rt.biped.getNode(com, rt.Name("lfingers"), link=19)
-        l_hand_pinky3 = rt.biped.getNode(com, rt.Name("lfingers"), link=20)
-        l_hand_ring = rt.biped.getNode(com, rt.Name("lfingers"), link=13)
-        l_hand_ring1 = rt.biped.getNode(com, rt.Name("lfingers"), link=14)
-        l_hand_ring2 = rt.biped.getNode(com, rt.Name("lfingers"), link=15)
-        l_hand_ring3 = rt.biped.getNode(com, rt.Name("lfingers"), link=16)
-        l_hand_thumb1 = rt.biped.getNode(com, rt.Name("lfingers"), link=1)
-        l_hand_thumb2 = rt.biped.getNode(com, rt.Name("lfingers"), link=2)
-        l_hand_thumb3 = rt.biped.getNode(com, rt.Name("lfingers"), link=3)
-        l_leg = rt.biped.getNode(com, rt.Name("lleg"), link=2)
-        l_upleg = rt.biped.getNode(com, rt.Name("lleg"), link=1)
-        neck = rt.biped.getNode(com, rt.Name("neck"), link=1)
-        neck1 = rt.biped.getNode(com, rt.Name("neck"), link=2)
-        r_arm = rt.biped.getNode(com, rt.Name("rarm"), link=2)
-        r_clavicle = rt.biped.getNode(com, rt.Name("rarm"), link=1)
-        r_foot = rt.biped.getNode(com, rt.Name("rleg"), link=3)
-        r_toe = rt.biped.getNode(com, rt.Name("rtoes"), link=1)
-        r_forearm = rt.biped.getNode(com, rt.Name("rarm"), link=3)
-        r_hand = rt.biped.getNode(com, rt.Name("rarm"), link=4)
-        r_hand_index = rt.biped.getNode(com, rt.Name("rfingers"), link=5)
-        r_hand_index1 = rt.biped.getNode(com, rt.Name("rfingers"), link=6)
-        r_hand_index2 = rt.biped.getNode(com, rt.Name("rfingers"), link=7)
-        r_hand_index3 = rt.biped.getNode(com, rt.Name("rfingers"), link=8)
-        r_hand_middle = rt.biped.getNode(com, rt.Name("rfingers"), link=9)
-        r_hand_middle1 = rt.biped.getNode(com, rt.Name("rfingers"), link=10)
-        r_hand_middle2 = rt.biped.getNode(com, rt.Name("rfingers"), link=11)
-        r_hand_middle3 = rt.biped.getNode(com, rt.Name("rfingers"), link=12)
-        r_hand_pinky = rt.biped.getNode(com, rt.Name("rfingers"), link=17)
-        r_hand_pinky1 = rt.biped.getNode(com, rt.Name("rfingers"), link=18)
-        r_hand_pinky2 = rt.biped.getNode(com, rt.Name("rfingers"), link=19)
-        r_hand_pinky3 = rt.biped.getNode(com, rt.Name("rfingers"), link=20)
-        r_hand_ring = rt.biped.getNode(com, rt.Name("rfingers"), link=13)
-        r_hand_ring1 = rt.biped.getNode(com, rt.Name("rfingers"), link=14)
-        r_hand_ring2 = rt.biped.getNode(com, rt.Name("rfingers"), link=15)
-        r_hand_ring3 = rt.biped.getNode(com, rt.Name("rfingers"), link=16)
-        r_hand_thumb1 = rt.biped.getNode(com, rt.Name("rfingers"), link=1)
-        r_hand_thumb2 = rt.biped.getNode(com, rt.Name("rfingers"), link=2)
-        r_hand_thumb3 = rt.biped.getNode(com, rt.Name("rfingers"), link=3)
-        r_leg = rt.biped.getNode(com, rt.Name("rleg"), link=2)
-        r_upleg = rt.biped.getNode(com, rt.Name("rleg"), link=1)
-        spine = rt.biped.getNode(com, rt.Name("spine"), link=1)
-        spine1 = rt.biped.getNode(com, rt.Name("spine"), link=2)
-        spine2 = rt.biped.getNode(com, rt.Name("spine"), link=3)
+        head = []
+        pelvis = []
+        lArm = []
+        lFingers = []
+        rArm = []
+        rFingers = []
+        lLeg = []
+        lToes = []
+        rLeg = []
+        rToes = []
+        neck = []
+        spine = []
+        tail = []
+        pony1 = []
+        pony2 = []
+        prop1 = []
+        prop2 = []
+        prop3 = []
         
-        # 순서대로 배열 생성
-        bip_node_array = [head, hips, l_arm, l_clavicle, l_foot, l_toe, l_forearm, l_hand,
-                         l_hand_index, l_hand_index1, l_hand_index2, l_hand_index3,
-                         l_hand_middle, l_hand_middle1, l_hand_middle2, l_hand_middle3,
-                         l_hand_pinky, l_hand_pinky1, l_hand_pinky2, l_hand_pinky3,
-                         l_hand_ring, l_hand_ring1, l_hand_ring2, l_hand_ring3,
-                         l_hand_thumb1, l_hand_thumb2, l_hand_thumb3,
-                         l_leg, l_upleg, neck, neck1,
-                         r_arm, r_clavicle, r_foot, r_toe, r_forearm, r_hand,
-                         r_hand_index, r_hand_index1, r_hand_index2, r_hand_index3,
-                         r_hand_middle, r_hand_middle1, r_hand_middle2, r_hand_middle3,
-                         r_hand_pinky, r_hand_pinky1, r_hand_pinky2, r_hand_pinky3,
-                         r_hand_ring, r_hand_ring1, r_hand_ring2, r_hand_ring3,
-                         r_hand_thumb1, r_hand_thumb2, r_hand_thumb3,
-                         r_leg, r_upleg, spine, spine1, spine2]
+        nn = rt.biped.maxNumNodes(com)
+        nl = rt.biped.maxNumLinks(com)
         
-        return bip_node_array
+        for i in range(1, nn + 1):
+            anode = rt.biped.getNode(com, i)
+            if anode:
+                for j in range(1, nl + 1):
+                    alink = rt.biped.getNode(com, i, link=j)
+                    if alink:
+                        if i == 1:
+                            lArm.append(alink)
+                        if i == 2:
+                            rArm.append(alink)
+                        if i == 3:
+                            lFingers.append(alink)
+                        if i == 4:
+                            rFingers.append(alink)
+                        if i == 5:
+                            lLeg.append(alink)
+                        if i == 6:
+                            rLeg.append(alink)
+                        if i == 7:
+                            lToes.append(alink)
+                        if i == 8:
+                            rToes.append(alink)
+                        if i == 9:
+                            spine.append(alink)
+                        if i == 10:
+                            tail.append(alink)
+                        if i == 11:
+                            head.append(alink)
+                        if i == 12:
+                            pelvis.append(alink)
+                        if i == 17:
+                            neck.append(alink)
+                        if i == 18:
+                            pony1.append(alink)
+                        if i == 19:
+                            pony2.append(alink)
+                        if i == 20:
+                            prop1.append(alink)
+                        if i == 21:
+                            prop2.append(alink)
+                        if i == 22:
+                            prop3.append(alink)
+        
+        bipNodeArray = head + pelvis + lArm + lFingers + lLeg + lToes + neck + rArm + rFingers + rLeg + rToes + spine + tail + pony1 + pony2 + prop1 + prop2 + prop3
+        
+        return bipNodeArray
     
-    def load_bip_file(self, in_bip_root, in_file):
+    def load_bip_file(self, inBipRoot, inFile):
         """
         Biped BIP 파일 로드
         
         Args:
-            in_bip_root: 로드 대상 Biped 루트 노드
-            in_file: 로드할 BIP 파일 경로
+            inBipRoot: 로드 대상 Biped 루트 노드
+            inFile: 로드할 BIP 파일 경로
         """
-        bip_node_array = self.get_all(in_bip_root)
+        bipNodeArray = self.get_all(inBipRoot)
         
-        # Figure 모드 전환
-        in_bip_root.controller.figureMode = False
-        rt.biped.loadBipFile(in_bip_root.controller, in_file)
-        in_bip_root.controller.figureMode = True
-        in_bip_root.controller.figureMode = False
+        inBipRoot.controller.figureMode = False
+        rt.biped.loadBipFile(inBipRoot.controller, inFile)
+        inBipRoot.controller.figureMode = True
+        inBipRoot.controller.figureMode = False
         
-        # 키 범위 설정
-        key_range = []
-        for i in range(1, len(bip_node_array)):
-            if bip_node_array[i].controller.keys.count != 0 and bip_node_array[i].controller.keys.count != -1:
-                key_time = bip_node_array[i].controller.keys[bip_node_array[i].controller.keys.count - 1].time
-                if key_time not in key_range:
-                    key_range.append(key_time)
+        keyRange = []
+        for i in range(1, len(bipNodeArray)):
+            if bipNodeArray[i].controller.keys.count != 0 and bipNodeArray[i].controller.keys.count != -1:
+                keyTime = bipNodeArray[i].controller.keys[bipNodeArray[i].controller.keys.count - 1].time
+                if keyTime not in keyRange:
+                    keyRange.append(keyTime)
         
-        if key_range and max(key_range) != 0:
-            rt.animationRange = rt.interval(0, max(key_range))
+        if keyRange and max(keyRange) != 0:
+            rt.animationRange = rt.interval(0, max(keyRange))
             rt.sliderTime = 0
     
-    def load_fig_file(self, in_bip_root, in_file):
+    def load_fig_file(self, inBipRoot, inFile):
         """
         Biped FIG 파일 로드
         
         Args:
-            in_bip_root: 로드 대상 Biped 루트 노드
-            in_file: 로드할 FIG 파일 경로
+            inBipRoot: 로드 대상 Biped 루트 노드
+            inFile: 로드할 FIG 파일 경로
         """
-        in_bip_root.controller.figureMode = False
-        in_bip_root.controller.figureMode = True
-        rt.biped.LoadFigFile(in_bip_root.controller, in_file)
-        in_bip_root.controller.figureMode = False
+        inBipRoot.controller.figureMode = False
+        inBipRoot.controller.figureMode = True
+        rt.biped.LoadFigFile(inBipRoot.controller, inFile)
+        inBipRoot.controller.figureMode = False
     
-    def save_fig_file(self, in_bip_root, file_name):
+    def save_fig_file(self, inBipRoot, fileName):
         """
         Biped FIG 파일 저장
         
         Args:
-            in_bip_root: 저장 대상 Biped 루트 노드
-            file_name: 저장할 FIG 파일 경로
+            inBipRoot: 저장 대상 Biped 루트 노드
+            fileName: 저장할 FIG 파일 경로
         """
-        in_bip_root.controller.figureMode = False
-        in_bip_root.controller.figureMode = True
-        rt.biped.saveFigFile(in_bip_root.controller, file_name)
+        inBipRoot.controller.figureMode = False
+        inBipRoot.controller.figureMode = True
+        rt.biped.saveFigFile(inBipRoot.controller, fileName)
     
-    def turn_on_figureMode(self, in_bip):
+    def turn_on_figure_mode(self, inBipRoot):
         """
         Biped Figure 모드 켜기
         
         Args:
-            in_bip: 대상 Biped 객체
+            inBipRoot: 대상 Biped 객체
         """
-        in_bip.controller.figureMode = True
+        inBipRoot.controller.figureMode = True
     
-    def turn_off_figureMode(self, in_bip):
+    def turn_off_figure_mode(self, inBipRoot):
         """
         Biped Figure 모드 끄기
         
         Args:
-            in_bip: 대상 Biped 객체
+            inBipRoot: 대상 Biped 객체
         """
-        in_bip.controller.figureMode = False
+        inBipRoot.controller.figureMode = False
     
-    def delete_copyCollection(self, in_bip, in_name):
+    def delete_copy_collection(self, inBipRoot, inName):
         """
         Biped 복사 컬렉션 삭제
         
         Args:
-            in_bip: 대상 Biped 객체
-            in_name: 삭제할 컬렉션 이름
+            inBipRoot: 대상 Biped 객체
+            inName: 삭제할 컬렉션 이름
         """
-        if self.is_biped_object(in_bip):
-            col_num = rt.biped.numCopyCollections(in_bip.controller)
-            if col_num > 0:
-                for i in range(1, col_num + 1):
-                    if rt.biped.getCopyCollection(in_bip.controller, i).name == in_name:
-                        rt.biped.deleteCopyCollection(in_bip.controller, i)
+        if self.is_biped_object(inBipRoot):
+            colNum = rt.biped.numCopyCollections(inBipRoot.controller)
+            if colNum > 0:
+                for i in range(1, colNum + 1):
+                    if rt.biped.getCopyCollection(inBipRoot.controller, i).name == inName:
+                        rt.biped.deleteCopyCollection(inBipRoot.controller, i)
                         break
+    
+    def delete_all_copy_collection(self, inBipRoot):
+        """
+        Biped 모든 복사 컬렉션 삭제
+        
+        Args:
+            inBipRoot: 대상 Biped 객체
+        """
+        if self.is_biped_object(inBipRoot):
+            colNum = rt.biped.numCopyCollections(inBipRoot.controller)
+            if colNum > 0:
+                rt.biped.deleteAllCopyCollections(inBipRoot.controller)
     
     def link_base_skeleton(self):
         """
         기본 스켈레톤 링크 (Biped와 일반 뼈대 연결)
         """
         rt.setWaitCursor()
-        skin_bone_base_name = "b"
+        skinBoneBaseName = "b"
         
-        bip_skel = self.get_bips()
-        base_skel = [None] * len(bip_skel)
+        bipSkel = self.get_bips()
+        baseSkel = [None] * len(bipSkel)
         
-        # 일치하는 기본 스켈레톤 찾기
-        for i in range(len(bip_skel)):
-            base_skeleton_name = self.name.replace_base(bip_skel[i].name, skin_bone_base_name)
-            base_skeleton_name = self.name.replace_filteringChar(base_skeleton_name, "_")
-            base_skel_obj = rt.getNodeByName(base_skeleton_name)
-            if rt.isValidObj(base_skel_obj):
-                base_skel[i] = base_skel_obj
+        for i in range(len(bipSkel)):
+            baseSkeletonName = self.name.replace_base(bipSkel[i].name, skinBoneBaseName)
+            baseSkeletonName = self.name.replace_filteringChar(baseSkeletonName, "_")
+            baseSkelObj = rt.getNodeByName(baseSkeletonName)
+            if rt.isValidObj(baseSkelObj):
+                baseSkel[i] = baseSkelObj
         
-        # 변환 저장 및 설정
-        self.anim.save_xform(bip_skel)
-        self.anim.set_xform(bip_skel)
+        self.anim.save_xform(bipSkel)
+        self.anim.set_xform(bipSkel)
         
-        self.anim.save_xform(base_skel)
-        self.anim.set_xform(base_skel)
+        self.anim.save_xform(baseSkel)
+        self.anim.set_xform(baseSkel)
         
-        # 링크 설정
-        for i in range(len(base_skel)):
-            if base_skel[i] is not None:
-                base_skel[i].scale.controller = rt.scaleXYZ()
-                base_skel[i].controller = rt.link_constraint()
+        for i in range(len(baseSkel)):
+            if baseSkel[i] is not None:
+                baseSkel[i].scale.controller = rt.scaleXYZ()
+                baseSkel[i].controller = rt.link_constraint()
                 
-                self.anim.set_xform([base_skel[i]], space="World")
-                base_skel[i].transform.controller.AddTarget(bip_skel[i], 0)
+                self.anim.set_xform([baseSkel[i]], space="World")
+                baseSkel[i].transform.controller.AddTarget(bipSkel[i], 0)
         
-        # 뼈대 활성화
-        for i in range(len(base_skel)):
-            if base_skel[i] is not None:
-                base_skel[i].boneEnable = True
+        for i in range(len(baseSkel)):
+            if baseSkel[i] is not None:
+                baseSkel[i].boneEnable = True
                 
         rt.setArrowCursor()
     
@@ -416,35 +407,31 @@ class Bip:
         기본 스켈레톤 링크 해제
         """
         rt.setWaitCursor()
-        skin_bone_base_name = "b"
+        skinBoneBaseName = "b"
         
-        bip_skel = self.get_bips()
-        base_skel = [None] * len(bip_skel)
+        bipSkel = self.get_bips()
+        baseSkel = [None] * len(bipSkel)
         
-        # 일치하는 기본 스켈레톤 찾기
-        for i in range(len(bip_skel)):
-            base_skeleton_name = self.name.replace_base(bip_skel[i].name, skin_bone_base_name)
-            base_skeleton_name = self.name.replace_filteringChar(base_skeleton_name, "_")
-            base_skel_obj = rt.getNodeByName(base_skeleton_name)
-            if rt.isValidObj(base_skel_obj):
-                base_skel[i] = base_skel_obj
+        for i in range(len(bipSkel)):
+            baseSkeletonName = self.name.replace_base(bipSkel[i].name, skinBoneBaseName)
+            baseSkeletonName = self.name.replace_filteringChar(baseSkeletonName, "_")
+            baseSkelObj = rt.getNodeByName(baseSkeletonName)
+            if rt.isValidObj(baseSkelObj):
+                baseSkel[i] = baseSkelObj
         
-        # 변환 저장 및 설정
-        self.anim.save_xform(bip_skel)
-        self.anim.set_xform(bip_skel)
+        self.anim.save_xform(bipSkel)
+        self.anim.set_xform(bipSkel)
         
-        self.anim.save_xform(base_skel)
-        self.anim.set_xform(base_skel)
+        self.anim.save_xform(baseSkel)
+        self.anim.set_xform(baseSkel)
         
-        # 링크 해제
-        for i in range(len(base_skel)):
-            if base_skel[i] is not None:
-                base_skel[i].controller = rt.prs()
-                self.anim.set_xform([base_skel[i]], space="World")
+        for i in range(len(baseSkel)):
+            if baseSkel[i] is not None:
+                baseSkel[i].controller = rt.prs()
+                self.anim.set_xform([baseSkel[i]], space="World")
         
-        # 뼈대 활성화
-        for i in range(len(base_skel)):
-            if base_skel[i] is not None:
-                base_skel[i].boneEnable = True
+        for i in range(len(baseSkel)):
+            if baseSkel[i] is not None:
+                baseSkel[i].boneEnable = True
                 
         rt.setArrowCursor()
