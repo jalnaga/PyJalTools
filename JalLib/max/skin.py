@@ -150,6 +150,12 @@ class Skin:
         rt.skinOps.RemoveZeroWeights(skin_mod)
         skin_mod.clearZeroLimit = 0
         
+        skin_mod.filter_vertices = True
+        skin_mod.showNoEnvelopes = True
+        
+        rt.skinOps.closeWeightTable(skin_mod)
+        rt.skinOps.closeWeightTool(skin_mod)
+        
         if rt.skinOps.getNumberBones(skin_mod) > 1:
             list_of_bones = [i for i in range(1, rt.skinOps.GetNumberBones(skin_mod) + 1)]
             
@@ -558,6 +564,28 @@ class Skin:
             
         else:
             print("You must have a skinned object selected")
+            
+        return verts_to_sel
+    
+    def sel_all_verts(self, skin_mod):
+        """
+        스킨 모디파이어의 모든 버텍스 선택
+        
+        Args:
+            skin_mod: 스킨 모디파이어
+            
+        Returns:
+            선택된 버텍스 배열
+        """
+        verts_to_sel = []
+        
+        if skin_mod is not None:
+            svc = rt.skinOps.GetNumberVertices(skin_mod)
+            
+            for o in range(1, svc + 1):
+                verts_to_sel.append(o)
+                
+            rt.skinOps.SelectVertices(skin_mod, verts_to_sel)
             
         return verts_to_sel
     
