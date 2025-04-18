@@ -36,4 +36,4 @@ skinPath2 = r"C:\Users\Admin\Desktop\KimDokja.skin"
 selNodes = rt.getCurrentSelection()
 skinMods = jalSkin.get_skin_mod(selNodes[0])
 bArray = [rt.getNodeByName("hand_l"), rt.getNodeByName("hand_r")]
-print(jalSkin.load_skin(selNodes[0], skinPath2))
+print(jalSkin.smooth_skin(selNodes[0]))
