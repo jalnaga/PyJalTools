@@ -658,3 +658,346 @@ class Skin:
         for i in range(len(vtx_list)):
             rt.skinOps.ReplaceVertexWeights(obj.skin, vtx_list[i], 
                                            skin_data[i][0], new_skin_data[i][1])
+    
+    def smooth_skin(self, smooth_skin_data=None, vert_group_mode=1, smooth_radius=5.0, keep_max=False, smooth_skin_max_undo=10, undo_weights=None):
+        """
+        스킨 가중치 스무딩 적용
+        
+        Args:
+            smooth_skin_data: 스무딩 데이터 캐시
+            vert_group_mode: 버텍스 그룹 모드 (1=이웃 버텍스, 2=선택되지 않은 버텍스, 3=반경 내 모든 버텍스, 4=엘리먼트/루프)
+            smooth_radius: 스무딩 반경
+            keep_max: 최대 가중치 보존 여부
+            smooth_skin_max_undo: 최대 언두 스택 수
+            undo_weights: 언두 가중치 데이터
+            
+        Returns:
+            업데이트된 undo_weights 리스트
+        """
+        # 초기화
+        if smooth_skin_data is None:
+            smooth_skin_data = [[] for _ in range(8)]
+        if undo_weights is None:
+            undo_weights = []
+            
+        obj = rt.selection[0] if len(rt.selection) > 0 else None
+        skin_mod = rt.modPanel.getCurrentObject()
+        final_bone_array = {}
+        final_weight_array = {}
+            
+        # 데이터 캐시 확인 및 초기화
+        use_old_data = False
+        if len(smooth_skin_data[0]) > 0:
+            if len(smooth_skin_data[0]) >= 2:
+                if obj == smooth_skin_data[0][0] and obj.verts.count == smooth_skin_data[0][1]:
+                    use_old_data = True
+                    
+        if not use_old_data:
+            smooth_skin_data = [[] for _ in range(8)]
+            if obj is not None:
+                smooth_skin_data[0] = [obj, obj.verts.count]
+        
+        # 임시 객체 복사
+        tmp_obj = rt.copy(obj)
+        tmp_obj.modifiers[skin_mod.name].enabled = False
+        
+        # 정규화 가중치 함수 정의
+        def do_normalize_weight(weight):
+            weight_length = sum(weight)
+            if weight_length != 0:
+                return [w * (1 / weight_length) for w in weight]
+            else:
+                return [1.0] + [0.0] * (len(weight) - 1) if len(weight) > 0 else [1.0]
+        
+        # 영향치 0인 버텍스 제거
+        skin_mod.clearZeroLimit = 0.0
+        rt.skinOps.RemoveZeroWeights(skin_mod)
+        
+        # 위치 배열 캐시
+        pos_array = [v.pos for v in tmp_obj.verts]
+        
+        # 반경이 변경된 경우 캐시 초기화
+        if len(smooth_skin_data) > 7 and smooth_skin_data[7] != smooth_radius:
+            smooth_skin_data[5] = []
+            smooth_skin_data[6] = []
+            
+        # 각 선택된 버텍스에 대해 처리
+        for v in range(1, obj.verts.count + 1):
+            # 버텍스가 선택되고 최대값 보존 조건을 충족하는 경우만 처리
+            if rt.skinOps.IsVertexSelected(skin_mod, v) == 1 and (not keep_max or rt.skinOps.GetVertexWeightCount(skin_mod, v) != 1):
+                vert_bros = set()
+                vert_bros_ratio = []
+                weight_array = []
+                bone_array = []
+                final_weight = []
+                
+                # 배열 초기화
+                weight_array = [None] * (rt.skinOps.GetNumberBones(skin_mod) + 1)
+                
+                # 버텍스 그룹 모드 1: 이웃 버텍스
+                if vert_group_mode == 1 and v not in smooth_skin_data[1]:
+                    # 폴리곤이나 메시 타입에 따라 버텍스 연결 정보 가져오기
+                    if rt.classOf(tmp_obj) == rt.Editable_Poly or rt.classOf(tmp_obj) == rt.PolyMeshObject:
+                        cur_edges = rt.polyop.GetEdgesUsingVert(tmp_obj, v)
+                        for ce in cur_edges:
+                            edge_verts = rt.polyop.getEdgeVerts(tmp_obj, ce)
+                            vert_bros.update(edge_verts)
+                    else:
+                        cur_edges = rt.meshop.GetEdgesUsingvert(tmp_obj, v)
+                        for i in range(len(cur_edges)):
+                            edge_idx = cur_edges[i]
+                            edge_vis = rt.getEdgeVis(tmp_obj, 1 + (edge_idx - 1) // 3, 1 + (edge_idx - 1) % 3)
+                            cur_edges[i] = edge_vis
+                        for ce in cur_edges:
+                            edge_verts = rt.meshop.getVertsUsingEdge(tmp_obj, ce)
+                            vert_bros.update(edge_verts)
+                    
+                    # 배열로 변환
+                    vert_bros = list(vert_bros)
+                    smooth_skin_data[1][v] = []
+                    smooth_skin_data[2][v] = []
+                    
+                    # 이웃 버텍스가 있으면 가중치 계산
+                    if len(vert_bros) > 0:
+                        for vb in vert_bros:
+                            cur_dist = rt.distance(pos_array[v-1], pos_array[vb-1])
+                            vert_bros_ratio.append(0 if cur_dist == 0 else 1 / cur_dist)
+                            
+                        # 가중치 정규화
+                        vert_bros_ratio = do_normalize_weight(vert_bros_ratio)
+                        
+                        # 자기 자신의 가중치는 1로 설정
+                        if v in vert_bros:
+                            self_idx = vert_bros.index(v)
+                            vert_bros_ratio[self_idx] = 1
+                            
+                        smooth_skin_data[1][v] = vert_bros
+                        smooth_skin_data[2][v] = vert_bros_ratio
+                
+                # 버텍스 그룹 모드 2: 선택되지 않은 버텍스
+                if vert_group_mode == 2:
+                    smooth_skin_data[3][v] = []
+                    for vb in range(1, len(pos_array) + 1):
+                        if rt.skinOps.IsVertexSelected(skin_mod, vb) == 0:
+                            if rt.distance(pos_array[v-1], pos_array[vb-1]) < smooth_radius:
+                                smooth_skin_data[3][v].append(vb)
+                    
+                    smooth_skin_data[4][v] = []
+                    for vb in smooth_skin_data[3][v]:
+                        cur_dist = rt.distance(pos_array[v-1], pos_array[vb-1])
+                        smooth_skin_data[4][v].append(0 if cur_dist == 0 else 1 / cur_dist)
+                    
+                    # 가중치 정규화 및 강화
+                    smooth_skin_data[4][v] = do_normalize_weight(smooth_skin_data[4][v])
+                    smooth_skin_data[4][v] = [w * 2 for w in smooth_skin_data[4][v]]
+                
+                # 버텍스 그룹 모드 3: 반경 내 모든 버텍스
+                if vert_group_mode == 3 and v not in smooth_skin_data[5]:
+                    smooth_skin_data[5][v] = []
+                    for vb in range(1, len(pos_array) + 1):
+                        if rt.distance(pos_array[v-1], pos_array[vb-1]) < smooth_radius:
+                            smooth_skin_data[5][v].append(vb)
+                    
+                    smooth_skin_data[6][v] = []
+                    for vb in smooth_skin_data[5][v]:
+                        cur_dist = rt.distance(pos_array[v-1], pos_array[vb-1])
+                        smooth_skin_data[6][v].append(0 if cur_dist == 0 else 1 / cur_dist)
+                    
+                    # 가중치 정규화 및 강화
+                    smooth_skin_data[6][v] = do_normalize_weight(smooth_skin_data[6][v])
+                    smooth_skin_data[6][v] = [w * 2 for w in smooth_skin_data[6][v]]
+                
+                # 엘리먼트/루프 모드가 아닌 경우 가중치 계산
+                if vert_group_mode != 4:
+                    # 현재 버텍스 그룹 모드에 따라 데이터 가져오기
+                    vert_bros = smooth_skin_data[vert_group_mode * 2 - 1][v]
+                    vert_bros_ratio = smooth_skin_data[vert_group_mode * 2][v]
+                    
+                    # 각 이웃 버텍스의 가중치 반영
+                    for z in range(len(vert_bros)):
+                        for cur_bone in range(1, rt.skinOps.GetVertexWeightCount(skin_mod, vert_bros[z]) + 1):
+                            cur_id = rt.skinOps.GetVertexWeightBoneID(skin_mod, vert_bros[z], cur_bone)
+                            if weight_array[cur_id] is None:
+                                weight_array[cur_id] = 0
+                            weight_array[cur_id] += rt.skinOps.GetVertexWeight(skin_mod, vert_bros[z], cur_bone) * vert_bros_ratio[z]
+                    
+                    # 최종 가중치 계산
+                    for i in range(1, len(weight_array)):
+                        if weight_array[i] is not None and weight_array[i] > 0:
+                            new_val = weight_array[i] / 2
+                            if new_val > 0.01:
+                                bone_array.append(i)
+                                final_weight.append(new_val)
+                    
+                    final_bone_array[v] = bone_array
+                    final_weight_array[v] = final_weight
+        
+        # 버텍스 그룹 모드 4: 엘리먼트/루프
+        if vert_group_mode == 4:
+            # 임시 객체를 폴리곤으로 변환
+            rt.convertToPoly(tmp_obj)
+            poly_obj = tmp_obj
+            
+            # 선택된 버텍스만 대상으로 처리
+            vert_selection = []
+            for v in range(1, obj.verts.count + 1):
+                if rt.skinOps.IsVertexSelected(skin_mod, v) == 1:
+                    vert_selection.append(v)
+            
+            # 선택되지 않은 엣지와 페이스 계산
+            done_edge = rt.BitArray(poly_obj.edges)
+            edges_using_vert = rt.polyop.getEdgesUsingVert(poly_obj, vert_selection)
+            done_edge = done_edge - edges_using_vert
+            
+            done_face = rt.BitArray(poly_obj.faces)
+            faces_using_vert = rt.polyop.getFacesUsingVert(poly_obj, vert_selection)
+            done_face = done_face - faces_using_vert
+            
+            # 작은 엘리먼트 찾기
+            small_elements = []
+            for f in range(1, poly_obj.faces.count + 1):
+                if not done_face[f]:
+                    cur_element = rt.polyop.getElementsUsingFace(poly_obj, rt.BitArray(f))
+                    cur_verts = rt.polyop.getVertsUsingFace(poly_obj, cur_element)
+                    max_dist = 0
+                    
+                    # 최대 거리 계산
+                    for v1 in cur_verts:
+                        for v2 in cur_verts:
+                            if max_dist < (smooth_radius * 2):
+                                dist = rt.distance(poly_obj.verts[v1-1].pos, poly_obj.verts[v2-1].pos)
+                                if dist > max_dist:
+                                    max_dist = dist
+                    
+                    # 반경 이내의 작은 엘리먼트 추가
+                    if max_dist < (smooth_radius * 2):
+                        small_elements.append(list(cur_verts))
+                    
+                    done_face = done_face | cur_element
+            
+            # 엣지 루프 찾기
+            edge_loops = []
+            for ed in small_elements:
+                edges = rt.polyop.getEdgesUsingVert(poly_obj, ed)
+                done_edge = done_edge | edges
+                
+            for ed in range(1, poly_obj.edges.count + 1):
+                if not done_edge[ed]:
+                    poly_obj.selectedEdges = rt.BitArray(ed)
+                    poly_obj.ButtonOp(rt.Name("SelectEdgeLoop"))
+                    cur_edge_loop = poly_obj.selectedEdges
+                    
+                    if cur_edge_loop.numberSet > 2:
+                        cur_verts = rt.polyop.getvertsusingedge(poly_obj, cur_edge_loop)
+                        max_dist = 0
+                        
+                        # 최대 거리 계산
+                        for v1 in cur_verts:
+                            for v2 in cur_verts:
+                                if max_dist < (smooth_radius * 2):
+                                    dist = rt.distance(poly_obj.verts[v1-1].pos, poly_obj.verts[v2-1].pos)
+                                    if dist > max_dist:
+                                        max_dist = dist
+                        
+                        # 반경 이내의 엣지 루프 추가
+                        if max_dist < (smooth_radius * 2):
+                            edge_loops.append(list(cur_verts))
+                        
+                    done_edge = done_edge | cur_edge_loop
+            
+            # 스킨 모드 설정
+            rt.modPanel.setCurrentObject(skin_mod)
+            rt.subObjectLevel = 1
+            
+            # 엘리먼트와 엣지 루프에 대해 가중치 계산
+            for z in [small_elements, edge_loops]:
+                for i in z:
+                    vert_list = []
+                    for v3 in i:
+                        if rt.skinOps.IsVertexSelected(skin_mod, v3) == 1:
+                            vert_list.append(v3)
+                    
+                    # 가중치 계산
+                    if len(vert_list) > 0:
+                        new_weights = self.make_rigid_skin(skin_mod, vert_list)
+                        for v3 in vert_list:
+                            final_bone_array[v3] = new_weights[0]
+                            final_weight_array[v3] = new_weights[1]
+        
+        # 반경 정보 저장
+        if len(smooth_skin_data) <= 7:
+            smooth_skin_data.append(None)
+        smooth_skin_data[7] = smooth_radius
+        
+        # 임시 객체 삭제
+        rt.delete(tmp_obj)
+        
+        # 가중치 적용 및 언두 데이터 저장
+        old_weight_array = []
+        old_bone_array = []
+        last_weights = []
+        
+        for sv in final_bone_array:
+            if final_bone_array[sv] and len(final_bone_array[sv]) > 0:
+                # 언두를 위한 현재 가중치 저장
+                num_item = rt.skinOps.GetVertexWeightCount(skin_mod, sv)
+                old_weight_array = [0] * num_item
+                old_bone_array = [0] * num_item
+                
+                for cur_bone in range(1, num_item + 1):
+                    old_bone_array[cur_bone-1] = rt.skinOps.GetVertexWeightBoneID(skin_mod, sv, cur_bone)
+                    old_weight_array[cur_bone-1] = rt.skinOps.GetVertexWeight(skin_mod, sv, cur_bone)
+                
+                # 언두 스택 저장
+                last_weights.append([skin_mod, sv, list(old_bone_array), list(old_weight_array)])
+                if len(undo_weights) >= smooth_skin_max_undo:
+                    undo_weights.pop(0)  # 가장 오래된 항목 제거
+                
+                # 새 가중치 적용
+                rt.skinOps.ReplaceVertexWeights(skin_mod, sv, final_bone_array[sv], final_weight_array[sv])
+        
+        # 언두 스택에 추가
+        if last_weights:
+            undo_weights.append(last_weights)
+            
+        return undo_weights
+    
+    def smooth_skin_iter(self, vert_group_mode=1, smooth_radius=5.0, keep_max=False, max_iter=3, smooth_skin_max_undo=10):
+        """
+        스킨 가중치 스무딩을 여러번 반복 적용
+        
+        Args:
+            vert_group_mode: 버텍스 그룹 모드 (1=이웃 버텍스, 2=선택되지 않은 버텍스, 3=반경 내 모든 버텍스, 4=엘리먼트/루프)
+            smooth_radius: 스무딩 반경
+            keep_max: 최대 가중치 보존 여부
+            max_iter: 반복 횟수
+            smooth_skin_max_undo: 최대 언두 스택 수
+            
+        Returns:
+            True: 성공
+            False: 실패
+        """
+        if len(rt.selection) != 1:
+            return False
+            
+        # 초기화
+        undo_weights = []
+        smooth_skin_data = [[] for _ in range(8)]
+        
+        # 반복 적용
+        for iter in range(max_iter):
+            # 스무딩 적용
+            undo_weights = self.smooth_skin(
+                smooth_skin_data=smooth_skin_data,
+                vert_group_mode=vert_group_mode,
+                smooth_radius=smooth_radius,
+                keep_max=keep_max,
+                smooth_skin_max_undo=smooth_skin_max_undo,
+                undo_weights=undo_weights
+            )
+            
+            # 진행상황 출력
+            progress = ((iter + 1) / max_iter) * 100.0
+            print(f"Smoothing progress: {progress:.1f}%")
+            
+        return True
