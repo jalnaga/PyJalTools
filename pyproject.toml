@@ -4,6 +4,4 @@ version = "0.1.0"
 description = "This is the Python version of JalTools. It provides various packages for establishing game graphics pipelines, mainly focusing on 3DS Max and Unreal Engine 5."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "pytest>=8.3.5",
-]
+dependencies = []
