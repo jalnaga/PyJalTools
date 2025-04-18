@@ -343,7 +343,7 @@ class Skin:
                 
         return missing_bones
     
-    def save_skin(self, obj=None, file_path=None):
+    def save_skin(self, obj=None, file_path=None, save_bind_pose=False):
         """
         스킨 데이터 저장
         MAXScript의 saveskin.ms 를 Python으로 변환한 함수
@@ -416,22 +416,23 @@ class Skin:
             print(f"Error saving skin data: {e}")
             return None
             
-        # 바인드 포즈 데이터 수집 및 저장
-        bind_poses = []
-        for i in range(1, rt.skinOps.GetNumberBones(skin_mod) + 1):
-            bone_name = rt.skinOps.GetBoneName(skin_mod, i, 1)
-            bone_node = rt.getNodeByName(bone_name)
-            bind_pose = rt.skinUtils.GetBoneBindTM(obj, bone_node)
-            bind_poses.append(bind_pose)
-            
-        # 바인드 포즈 파일 저장
-        bind_pose_file = file_path[:-4] + "bp"  # .skin -> .bp
-        try:
-            with open(bind_pose_file, 'w') as f:
-                for pose in bind_poses:
-                    f.write(str(pose) + '\n')
-        except Exception as e:
-            print(f"Error saving bind pose data: {e}")
+        if save_bind_pose:
+            # 바인드 포즈 데이터 수집 및 저장
+            bind_poses = []
+            for i in range(1, rt.skinOps.GetNumberBones(skin_mod) + 1):
+                bone_name = rt.skinOps.GetBoneName(skin_mod, i, 1)
+                bone_node = rt.getNodeByName(bone_name)
+                bind_pose = rt.skinUtils.GetBoneBindTM(obj, bone_node)
+                bind_poses.append(bind_pose)
+                
+            # 바인드 포즈 파일 저장
+            bind_pose_file = file_path[:-4] + "bp"  # .skin -> .bp
+            try:
+                with open(bind_pose_file, 'w') as f:
+                    for pose in bind_poses:
+                        f.write(str(pose) + '\n')
+            except Exception as e:
+                print(f"Error saving bind pose data: {e}")
             
         return file_path
     

@@ -32,7 +32,8 @@ from JalLib.max.skin import Skin
 jal = Header()  # Update this to match the actual class name
 jalSkin = Skin()
 skinPath = r"C:\Users\Admin\Desktop\SavedSkin.skin"
+skinPath2 = r"C:\Users\Admin\Desktop\KimDokja.skin"
 selNodes = rt.getCurrentSelection()
 skinMods = jalSkin.get_skin_mod(selNodes[0])
 bArray = [rt.getNodeByName("hand_l"), rt.getNodeByName("hand_r")]
-print(jalSkin.sel_vert_from_bones(skinMods[0]))
+print(jalSkin.load_skin(selNodes[0], skinPath2))
