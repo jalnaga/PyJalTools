@@ -26,7 +26,7 @@ def reload_jallib_modules():
                 module = sys.modules[module_name]
                 importlib.reload(module)
                 reloaded_modules.append(module_name)
-                print(f"리로드됨: {module_name}")
+                print(f"{module_name}이 다시 로드 되었습니다.")
             except Exception as e:
                 print(f"모듈 리로드 중 오류 발생 - {module_name}: {e}")
     
