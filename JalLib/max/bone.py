@@ -238,7 +238,8 @@ class Bone:
         nubBone.frontfin = False
         nubBone.backfin = False
         nubBone.sidefins = False
-        nubBone.name = self.name.set_index_as_nub(inName)
+        nubBone.name = self.name.remove_name_part(inName, "Index")
+        nubBone.name = self.name.replace_name_part(nubBone.name, "Nub", "Nub")
         
         # 화면 갱신 재개
         rt.enableSceneRedraw()

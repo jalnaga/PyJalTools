@@ -595,10 +595,10 @@ class Constraint:
         
         # 헬퍼 객체 이름 생성
         if self.name:
-            rotPointName = self.name.replace_type(inObj.name, self.name.get_dummy_value())
+            rotPointName = self.name.replace_Type(inObj.name, self.name.get_dummy_value())
             rotMeasurePointName = self.name.increase_index(rotPointName, 1)
-            rotExpName = self.name.replace_type(inObj.name, self.name.get_exposeTm_value())
-            rotExpName = self.name.replace_index(rotExpName, "0")
+            rotExpName = self.name.replace_Type(inObj.name, self.name.get_exposeTm_value())
+            rotExpName = self.name.replace_Index(rotExpName, "0")
             
             print(f"dumStr: {self.name.get_dummy_value()}")
             print(f"exposeTmStr: {self.name.get_exposeTm_value()}")
