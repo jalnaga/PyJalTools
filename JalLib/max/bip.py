@@ -184,21 +184,16 @@ class Bip:
         
         return returnVal
     
-    def get_nodes_by_skeleton_order(self, inBip):
+    def get_all_grouped_nodes(self, inBip):
         """
-        스켈레톤 순서대로 Biped 노드 반환
+        Biped의 체인 이름으로 노드 반환
         
         Args:
             inBip: 기준 Biped 객체
             
         Returns:
-            순서대로 정렬된 Biped 노드 리스트
+            해당 체인에 속하는 Biped 노드 리스트
         """
-        if rt.classOf(inBip) != rt.Biped_Object:
-            return []
-            
-        com = inBip.controller.rootNode
-        
         # Define node categories with their corresponding index numbers
         NODE_CATEGORIES = {
             1: "lArm",
@@ -224,6 +219,10 @@ class Bip:
         # Initialize node collections dictionary
         nodes = {category: [] for category in NODE_CATEGORIES.values()}
         
+        com = inBip.controller.rootNode
+        if rt.classOf(inBip) != rt.Biped_Object:
+            return nodes
+        
         nn = rt.biped.maxNumNodes(com)
         nl = rt.biped.maxNumLinks(com)
         
@@ -243,6 +242,38 @@ class Bip:
                 if alink:
                     nodes[category].append(alink)
         
+        return nodes
+    
+    def get_grouped_nodes(self, inBip,inGroupName):
+        """
+        Biped의 체인 이름으로 노드 반환
+        
+        Args:
+            inBip: 기준 Biped 객체
+            inGroupName: 체인 이름 (예: "lArm", "rLeg" 등)
+            
+        Returns:
+            해당 체인에 속하는 Biped 노드 리스트
+        """
+        nodes = self.get_all_grouped_nodes(inBip)
+        
+        if inGroupName in nodes:
+            return nodes[inGroupName]
+        
+        return []
+    
+    def get_nodes_by_skeleton_order(self, inBip):
+        """
+        스켈레톤 순서대로 Biped 노드 반환
+        
+        Args:
+            inBip: 기준 Biped 객체
+            
+        Returns:
+            순서대로 정렬된 Biped 노드 리스트
+        """
+        nodes = self.get_all_grouped_nodes(inBip)
+                    
         # Define the order of categories in final array
         ORDER = [
             "head", "pelvis", "lArm", "lFingers", "lLeg", "lToes", "neck",

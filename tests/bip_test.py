@@ -32,6 +32,5 @@ from JalLib.max.bip import Bip
 jal = Header()  # Update this to match the actual class name
 jalBip = Bip(anim_service=jal.anim, name_service=jal.name, bone_service=jal.bone)
 
-selNodes = rt.getCurrentSelection()
 bipCom = rt.getNodeByName("Bip001")
-rt.select(jalBip.get_nodes_by_skeleton_order(bipCom))
+print(jalBip.get_grouped_nodes(bipCom, "lArm"))
