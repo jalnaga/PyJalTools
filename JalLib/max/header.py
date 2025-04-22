@@ -24,6 +24,8 @@ from .link import Link
 from .bip import Bip
 from .skin import Skin
 
+from .twistBone import TwistBone
+
 class Header:
     """
     JalLib.max 패키지의 헤더 모듈
@@ -51,3 +53,5 @@ class Header:
         
         self.bip = Bip(name_service=self.name, bone_service=self.bone, anim_service=self.anim)
         self.skin = Skin()
+        
+        self.twistBone = TwistBone(name_service=self.name, anim_service=self.anim, const_service=self.constraint, bip_service=self.bip)

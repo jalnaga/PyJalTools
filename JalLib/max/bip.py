@@ -262,6 +262,52 @@ class Bip:
         
         return []
     
+    def is_left_node(self, inNode):
+        """
+        노드가 왼쪽인지 확인
+        
+        Args:
+            inNode: 확인할 노드 객체
+            
+        Returns:
+            왼쪽 노드이면 True, 아니면 False
+        """
+        if rt.classOf(inNode) != rt.Biped_Object:
+            return False
+        com = self.get_com(inNode)
+        nodes = self.get_all_grouped_nodes(com)
+        
+        categories = ["lArm", "lFingers", "lLeg", "lToes"]
+        for category in categories:
+            groupedNodes = nodes[category]
+            if inNode in groupedNodes:
+                return True
+        
+        return False
+    
+    def is_right_node(self, inNode):
+        """
+        노드가 오른쪽인지 확인
+        
+        Args:
+            inNode: 확인할 노드 객체
+            
+        Returns:
+            오른쪽 노드이면 True, 아니면 False
+        """
+        if rt.classOf(inNode) != rt.Biped_Object:
+            return False
+        com = self.get_com(inNode)
+        nodes = self.get_all_grouped_nodes(com)
+        
+        categories = ["rArm", "rFingers", "rLeg", "rToes"]
+        for category in categories:
+            groupedNodes = nodes[category]
+            if inNode in groupedNodes:
+                return True
+        
+        return False
+    
     def get_nodes_by_skeleton_order(self, inBip):
         """
         스켈레톤 순서대로 Biped 노드 반환

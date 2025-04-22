@@ -6,14 +6,7 @@
 원본 MAXScript의 twistBone.ms를 Python으로 변환하였으며, pymxs 모듈 기반으로 구현됨
 """
 
-import copy
 from pymxs import runtime as rt
-from .name import Name
-from .anim import Anim
-from .helper import Helper
-from .bone import Bone
-from .constraint import Constraint
-from .bip import Bip
 
 
 class TwistBone:
@@ -23,7 +16,7 @@ class TwistBone:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, name_service, anim_service, helper_service, bone_service, const_service, bip_service):
+    def __init__(self, name_service, anim_service, const_service, bip_service):
         """
         클래스 초기화.
         
@@ -37,28 +30,8 @@ class TwistBone:
         """
         self.name = name_service
         self.anim = anim_service
-        self.helper = helper_service
-        self.bone = bone_service
         self.const = const_service
         self.bip = bip_service
-        
-        # 기본 속성 초기화
-        self.baseName = ""
-        self.filteringChar = " "
-        self.bipObj = None
-        self.upperArmNum = 0
-        self.foreArmNum = 0
-        self.thighNum = 0
-        self.calfNum = 0
-        self.boneSize = 2.0
-        self.lUpperArmBoneArray = []
-        self.rUpperArmBoneArray = []
-        self.lForeArmBoneArray = []
-        self.rForeArmBoneArray = []
-        self.lThighBoneArray = []
-        self.rThighBoneArray = []
-        self.lCalfBoneArray = []
-        self.rCalfBoneArray = []
         
         # 표현식 초기화
         self._init_expressions()
@@ -175,33 +148,37 @@ class TwistBone:
             rt.Point3(0, 0, 1)
         )
         boneName = self.name.get_string(inObj.name) + "Twist"
-        TwistBone.name = self.name.replace_index(boneName, "0")
+        TwistBone.name = self.name.replace_Index(boneName, "0")
         TwistBone.transform = Limb.transform
         TwistBone.parent = Limb
-        TwistBone.Length = distanceVar / inTwistNum
-        TwistBone.Width = distanceVar / 8
-        TwistBone.Height = TwistBone.Width
+        TwistBone.length = distanceVar / inTwistNum
+        TwistBone.width = distanceVar / 8
+        TwistBone.height = TwistBone.width
         TwistBone.taper = 0
         TwistBone.sidefins = False
         TwistBone.frontfin = False
         TwistBone.backfin = False
         
         # 회전 컨트롤러 설정
-        TwistBone.rotation.controller = rt.Rotation_List()
-        TwistBone.rotation.controller[1].controller = rt.rotation_script()
-        TwistBone.rotation.controller[1].AddNode("Limb", ControllerLimb)
-        TwistBone.rotation.controller[1].SetExpression(TBExpression)
-        TwistBone.rotation.controller.weight[1] = weightVar
+        TBRotListController = self.const.assign_rot_list(TwistBone)
+        TBController = rt.Rotation_Script()
+        TBController.addNode("Limb", ControllerLimb)
+        TBController.setExpression(TBExpression)
+        
+        rt.setPropertyController(TBRotListController, "Available", TBController)
+        TBRotListController.delete(1)
+        TBRotListController.setActive(TBRotListController.count)
+        TBRotListController.weight[0] = weightVar
         
         boneChainArray.append(TwistBone)
         
         # 추가 회전 컨트롤러 설정
-        TBExtraController = rt.rotation_script()
+        TBExtraController = rt.Rotation_Script()
         if rt.matchPattern(inExtraExpression, pattern="*\nTB.*"):
-            TBExtraController.AddNode("TB", TwistBone)
+            TBExtraController.addNode("TB", TwistBone)
         else:
-            TBExtraController.AddNode("Limb", Limb)
-            TBExtraController.AddNode("LimbParent", TwistBone)
+            TBExtraController.addNode("Limb", Limb)
+            TBExtraController.addNode("LimbParent", TwistBone)
         TBExtraController.setExpression(inExtraExpression)
         
         PrevTBE = TwistBone
@@ -217,20 +194,22 @@ class TwistBone:
                 matAux = rt.matrix3(1)
                 matAux.position = rt.Point3(distanceVar/inTwistNum, 0, 0)
                 TwistBoneExtra.transform = matAux * PrevTBE.transform
-                TwistBoneExtra.name = self.name.replace_index(boneName, str(j-1))
+                TwistBoneExtra.name = self.name.replace_Index(boneName, str(j-1))
                 TwistBoneExtra.parent = PrevTBE
-                TwistBoneExtra.Length = distanceVar / inTwistNum
-                TwistBoneExtra.Width = PrevTBE.Width
-                TwistBoneExtra.Height = PrevTBE.Height
+                TwistBoneExtra.length = distanceVar / inTwistNum
+                TwistBoneExtra.width = PrevTBE.width
+                TwistBoneExtra.height = PrevTBE.height
                 TwistBoneExtra.taper = 0
                 TwistBoneExtra.sidefins = False
                 TwistBoneExtra.frontfin = False
                 TwistBoneExtra.backfin = False
                 
                 # 회전 컨트롤러 설정
-                TwistBoneExtra.rotation.controller = rt.Rotation_List()
-                TwistBoneExtra.rotation.controller[1].controller = TBExtraController
-                TwistBoneExtra.rotation.controller.weight[1] = 100 / (inTwistNum - 1)
+                TBExtraRotListController = self.const.assign_rot_list(TwistBoneExtra)
+                rt.setPropertyController(TBExtraRotListController, "Available", TBExtraController)
+                TBExtraRotListController.delete(1)
+                TBExtraRotListController.setActive(TBExtraRotListController.count)
+                TBExtraRotListController.weight[0] = 100 / (inTwistNum - 1)
                 
                 PrevTBE = TwistBoneExtra
                 boneChainArray.append(TwistBoneExtra)
@@ -244,11 +223,11 @@ class TwistBone:
             matAux = rt.matrix3(1)
             matAux.position = rt.Point3(distanceVar/inTwistNum, 0, 0)
             TwistBoneEnd.transform = matAux * PrevTBE.transform
-            TwistBoneEnd.name = self.name.replace_index(boneName, str(inTwistNum-1))
+            TwistBoneEnd.name = self.name.replace_Index(boneName, str(inTwistNum-1))
             TwistBoneEnd.parent = inObj
-            TwistBoneEnd.Length = distanceVar / inTwistNum
-            TwistBoneEnd.Width = PrevTBE.Width
-            TwistBoneEnd.Height = PrevTBE.Height
+            TwistBoneEnd.length = distanceVar / inTwistNum
+            TwistBoneEnd.width = PrevTBE.width
+            TwistBoneEnd.height = PrevTBE.height
             TwistBoneEnd.taper = 0
             TwistBoneEnd.sidefins = False
             TwistBoneEnd.frontfin = False
@@ -268,7 +247,7 @@ class TwistBone:
         Returns:
             재배치된 뼈대 체인 배열
         """
-        boneChainArray = copy.deepcopy(inBoneChainArray)
+        boneChainArray = rt.deepcopy(inBoneChainArray)
         returnBoneArray = []
         
         # 첫 번째와 마지막 뼈대 가져오기
@@ -287,7 +266,7 @@ class TwistBone:
         
         # 새로운 순서대로 이름 재설정
         for i in range(len(returnBoneArray)):
-            returnBoneArray[i].name = self.name.replace_index(boneChainArray[i].name, str(i))
+            returnBoneArray[i].name = self.name.replace_Index(boneChainArray[i].name, str(i))
         
         return returnBoneArray
     
@@ -305,8 +284,7 @@ class TwistBone:
         if inObj.parent is None or inObj.children.count == 0:
             return False
         
-        controllerLimb = None
-        weightVal = 100
+        weightVal = 100.0
         
         return self.create_bones(
             inObj,
@@ -318,7 +296,7 @@ class TwistBone:
             weightVal
         )
     
-    def create_foreArm_type(self, inObj, inTwistNum, side="left"):
+    def create_foreArm_type(self, inObj, inTwistNum, reorder=True):
         """
         전완(Forearm) 타입의 트위스트 뼈대 생성
         
@@ -334,22 +312,21 @@ class TwistBone:
             return False
         
         controllerLimb = None
-        weightVal = 100
+        weightVal = 100.0
         
         # 좌/우측에 따른 표현식 선택
-        TBExpression = self.lForeArmExpression if side == "left" else self.rForeArmExpression
+        TBExpression = self.lForeArmExpression if self.bip.is_left_node(inObj) else self.rForeArmExpression
         
         # Biped 컨트롤러 노드 설정
-        if side == "left":
-            controllerLimb = rt.biped.getNode(inObj.controller.rootNode, rt.Name("larm"), link=4)
+        if self.bip.is_left_node(inObj):
+            controllerLimb = rt.biped.getNode(inObj.controller.rootNode, rt.Name("lArm"), link=4)
         else:
-            controllerLimb = rt.biped.getNode(inObj.controller.rootNode, rt.Name("rarm"), link=4)
-        
-        # 복수 뼈대인 경우 가중치 조정
+            controllerLimb = rt.biped.getNode(inObj.controller.rootNode, rt.Name("rArm"), link=4)
+            
         if inTwistNum > 1:
-            weightVal = 100 / inTwistNum
-        
-        return self.reorder_bones(self.create_bones(
+            weightVal = 100 / (inTwistNum - 1)
+            
+        createdBones = self.create_bones(
             inObj,
             controllerLimb,
             inTwistNum,
@@ -357,7 +334,9 @@ class TwistBone:
             self.foreArmExtraExpression,
             controllerLimb,
             weightVal
-        ))
+        )
+        
+        return self.reorder_bones(createdBones) if reorder else createdBones
     
     def create_thigh_type(self, inObj, inTwistNum):
         """
@@ -386,7 +365,7 @@ class TwistBone:
             weightVal
         )
     
-    def create_calf_type(self, inObj, inTwistNum, side="left"):
+    def create_calf_type(self, inObj, inTwistNum, reorder=True):
         """
         종아리(Calf) 타입의 트위스트 뼈대 생성
         
@@ -405,16 +384,16 @@ class TwistBone:
         weightVal = 100
         
         # Biped 컨트롤러 노드 설정
-        if side == "left":
-            controllerLimb = rt.biped.getNode(inObj.controller.rootNode, rt.Name("lleg"), link=3)
+        if self.bip.is_left_node(inObj):
+            controllerLimb = rt.biped.getNode(inObj.controller.rootNode, rt.Name("lLeg"), link=3)
         else:
-            controllerLimb = rt.biped.getNode(inObj.controller.rootNode, rt.Name("rleg"), link=3)
+            controllerLimb = rt.biped.getNode(inObj.controller.rootNode, rt.Name("rLeg"), link=3)
         
         # 복수 뼈대인 경우 가중치 조정
         if inTwistNum > 1:
-            weightVal = 100 / inTwistNum
-        
-        return self.reorder_bones(self.create_bones(
+            weightVal = 100 / (inTwistNum - 1)
+            
+        createdBones = self.create_bones(
             inObj,
             controllerLimb,
             inTwistNum,
@@ -422,7 +401,9 @@ class TwistBone:
             self.calfExtraExpression,
             controllerLimb,
             weightVal
-        ))
+        )
+        
+        return self.reorder_bones(createdBones) if reorder else createdBones
     
     def create_bend_type(self):
         """

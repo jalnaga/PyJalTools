@@ -7,6 +7,7 @@
 """
 
 from pymxs import runtime as rt
+import textwrap
 
 
 class Constraint:
@@ -550,10 +551,12 @@ class Constraint:
             targetRotConstraint.AddObject("NodePos", pos_controller)
             
             # 회전 계산 스크립트 설정
-            script = """theTargetVector=(Target.transform.position * Inverse Parent.transform)-NodePos.value
-theAxis=Normalize (cross theTargetVector [1,0,0])
-theAngle=acos (dot (Normalize theTargetVector) [1,0,0])
-Quat theAngle theAxis"""
+            script = textwrap.dedent(r'''
+                theTargetVector=(Target.transform.position * Inverse Parent.transform)-NodePos.value
+                theAxis=Normalize (cross theTargetVector [1,0,0])
+                theAngle=acos (dot (Normalize theTargetVector) [1,0,0])
+                Quat theAngle theAxis
+                ''')
             targetRotConstraint.script = script
             
             # 회전 컨트롤러가 리스트 형태가 아니면 변환
@@ -592,13 +595,13 @@ Quat theAngle theAxis"""
         
         # 헬퍼 객체 이름 생성
         if self.name:
-            rotPointName = self.name.replace_type(inObj.name, self.name.get_dummy_str())
+            rotPointName = self.name.replace_type(inObj.name, self.name.get_dummy_value())
             rotMeasurePointName = self.name.increase_index(rotPointName, 1)
-            rotExpName = self.name.replace_type(inObj.name, self.name.get_exposeTm_str())
+            rotExpName = self.name.replace_type(inObj.name, self.name.get_exposeTm_value())
             rotExpName = self.name.replace_index(rotExpName, "0")
             
-            print(f"dumStr: {self.name.get_dummy_str()}")
-            print(f"exposeTmStr: {self.name.get_exposeTm_str()}")
+            print(f"dumStr: {self.name.get_dummy_value()}")
+            print(f"exposeTmStr: {self.name.get_exposeTm_value()}")
             print(f"rotPointName: {rotPointName}, rotMeasurePointName: {rotMeasurePointName}, rotExpName: {rotExpName}")
         else:
             # name 서비스가 없는 경우 기본 이름 사용
@@ -634,13 +637,14 @@ Quat theAngle theAxis"""
         rotExpPoint.localReferenceNode = rotMeasuerPoint
         
         # 회전 스크립트 생성
-        rotScript = """local targetRot = rot.localEuler
-local rotX = (radToDeg targetRot.x)
-local rotY = (radToDeg targetRot.y)
-local rotZ = (radToDeg targetRot.z)
-local result = eulerAngles rotX rotY rotZ
-eulerToQuat result
-"""
+        rotScript = textwrap.dedent(r'''
+            local targetRot = rot.localEuler
+            local rotX = (radToDeg targetRot.x)
+            local rotY = (radToDeg targetRot.y)
+            local rotZ = (radToDeg targetRot.z)
+            local result = eulerAngles rotX rotY rotZ
+            eulerToQuat result
+            ''')
         
         # 스크립트에 노드 추가 및 표현식 설정
         targetRotConstraint.AddNode("rot", rotExpPoint)
@@ -668,12 +672,12 @@ eulerToQuat result
         if self.name:
             objName = self.name.get_string(oriObj.name)
             indexNum = self.name.get_index_as_digit(oriObj.name)
-            dummyName = self.name.add_prefix_to_real_name(objName, self.name.get_dummy_str())
+            dummyName = self.name.add_prefix_to_real_name(objName, self.name.get_dummy_value())
             
-            lookAtPointName = self.name.replace_index(dummyName, str(indexNum))
-            lookAtMeasurePointName = self.name.replace_index(dummyName, str(indexNum+1))
-            lookAtExpPointName = dummyName + self.name.get_exposeTm_str()
-            lookAtExpPointName = self.name.replace_index(lookAtExpPointName, "0")
+            lookAtPointName = self.name.replace_Index(dummyName, str(indexNum))
+            lookAtMeasurePointName = self.name.replace_Index(dummyName, str(indexNum+1))
+            lookAtExpPointName = dummyName + self.name.get_exposeTm_value()
+            lookAtExpPointName = self.name.replace_Index(lookAtExpPointName, "0")
         
         # 헬퍼 객체 생성
         if self.helper:
