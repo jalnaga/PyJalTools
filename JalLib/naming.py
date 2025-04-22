@@ -471,7 +471,9 @@ class Naming:
                 combinedNameArray[i] = inPartsDict[partName]
                 
         # 배열을 문자열로 결합
-        return self._combine(combinedNameArray, inFilChar)
+        newName = self._combine(combinedNameArray, inFilChar)
+        newName = self.set_index_padding_num(newName)
+        return newName
     
     def get_RealName(self, inStr):
         """
@@ -783,6 +785,7 @@ class Naming:
             indexStr = f"{indexNum:0{indexPaddingNum}d}"
             nameArray[indexIndex] = indexStr
             newName = self._combine(nameArray, filChar)
+            newName = self.set_index_padding_num(newName)
             
         return newName
 
@@ -927,7 +930,10 @@ class Naming:
         if partIndex >= 0:
             nameArray[partIndex] = inNewName
         
-        return self._combine(nameArray, self._get_filtering_char(inStr))
+        newName = self._combine(nameArray, self._get_filtering_char(inStr))
+        newName = self.set_index_padding_num(newName)
+        
+        return newName
 
     def remove_name_part(self, inStr, inNamePart):
         """
@@ -945,8 +951,11 @@ class Naming:
         
         if partIndex >= 0:
             nameArray[partIndex] = ""
+            
+        newName = self._combine(nameArray, self._get_filtering_char(inStr))
+        newName = self.set_index_padding_num(newName)
         
-        return self._combine(nameArray, self._get_filtering_char(inStr))
+        return newName
 
     def load_from_config_file(self, configPath=None):
         """

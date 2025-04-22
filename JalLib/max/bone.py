@@ -336,7 +336,7 @@ class Bone:
                     newBone = rt.BoneSys.createBone(inPointArray[i].transform.position, inPointArray[i+1].transform.position, rt.Point3(0, -1, 0))
                 
                 newBone.boneFreezeLength = True
-                newBone.name = self.name.replace_index(inName, str(boneNum))
+                newBone.name = self.name.replace_name_part(inName, "Index", str(boneNum))
                 newBone.height = size
                 newBone.width = size
                 newBone.frontfin = False

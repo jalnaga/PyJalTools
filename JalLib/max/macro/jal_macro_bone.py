@@ -43,6 +43,7 @@ def jal_bone_create():
     simpleBoneLength = 5
     
     from PySide2 import QtWidgets, QtCore, QtGui
+    import gc  # Import garbage collector
 
     class BoneNameDialog(QtWidgets.QDialog):
         def __init__(self, parent=QtWidgets.QWidget.find(rt.windows.getMAXHWND())):
@@ -73,7 +74,7 @@ def jal_bone_create():
             comboItems = jal.name.get_name_part_predefined_values("Base")
             comboItems.insert(0, "")
             self.base_name_combo.addItems(comboItems)
-            self.base_name_combo.setCurrentIndex(1) # Set default index to 0
+            self.base_name_combo.setCurrentIndex(2) # Set default index to 0
 
             # Name
             name_label = QtWidgets.QLabel("Name:")
@@ -190,7 +191,7 @@ def jal_bone_create():
             elif self.filter_underBar_radio.isChecked():
                 self.filteringChar = "_"
             
-            finalNmae = jal.name.combine(
+            finalName = jal.name.combine(
                 inPartsDict={
                     "Base":self.baseName, 
                     "Type":"", 
@@ -201,16 +202,17 @@ def jal_bone_create():
                 }, 
                 inFilChar=self.filteringChar
             )
-            self.result_edit.setText(finalNmae)
-            self.boneName = jal.name.get_string(self.result_edit.setText(finalNmae))
+            self.result_edit.setText(finalName)
+            self.boneName = finalName
         
         def ok_clicked(self):
             self.update_ui()
             
             existingBoneNum = 0
             nameCheckBoneArray = [item for item in rt.objects if rt.classOf(item) == rt.BoneGeometry]
+            namePattern = jal.name.get_string(self.boneName) + self.filteringChar
             for item in nameCheckBoneArray:
-                if (item.name.startswith(self.boneName + self.filteringChar)):
+                if (item.name.startswith(namePattern)):
                     existingBoneNum += 1
             
             if existingBoneNum > 0:
@@ -225,9 +227,32 @@ def jal_bone_create():
             self.reject()
         
     dialog = BoneNameDialog()
-            
     
+    # Show the dialog and store the result
+    result = dialog.exec_()
     
+    # Store dialog values in external variables
+    boneNameSetted = dialog.boneNameSetted
+    boneName = dialog.boneName
+    filteringChar = dialog.filteringChar
+    
+    # Now you can use boneNameSetted and boneName variables
+    if boneNameSetted:
+        if len(selArray) == 0 or len(selArray) == 1:
+            genBoneArray = jal.bone.create_simple_bone(simpleBoneLength, boneName)
+            for item in genBoneArray:
+                item.name = jal.name.replace_filtering_char(item.name, filteringChar)
+            if len(selArray) == 1:
+                genBoneArray[0].transform = selArray[0].transform
+        elif len(selArray) > 1:
+            genBoneArray = jal.bone.create_bone(selArray, boneName, delPoint=True)
+            for item in genBoneArray:
+                item.name = jal.name.replace_filtering_char(item.name, filteringChar)
+    
+    # Explicitly delete the dialog and force garbage collection
+    dialog.deleteLater()
+    dialog = None
+    gc.collect()  # Force garbage collection
 
 def jal_bone_nub_create():
     sel_array = rt.getCurrentSelection()
@@ -251,7 +276,6 @@ def jal_bone_nub_create():
         jal.bone.create_nub_bone("Temp Nub", 2)
 
 # Register macroscripts
-'''
 macroScript_Category = "jalTools"
 
 rt.jal_bone_on = jal_bone_on
@@ -334,14 +358,3 @@ rt.macros.new(
     "jal_bone_nub_create",
     "jal_bone_nub_create()"
 )
-'''
-
-#jal_bone_on()
-#jal_bone_off()
-# jal_bone_length_freeze_on()
-# jal_bone_length_freeze_off()
-# jal_bone_fin_on()
-# jal_bone_fin_off()
-# jal_bone_reset_scale()
-# jal_bone_create()
-# jal_bone_nub_create()
