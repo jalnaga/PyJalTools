@@ -61,25 +61,41 @@ class DraggableListWidget(QListWidget):
 class NamePartWidget(QWidget):
     """NamePart를 표시하고 편집하는 위젯"""
     
-    def __init__(self, part: NamePart, parent=None):
+    def __init__(self, part: NamePart, parent=None, color=None):
         super().__init__(parent)
         self.part = part
+        self.color = color if color else QColor(150, 150, 150)  # 기본 회색
         self.setupUI()
         
     def setupUI(self):
         """위젯 UI 구성"""
         layout = QVBoxLayout(self)
         
+        # 배경색 설정
+        self.setAutoFillBackground(True)
+        palette = self.palette()
+        bg_color = QColor(self.color)
+        bg_color.setAlpha(40)  # 투명도 설정
+        palette.setColor(self.backgroundRole(), bg_color)
+        self.setPalette(palette)
+        
+        # 테두리 스타일 설정
+        border_style = f"border: 2px solid {self.color.name()}; border-radius: 5px;"
+        self.setStyleSheet(border_style)
+        
         # NamePart 이름 표시
         nameLabel = QLabel(self.part.get_name())
         nameLabel.setAlignment(Qt.AlignCenter)
+        nameLabel.setStyleSheet(f"color: {self.color.darker(120).name()}; font-weight: bold; border: none;")
         
         # NamePart 타입 표시
         typeLabel = QLabel(f"({self.part.get_type().name})")
         typeLabel.setAlignment(Qt.AlignCenter)
+        typeLabel.setStyleSheet("border: none;")
         
         # 값 선택 드롭다운
         self.valueCombo = QComboBox()
+        self.valueCombo.setStyleSheet("border: 1px solid gray;")
         
         # NamePart 타입에 따라 다르게 처리
         if self.part.is_realname():
@@ -116,6 +132,10 @@ class NamePartWidget(QWidget):
     def getNamePart(self) -> NamePart:
         """NamePart 객체 반환"""
         return self.part
+        
+    def getColor(self) -> QColor:
+        """색상 반환"""
+        return self.color
 
 class NameConfigToolUI(QMainWindow):
     """네이밍 설정 도구 메인 UI 클래스"""
@@ -132,6 +152,18 @@ class NameConfigToolUI(QMainWindow):
         
         # 필터링 문자 (기본값은 '_')
         self.filteringChar = "_"
+        
+        # 색상 팔레트 - NamePart 색상 지정용
+        self.colorPalette = {
+            NamePartType.PREFIX: QColor(70, 150, 195),   # 청록색 계열
+            NamePartType.SUFFIX: QColor(160, 110, 190),  # 보라색 계열
+            NamePartType.REALNAME: QColor(80, 170, 90),  # 녹색 계열
+            NamePartType.INDEX: QColor(215, 120, 70),    # 주황색 계열
+            NamePartType.UNDEFINED: QColor(150, 150, 150) # 회색
+        }
+        
+        # NamePart별 고유 색상 저장
+        self.partColors = {}
         
         # UI 구성
         self.setupUI()
@@ -289,15 +321,15 @@ class NameConfigToolUI(QMainWindow):
     
     def setupEditingArea(self):
         """편집 영역 구성"""
-        editGroup = QGroupBox("선택한 요소 편집")
-        editLayout = QVBoxLayout(editGroup)
+        editGroup = QGroupBox("NamePart 편집")
+        mainEditLayout = QVBoxLayout(editGroup)  # 전체 레이아웃을 QGroupBox에 직접 설정
         
-        # 탭 위젯으로 구성
-        self.editTabs = QTabWidget()
+        # 가로로 나란히 배치할 레이아웃
+        editLayout = QHBoxLayout()
         
-        # === 기본 정보 탭 ===
-        basicTab = QWidget()
-        basicLayout = QVBoxLayout(basicTab)
+        # === 기본 정보 영역 ===
+        basicGroup = QGroupBox("기본 정보")
+        basicLayout = QVBoxLayout(basicGroup)
         
         # 부분 이름 및 타입
         nameLayout = QHBoxLayout()
@@ -321,10 +353,11 @@ class NameConfigToolUI(QMainWindow):
         directionLayout.addStretch(1)
         
         basicLayout.addLayout(directionLayout)
+        basicLayout.addStretch(1)
         
-        # === 값 편집 탭 ===
-        valuesTab = QWidget()
-        valuesLayout = QVBoxLayout(valuesTab)
+        # === 값 편집 영역 ===
+        valuesGroup = QGroupBox("사전 정의 값")
+        valuesLayout = QVBoxLayout(valuesGroup)
         
         # 테이블로 값과 설명 편집
         self.valuesTable = QTableWidget(0, 2)
@@ -346,16 +379,20 @@ class NameConfigToolUI(QMainWindow):
         valuesLayout.addWidget(self.valuesTable)
         valuesLayout.addLayout(valuesButtonLayout)
         
-        # 탭 추가
-        self.editTabs.addTab(basicTab, "기본 정보")
-        self.editTabs.addTab(valuesTab, "사전 정의 값")
+        # 영역 추가
+        editLayout.addWidget(basicGroup, 1)  # 1:1 비율로 공간 분배
+        editLayout.addWidget(valuesGroup, 1)
         
-        editLayout.addWidget(self.editTabs)
-        
-        # 변경 적용 버튼
+        # 변경 적용 버튼을 위한 레이아웃
+        buttonLayout = QHBoxLayout()
         self.applyButton = QPushButton("변경 적용")
         self.applyButton.clicked.connect(self.applyChanges)
-        editLayout.addWidget(self.applyButton)
+        buttonLayout.addStretch(1)
+        buttonLayout.addWidget(self.applyButton)
+        
+        # 메인 레이아웃에 추가
+        mainEditLayout.addLayout(editLayout)
+        mainEditLayout.addLayout(buttonLayout)
         
         self.mainLayout.addWidget(editGroup)
     
@@ -533,8 +570,14 @@ class NameConfigToolUI(QMainWindow):
         for name in self.configObj.get_part_order():
             part = self.configObj.get_part(name)
             if part:
+                # 각 NamePart에 대한 고유 색상 가져오기 (없으면 새로 생성)
+                if name not in self.partColors:
+                    self.partColors[name] = self.generateRandomColor()
+                
+                color = self.partColors[name]
+                
                 # 각 NamePart를 위젯으로 변환하여 표시
-                partWidget = NamePartWidget(part)
+                partWidget = NamePartWidget(part, color=color)
                 partWidget.valueCombo.currentIndexChanged.connect(self.updatePreview)
                 
                 # 리스트 아이템 생성
@@ -542,6 +585,58 @@ class NameConfigToolUI(QMainWindow):
                 self.partsList.addItem(item)
                 item.setSizeHint(partWidget.sizeHint())
                 self.partsList.setItemWidget(item, partWidget)
+    
+    def generateRandomColor(self) -> QColor:
+        """랜덤 색상 생성 (가시성 좋은 색상으로 제한)"""
+        import random
+        
+        # 미리 정의된 보기 좋은 색상 팔레트 (색상 라이브러리에서 자주 사용되는 색상들)
+        predefined_colors = [
+            QColor(231, 76, 60),   # 밝은 적색
+            QColor(52, 152, 219),  # 밝은 청색
+            QColor(46, 204, 113),  # 녹색
+            QColor(155, 89, 182),  # 보라색
+            QColor(241, 196, 15),  # 노란색
+            QColor(230, 126, 34),  # 주황색
+            QColor(52, 73, 94),    # 어두운 청록색
+            QColor(26, 188, 156),  # 청록색
+            QColor(243, 156, 18),  # 황금색
+            QColor(211, 84, 0),    # 어두운 주황색
+            QColor(41, 128, 185),  # 어두운 청색
+            QColor(142, 68, 173),  # 어두운 보라색
+            QColor(39, 174, 96),   # 어두운 녹색
+            QColor(192, 57, 43),   # 어두운 빨강색
+            QColor(127, 140, 141), # 은회색
+        ]
+        
+        # 이미 사용 중인 색상들
+        used_colors = list(self.partColors.values())
+        
+        # 사용 가능한 색상 필터링
+        available_colors = [c for c in predefined_colors if c not in used_colors]
+        
+        if available_colors:
+            # 사용 가능한 색상 중에서 무작위 선택
+            return random.choice(available_colors)
+        else:
+            # 모든 색상이 사용 중이면 기존 색상에서 약간 변형
+            base_color = random.choice(predefined_colors)
+            hue_shift = random.randint(-20, 20)
+            
+            # HSL 색상 공간으로 변환
+            h, s, l, a = base_color.getHslF()
+            
+            # 색조 변경 (0-1 범위에서)
+            h = (h + hue_shift/360) % 1.0
+            
+            # 약간 다른 채도와 밝기
+            s = min(1.0, max(0.5, s + random.uniform(-0.1, 0.1)))
+            l = min(0.8, max(0.3, l + random.uniform(-0.1, 0.1)))
+            
+            # 새 색상 생성
+            new_color = QColor()
+            new_color.setHslF(h, s, l, a)
+            return new_color
     
     def updatePartOrder(self):
         """파트 순서 업데이트 (드래그 앤 드롭 이후)"""
@@ -563,6 +658,7 @@ class NameConfigToolUI(QMainWindow):
         """이름 미리보기 업데이트"""
         # 각 부분의 값 가져와서 조합
         preview_parts = []
+        part_colors = []
         
         for i in range(self.partsList.count()):
             item = self.partsList.item(i)
@@ -571,10 +667,36 @@ class NameConfigToolUI(QMainWindow):
                 value = widget.getValue()
                 if value:
                     preview_parts.append(value)
+                    part_colors.append(widget.getColor())
         
         # 미리보기 이름 업데이트 (구분 문자 사용)
         self.previewName = self.filteringChar.join(preview_parts)
-        self.previewLabel.setText(self.previewName)
+        
+        # 색상이 적용된 HTML 문자열 생성
+        if self.previewName:
+            html_parts = []
+            
+            # 구분 문자로 분리된 각 파트에 색상 적용
+            parts = self.previewName.split(self.filteringChar)
+            
+            for i, part in enumerate(parts):
+                if i < len(part_colors):
+                    color = part_colors[i]
+                    html_parts.append(f'<span style="color:{color.name()};">{part}</span>')
+                else:
+                    html_parts.append(part)
+            
+            # 구분 문자를 회색으로 표시
+            separator_html = f'<span style="color:#999999;">{self.filteringChar}</span>'
+            
+            # HTML로 조합하여 미리보기 레이블에 설정
+            preview_html = separator_html.join(html_parts)
+            self.previewLabel.setText(preview_html)
+        else:
+            self.previewLabel.setText("")
+        
+        # Rich Text 형식 사용 설정
+        self.previewLabel.setTextFormat(Qt.RichText)
     
     def onPartItemSelected(self, item):
         """NamePart 아이템 선택 시 처리"""
