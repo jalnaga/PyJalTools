@@ -8,6 +8,10 @@
 
 from pymxs import runtime as rt
 
+# Import necessary service classes for default initialization
+from .name import Name
+from .bone import Bone
+
 
 class Select:
     """
@@ -16,16 +20,16 @@ class Select:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, nameService, boneService):
+    def __init__(self, nameService=None, boneService=None):
         """
         클래스 초기화
         
         Args:
-            nameService: Name 서비스 인스턴스
-            boneService: Bone 서비스 인스턴스
+            nameService: Name 서비스 인스턴스 (제공되지 않으면 새로 생성)
+            boneService: Bone 서비스 인스턴스 (제공되지 않으면 새로 생성)
         """
-        self.name = nameService
-        self.bone = boneService
+        self.name = nameService if nameService else Name()
+        self.bone = boneService if boneService else Bone(nameService=self.name) # Pass the potentially newly created nameService
     
     def set_selectionSet_to_all(self):
         """

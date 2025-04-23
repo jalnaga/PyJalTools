@@ -22,20 +22,20 @@ class Bone:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, nameService, animService, helperService, constraintService):
+    def __init__(self, nameService=None, animService=None, helperService=None, constraintService=None):
         """
         클래스 초기화.
         
         Args:
-            nameService: 이름 처리 서비스
-            animService: 애니메이션 서비스
-            helperService: 헬퍼 객체 서비스
-            constraintService: 제약 서비스
+            nameService: 이름 처리 서비스 (제공되지 않으면 새로 생성)
+            animService: 애니메이션 서비스 (제공되지 않으면 새로 생성)
+            helperService: 헬퍼 객체 서비스 (제공되지 않으면 새로 생성)
+            constraintService: 제약 서비스 (제공되지 않으면 새로 생성)
         """
-        self.name = nameService
-        self.anim = animService
-        self.helper = helperService
-        self.const = constraintService
+        self.name = nameService if nameService else Name()
+        self.anim = animService if animService else Anim()
+        self.helper = helperService if helperService else Helper(nameService=self.name)
+        self.const = constraintService if constraintService else Constraint(nameService=self.name, helperService=self.helper)
     
     def remove_ik(self, inBone):
         """

@@ -8,6 +8,11 @@ Biped 모듈 - 3ds Max의 Biped 객체 관련 기능 제공
 
 from pymxs import runtime as rt
 
+# Import necessary service classes for default initialization
+from .anim import Anim
+from .name import Name
+from .bone import Bone
+
 
 class Bip:
     """
@@ -16,18 +21,18 @@ class Bip:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, animService, nameService, boneService):
+    def __init__(self, animService=None, nameService=None, boneService=None):
         """
         클래스 초기화
         
         Args:
-            animService: Anim 서비스 인스턴스
-            nameService: Name 서비스 인스턴스
-            boneService: Bone 서비스 인스턴스
+            animService: Anim 서비스 인스턴스 (제공되지 않으면 새로 생성)
+            nameService: Name 서비스 인스턴스 (제공되지 않으면 새로 생성)
+            boneService: Bone 서비스 인스턴스 (제공되지 않으면 새로 생성)
         """
-        self.anim = animService
-        self.name = nameService
-        self.bone = boneService
+        self.anim = animService if animService else Anim()
+        self.name = nameService if nameService else Name()
+        self.bone = boneService if boneService else Bone(nameService=self.name, animService=self.anim) # Pass potentially new instances
     
     def get_bips(self):
         """

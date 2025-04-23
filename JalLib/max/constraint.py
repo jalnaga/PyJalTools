@@ -9,6 +9,10 @@
 from pymxs import runtime as rt
 import textwrap
 
+# Import necessary service classes for default initialization
+from .name import Name
+from .helper import Helper
+
 
 class Constraint:
     """
@@ -17,16 +21,16 @@ class Constraint:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, nameService, helperService):
+    def __init__(self, nameService=None, helperService=None):
         """
         클래스 초기화.
         
         Args:
-            nameService: 이름 처리 서비스
-            helperService: 헬퍼 객체 관련 서비스
+            nameService: 이름 처리 서비스 (제공되지 않으면 새로 생성)
+            helperService: 헬퍼 객체 관련 서비스 (제공되지 않으면 새로 생성)
         """
-        self.name = nameService
-        self.helper = helperService
+        self.name = nameService if nameService else Name()
+        self.helper = helperService if helperService else Helper(nameService=self.name) # Pass the potentially newly created nameService
     
     def collapse(self, inObj):
         """

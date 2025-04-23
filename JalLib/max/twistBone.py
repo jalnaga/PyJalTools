@@ -8,6 +8,12 @@
 
 from pymxs import runtime as rt
 
+# Import necessary service classes for default initialization
+from .name import Name
+from .anim import Anim
+from .constraint import Constraint
+from .bip import Bip
+
 
 class TwistBone:
     """
@@ -16,20 +22,21 @@ class TwistBone:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, nameService, animService, constService, bipService):
+    def __init__(self, nameService=None, animService=None, constService=None, bipService=None):
         """
         클래스 초기화.
         
         Args:
-            nameService: 이름 처리 서비스
-            animService: 애니메이션 서비스
-            constService: 제약 서비스
-            bipService: 바이페드 서비스
+            nameService: 이름 처리 서비스 (제공되지 않으면 새로 생성)
+            animService: 애니메이션 서비스 (제공되지 않으면 새로 생성)
+            constService: 제약 서비스 (제공되지 않으면 새로 생성)
+            bipService: 바이페드 서비스 (제공되지 않으면 새로 생성)
         """
-        self.name = nameService
-        self.anim = animService
-        self.const = constService
-        self.bip = bipService
+        self.name = nameService if nameService else Name()
+        self.anim = animService if animService else Anim()
+        # Ensure dependent services use the potentially newly created instances
+        self.const = constService if constService else Constraint(nameService=self.name)
+        self.bip = bipService if bipService else Bip(animService=self.anim, nameService=self.name) # Pass potentially new instances
         
         # 표현식 초기화
         self._init_expressions()
