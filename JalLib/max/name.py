@@ -184,7 +184,7 @@ class Name(Naming):
         Returns:
             Base 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
         """
-        return self.has_name_part(inStr, "Base")
+        return self.has_name_part("Base", inStr)
     
     def has_Type(self, inStr):
         """
@@ -196,7 +196,7 @@ class Name(Naming):
         Returns:
             Type 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
         """
-        return self.has_name_part(inStr, "Type")
+        return self.has_name_part("Type", inStr)
     
     def has_Side(self, inStr):
         """
@@ -208,7 +208,7 @@ class Name(Naming):
         Returns:
             Side 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
         """
-        return self.has_name_part(inStr, "Side")
+        return self.has_name_part("Side", inStr)
     
     def has_FrontBack(self, inStr):
         """
@@ -220,7 +220,7 @@ class Name(Naming):
         Returns:
             FrontBack 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
         """
-        return self.has_name_part(inStr, "FrontBack")
+        return self.has_name_part("FrontBack", inStr)
     
     def has_Nub(self, inStr):
         """
@@ -232,7 +232,7 @@ class Name(Naming):
         Returns:
             Nub 부분의 사전 정의 값이 포함되어 있으면 True, 아니면 False
         """
-        return self.has_name_part(inStr, "Nub")
+        return self.has_name_part("Nub", inStr)
     
     # replace_<NamePart 이름> 메소드들
     def replace_Base(self, inStr, inNewName):
@@ -246,7 +246,7 @@ class Name(Naming):
         Returns:
             변경된 문자열
         """
-        return self.replace_name_part(inStr, "Base", inNewName)
+        return self.replace_name_part("Base", inStr, inNewName)
     
     def replace_Type(self, inStr, inNewName):
         """
@@ -259,7 +259,7 @@ class Name(Naming):
         Returns:
             변경된 문자열
         """
-        return self.replace_name_part(inStr, "Type", inNewName)
+        return self.replace_name_part("Type", inStr, inNewName)
     
     def replace_Side(self, inStr, inNewName):
         """
@@ -272,7 +272,7 @@ class Name(Naming):
         Returns:
             변경된 문자열
         """
-        return self.replace_name_part(inStr, "Side", inNewName)
+        return self.replace_name_part("Side", inStr, inNewName)
     
     def replace_FrontBack(self, inStr, inNewName):
         """
@@ -285,7 +285,7 @@ class Name(Naming):
         Returns:
             변경된 문자열
         """
-        return self.replace_name_part(inStr, "FrontBack", inNewName)
+        return self.replace_name_part("FrontBack", inStr, inNewName)
     
     def replace_RealName(self, inStr, inNewName):
         """
@@ -298,7 +298,7 @@ class Name(Naming):
         Returns:
             변경된 문자열
         """
-        return self.replace_name_part(inStr, "RealName", inNewName)
+        return self.replace_name_part("RealName", inStr, inNewName)
     
     def replace_Index(self, inStr, inNewName):
         """
@@ -311,7 +311,7 @@ class Name(Naming):
         Returns:
             변경된 문자열
         """
-        return self.replace_name_part(inStr, "Index", inNewName)
+        return self.replace_name_part("Index", inStr, inNewName)
     
     def replace_Nub(self, inStr, inNewName):
         """
@@ -324,7 +324,7 @@ class Name(Naming):
         Returns:
             변경된 문자열
         """
-        return self.replace_name_part(inStr, "Nub", inNewName)
+        return self.replace_name_part("Nub", inStr, inNewName)
     
     # remove_<NamePart 이름> 메소드들
     def remove_Base(self, inStr):
@@ -337,7 +337,7 @@ class Name(Naming):
         Returns:
             Base 부분이 제거된 문자열
         """
-        return self.remove_name_part(inStr, "Base")
+        return self.remove_name_part("Base", inStr)
     
     def remove_Type(self, inStr):
         """
@@ -349,7 +349,7 @@ class Name(Naming):
         Returns:
             Type 부분이 제거된 문자열
         """
-        return self.remove_name_part(inStr, "Type")
+        return self.remove_name_part("Type", inStr)
     
     def remove_Side(self, inStr):
         """
@@ -361,7 +361,7 @@ class Name(Naming):
         Returns:
             Side 부분이 제거된 문자열
         """
-        return self.remove_name_part(inStr, "Side")
+        return self.remove_name_part("Side", inStr)
     
     def remove_FrontBack(self, inStr):
         """
@@ -373,7 +373,7 @@ class Name(Naming):
         Returns:
             FrontBack 부분이 제거된 문자열
         """
-        return self.remove_name_part(inStr, "FrontBack")
+        return self.remove_name_part("FrontBack", inStr)
     
     def remove_Index(self, inStr):
         """
@@ -385,7 +385,7 @@ class Name(Naming):
         Returns:
             Index 부분이 제거된 문자열
         """
-        return self.remove_name_part(inStr, "Index")
+        return self.remove_name_part("Index", inStr)
     
     def remove_Nub(self, inStr):
         """
@@ -397,7 +397,7 @@ class Name(Naming):
         Returns:
             Nub 부분이 제거된 문자열
         """
-        return self.remove_name_part(inStr, "Nub")
+        return self.remove_name_part("Nub", inStr)
     
     # pymxs 의존적인 메소드 구현
     

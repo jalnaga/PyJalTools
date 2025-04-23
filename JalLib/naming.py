@@ -590,26 +590,26 @@ class Naming:
         
         return returnDict
     
-    def has_name_part(self, inStr, inPart):
+    def has_name_part(self, inPart, inStr):
         """
         문자열에 특정 namePart가 포함되어 있는지 확인
         
         Args:
-            inStr: 확인할 문자열
             inPart: 확인할 namePart 이름 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
+            inStr: 확인할 문자열
             
         Returns:
             포함되어 있으면 True, 아니면 False
         """
         return self.get_name(inPart, inStr) != ""
     
-    def add_prefix_to_name_part(self, inStr, inPart, inPrefix):
+    def add_prefix_to_name_part(self, inPart, inStr, inPrefix):
         """
         이름의 특정 부분에 접두사 추가
         
         Args:
-            inStr: 처리할 이름 문자열
             inPart: 수정할 부분 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
+            inStr: 처리할 이름 문자열
             inPrefix: 추가할 접두사
             
         Returns:
@@ -628,14 +628,14 @@ class Naming:
                 
         return returnStr
     
-    def add_suffix_to_name_part(self, inStr, inPart, inSuffix):
+    def add_suffix_to_name_part(self, inPart, inStr, inSuffix):
         """
-        이름의 특정 부분에 접두사 추가
+        이름의 특정 부분에 접미사 추가
         
         Args:
-            inStr: 처리할 이름 문자열
             inPart: 수정할 부분 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
-            inSuffix):: 추가할 접두사
+            inStr: 처리할 이름 문자열
+            inSuffix: 추가할 접미사
             
         Returns:
             수정된 이름 문자열
@@ -664,7 +664,7 @@ class Naming:
         Returns:
             수정된 이름 문자열
         """
-        return self.add_prefix_to_name_part(inStr, "RealName", inPrefix)
+        return self.add_prefix_to_name_part("RealName", inStr, inPrefix)
 
     def add_suffix_to_real_name(self, inStr, inSuffix):
         """
@@ -677,7 +677,7 @@ class Naming:
         Returns:
             수정된 이름 문자열
         """
-        return self.add_suffix_to_name_part(inStr, "RealName", inSuffix)
+        return self.add_suffix_to_name_part("RealName", inStr, inSuffix)
     
     def convert_digit_into_padding_string(self, inDigit, inPaddingNum=None):
         """
@@ -912,20 +912,20 @@ class Naming:
         nameArray = self.convert_name_to_array(inStr)
         return self._combine(nameArray, inNewFilChar)
 
-    def replace_name_part(self, inStr, inNamePart, inNewName):
+    def replace_name_part(self, inPart, inStr, inNewName):
         """
         이름의 특정 부분을 새 이름으로 변경
         
         Args:
+            inPart: 수정할 부분 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
             inStr: 처리할 이름 문자열
-            inNamePart: 수정할 부분 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
             inNewName: 새 이름
         
         Returns:
             수정된 이름 문자열
         """
         nameArray = self.convert_name_to_array(inStr)
-        partIndex = self.get_name_part_index(inNamePart)
+        partIndex = self.get_name_part_index(inPart)
         
         if partIndex >= 0:
             nameArray[partIndex] = inNewName
@@ -935,19 +935,19 @@ class Naming:
         
         return newName
 
-    def remove_name_part(self, inStr, inNamePart):
+    def remove_name_part(self, inPart, inStr):
         """
         이름의 특정 부분 제거
         
         Args:
+            inPart: 제거할 부분 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
             inStr: 처리할 이름 문자열
-            inNamePart: 제거할 부분 ("Base", "Type", "Side", "FrontBack", "RealName", "Index")
             
         Returns:
             수정된 이름 문자열
         """
         nameArray = self.convert_name_to_array(inStr)
-        partIndex = self.get_name_part_index(inNamePart)
+        partIndex = self.get_name_part_index(inPart)
         
         if partIndex >= 0:
             nameArray[partIndex] = ""

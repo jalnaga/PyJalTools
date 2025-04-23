@@ -144,7 +144,7 @@ def jal_create_helper():
         helperType = dialog.selectedHelperType
         genHelpers = jal.helper.create_helper()
         for item in genHelpers:
-            item.name = jal.name.replace_name_part(item.name, "Type", helperType)
+            item.name = jal.name.replace_name_part("Type", item.name, helperType)
         
     dialog.deleteLater()
     dialog = None  # Clear the reference to the dialog object
@@ -184,7 +184,7 @@ def jal_create_pos_average_helper():
             crossToggle=dum_shape[1]
         )
         average_dum.transform = temp_transform
-        average_dum.name = jal.name.replace_name_part(average_dum.name, "Type", "Pos")
+        average_dum.name = jal.name.replace_name_part("Type", average_dum.name, "Pos")
 
 def jal_create_rot_average_helper():
     sel_array = rt.getCurrentSelection()
@@ -202,7 +202,7 @@ def jal_create_rot_average_helper():
             crossToggle=dum_shape[1]
         )
         average_dum.transform = temp_transform
-        average_dum.name = jal.name.replace_name_part(average_dum.name, "Type", "Rot")
+        average_dum.name = jal.name.replace_name_part("Type", average_dum.name, "Rot")
 
 def jal_create_expHelper():
     jal.helper.create_exp_tm()
@@ -213,7 +213,7 @@ def jal_create_two_helper():
     helperType = dialog.selectedHelperType
     genHelpers = jal.helper.create_helper(make_two=True)
     for item in genHelpers:
-        item.name = jal.name.replace_name_part(item.name, "Type", helperType)
+        item.name = jal.name.replace_name_part("Type", item.name, helperType)
         
     dialog.deleteLater()
     dialog = None  # Clear the reference to the dialog object

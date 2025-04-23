@@ -139,7 +139,7 @@ class Helper:
             typeName = self.get_name_by_type("ExposeTm")
         
         # 이름 생성
-        tempName = self.name.replace_name_part(inObj.name, "Type", typeName)
+        tempName = self.name.replace_name_part("Type", inObj.name, typeName)
         if self.name.get_name("Type", inObj.name) == typeName:
             tempName = self.name.increase_index(tempName, 1)
         
@@ -294,7 +294,7 @@ class Helper:
                 rt.setProperty(item, "parent", genPoint)
                 
                 # 부모 헬퍼로 이름 변경
-                finalName = self.name.replace_name_part(genPoint.name, "Type", self.get_name_by_type("Parent"))
+                finalName = self.name.replace_name_part("Type", genPoint.name, self.get_name_by_type("Parent"))
                 rt.setProperty(genPoint, "name", finalName)
     
     def create_exp_tm(self):

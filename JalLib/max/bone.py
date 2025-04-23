@@ -238,8 +238,8 @@ class Bone:
         nubBone.frontfin = False
         nubBone.backfin = False
         nubBone.sidefins = False
-        nubBone.name = self.name.remove_name_part(inName, "Index")
-        nubBone.name = self.name.replace_name_part(nubBone.name, "Nub", "Nub")
+        nubBone.name = self.name.remove_name_part("Index", inName)
+        nubBone.name = self.name.replace_name_part("Nub", nubBone.name, "Nub")
         
         # 화면 갱신 재개
         rt.enableSceneRedraw()
@@ -336,7 +336,7 @@ class Bone:
                     newBone = rt.BoneSys.createBone(inPointArray[i].transform.position, inPointArray[i+1].transform.position, rt.Point3(0, -1, 0))
                 
                 newBone.boneFreezeLength = True
-                newBone.name = self.name.replace_name_part(inName, "Index", str(boneNum))
+                newBone.name = self.name.replace_name_part("Index", inName, str(boneNum))
                 newBone.height = size
                 newBone.width = size
                 newBone.frontfin = False
