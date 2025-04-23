@@ -3,6 +3,190 @@
 
 from pymxs import runtime as rt
 
+from PySide2 import QtWidgets, QtCore, QtGui
+import gc  # Import garbage collector
+
+class BoneNameDialog(QtWidgets.QDialog):
+    def __init__(self, parent=QtWidgets.QWidget.find(rt.windows.getMAXHWND())):
+        super().__init__(parent)
+        self.boneNameSetted = False
+        self.baseName = ""
+        self.sideName = ""
+        self.frontBackName = ""
+        self.RealName = ""
+        self.filteringChar = " "
+        self.boneName = ""
+        
+        self.setWindowTitle("Bone Name")
+        self.setMinimumWidth(300)
+
+        # Layouts
+        main_layout = QtWidgets.QVBoxLayout(self)
+        grid_layout = QtWidgets.QGridLayout()
+        radio_button_layout = QtWidgets.QHBoxLayout()
+        button_layout = QtWidgets.QHBoxLayout()
+
+        # Widgets
+        # Base Name
+        base_name_label = QtWidgets.QLabel("Base Name:")
+        self.base_name_edit = QtWidgets.QLineEdit("Bip001")
+        self.base_name_edit.setReadOnly(True)
+        self.base_name_combo = QtWidgets.QComboBox() # Placeholder for dropdown
+        comboItems = jal.name.get_name_part_predefined_values("Base")
+        comboItems.insert(0, "")
+        self.base_name_combo.addItems(comboItems)
+        self.base_name_combo.setCurrentIndex(2) # Set default index to 0
+
+        # Name
+        name_label = QtWidgets.QLabel("Name:")
+        self.name_edit = QtWidgets.QLineEdit("TempBone")
+
+        # Side Radio Buttons
+        side_group = QtWidgets.QGroupBox("Side:")
+        side_layout = QtWidgets.QVBoxLayout()
+        self.side_none_radio = QtWidgets.QRadioButton("(None)")
+        self.side_l_radio = QtWidgets.QRadioButton("L")
+        self.side_r_radio = QtWidgets.QRadioButton("R")
+        self.side_none_radio.setChecked(True)
+        side_layout.addWidget(self.side_none_radio)
+        side_layout.addWidget(self.side_l_radio)
+        side_layout.addWidget(self.side_r_radio)
+        side_group.setLayout(side_layout)
+
+        # Front Radio Buttons
+        front_group = QtWidgets.QGroupBox("Front:")
+        front_layout = QtWidgets.QVBoxLayout()
+        self.front_none_radio = QtWidgets.QRadioButton("(None)")
+        self.front_f_radio = QtWidgets.QRadioButton("F")
+        self.front_b_radio = QtWidgets.QRadioButton("B")
+        self.front_none_radio.setChecked(True)
+        front_layout.addWidget(self.front_none_radio)
+        front_layout.addWidget(self.front_f_radio)
+        front_layout.addWidget(self.front_b_radio)
+        front_group.setLayout(front_layout)
+
+        # Filtering Radio Buttons
+        filtering_group = QtWidgets.QGroupBox("Filtering:")
+        filtering_layout = QtWidgets.QVBoxLayout()
+        self.filter_blank_radio = QtWidgets.QRadioButton("(Blank)")
+        self.filter_underBar_radio = QtWidgets.QRadioButton("_")
+        self.filter_blank_radio.setChecked(True)
+        filtering_layout.addWidget(self.filter_blank_radio)
+        filtering_layout.addWidget(self.filter_underBar_radio)
+        filtering_group.setLayout(filtering_layout)
+
+        # Result
+        result_label = QtWidgets.QLabel("Result:")
+        self.result_edit = QtWidgets.QLineEdit("Bip001 TempBone 0")
+        self.result_edit.setReadOnly(True) # Make result read-only
+
+        # OK/Cancel Buttons
+        self.ok_button = QtWidgets.QPushButton("OK")
+        self.cancel_button = QtWidgets.QPushButton("Cancel")
+
+        # Arrange Widgets in Grid Layout
+        grid_layout.addWidget(base_name_label, 0, 0)
+        grid_layout.addWidget(self.base_name_edit, 0, 1)
+        grid_layout.addWidget(self.base_name_combo, 1, 1) # Dropdown below Base Name
+        grid_layout.addWidget(name_label, 2, 0)
+        grid_layout.addWidget(self.name_edit, 2, 1)
+
+        # Arrange Radio Button Groups
+        radio_button_layout.addWidget(side_group)
+        radio_button_layout.addWidget(front_group)
+        radio_button_layout.addWidget(filtering_group)
+
+        # Arrange Buttons
+        button_layout.addStretch()
+        button_layout.addWidget(self.ok_button)
+        button_layout.addWidget(self.cancel_button)
+
+        # Add layouts to main layout
+        main_layout.addLayout(grid_layout)
+        main_layout.addLayout(radio_button_layout)
+        main_layout.addWidget(result_label)
+        main_layout.addWidget(self.result_edit)
+        main_layout.addStretch()
+        main_layout.addLayout(button_layout)
+
+        # Connect signals
+        self.ok_button.clicked.connect(self.ok_clicked)
+        self.cancel_button.clicked.connect(self.cancel_clicked)
+        
+        # Connect all relevant UI changes to the update method
+        self.base_name_combo.currentTextChanged.connect(self.update_ui)
+        self.name_edit.textChanged.connect(self.update_ui)
+        self.side_none_radio.toggled.connect(self.update_ui)
+        self.side_l_radio.toggled.connect(self.update_ui)
+        self.side_r_radio.toggled.connect(self.update_ui)
+        self.front_none_radio.toggled.connect(self.update_ui)
+        self.front_f_radio.toggled.connect(self.update_ui)
+        self.front_b_radio.toggled.connect(self.update_ui)
+        self.filter_blank_radio.toggled.connect(self.update_ui)
+        self.filter_underBar_radio.toggled.connect(self.update_ui)
+        
+        self.update_ui()  # Initial update to set the result field
+        
+    def update_ui(self):
+        self.base_name_edit.setText(self.base_name_combo.currentText())
+        self.baseName = self.base_name_edit.text()
+        
+        if self.side_none_radio.isChecked():
+            self.sideName = ""
+        elif self.side_l_radio.isChecked():
+            self.sideName = "L"
+        elif self.side_r_radio.isChecked():
+            self.sideName = "R"
+        
+        if self.front_none_radio.isChecked():
+            self.frontBackName = ""
+        elif self.front_f_radio.isChecked():
+            self.frontBackName = "F"
+        elif self.front_b_radio.isChecked():
+            self.frontBackName = "B"
+        
+        RealName = self.name_edit.text() if self.name_edit.text() != "" else "TempBone"
+        
+        if self.filter_blank_radio.isChecked():
+            self.filteringChar = " "
+        elif self.filter_underBar_radio.isChecked():
+            self.filteringChar = "_"
+        
+        finalName = jal.name.combine(
+            inPartsDict={
+                "Base":self.baseName, 
+                "Type":"", 
+                "Side":self.sideName, 
+                "FrontBack":self.frontBackName,
+                "RealName":RealName,
+                "Index":"00"
+            }, 
+            inFilChar=self.filteringChar
+        )
+        self.result_edit.setText(finalName)
+        self.boneName = finalName
+    
+    def ok_clicked(self):
+        self.update_ui()
+        
+        existingBoneNum = 0
+        nameCheckBoneArray = [item for item in rt.objects if rt.classOf(item) == rt.BoneGeometry]
+        namePattern = jal.name.get_string(self.boneName) + self.filteringChar
+        for item in nameCheckBoneArray:
+            if (item.name.startswith(namePattern)):
+                existingBoneNum += 1
+        
+        if existingBoneNum > 0:
+            QtWidgets.QMessageBox.warning(None, "Warning", "Same Name Bone Exist!")
+            self.boneNameSetted = False
+        else:
+            self.boneNameSetted = True
+            self.accept()
+    
+    def cancel_clicked(self):
+        self.boneNameSetted = False
+        self.reject()
+
 def jal_bone_on():
     jal.bone.set_bone_on_selection()
 
@@ -41,194 +225,8 @@ def jal_bone_reset_scale():
 def jal_bone_create():
     selArray = rt.getCurrentSelection()
     simpleBoneLength = 5
-    
-    from PySide2 import QtWidgets, QtCore, QtGui
-    import gc  # Import garbage collector
-
-    class BoneNameDialog(QtWidgets.QDialog):
-        def __init__(self, parent=QtWidgets.QWidget.find(rt.windows.getMAXHWND())):
-            super().__init__(parent)
-            self.boneNameSetted = False
-            self.baseName = ""
-            self.sideName = ""
-            self.frontBackName = ""
-            self.RealName = ""
-            self.filteringChar = " "
-            self.boneName = ""
-            
-            self.setWindowTitle("Bone Name")
-            self.setMinimumWidth(300)
-
-            # Layouts
-            main_layout = QtWidgets.QVBoxLayout(self)
-            grid_layout = QtWidgets.QGridLayout()
-            radio_button_layout = QtWidgets.QHBoxLayout()
-            button_layout = QtWidgets.QHBoxLayout()
-
-            # Widgets
-            # Base Name
-            base_name_label = QtWidgets.QLabel("Base Name:")
-            self.base_name_edit = QtWidgets.QLineEdit("Bip001")
-            self.base_name_edit.setReadOnly(True)
-            self.base_name_combo = QtWidgets.QComboBox() # Placeholder for dropdown
-            comboItems = jal.name.get_name_part_predefined_values("Base")
-            comboItems.insert(0, "")
-            self.base_name_combo.addItems(comboItems)
-            self.base_name_combo.setCurrentIndex(2) # Set default index to 0
-
-            # Name
-            name_label = QtWidgets.QLabel("Name:")
-            self.name_edit = QtWidgets.QLineEdit("TempBone")
-
-            # Side Radio Buttons
-            side_group = QtWidgets.QGroupBox("Side:")
-            side_layout = QtWidgets.QVBoxLayout()
-            self.side_none_radio = QtWidgets.QRadioButton("(None)")
-            self.side_l_radio = QtWidgets.QRadioButton("L")
-            self.side_r_radio = QtWidgets.QRadioButton("R")
-            self.side_none_radio.setChecked(True)
-            side_layout.addWidget(self.side_none_radio)
-            side_layout.addWidget(self.side_l_radio)
-            side_layout.addWidget(self.side_r_radio)
-            side_group.setLayout(side_layout)
-
-            # Front Radio Buttons
-            front_group = QtWidgets.QGroupBox("Front:")
-            front_layout = QtWidgets.QVBoxLayout()
-            self.front_none_radio = QtWidgets.QRadioButton("(None)")
-            self.front_f_radio = QtWidgets.QRadioButton("F")
-            self.front_b_radio = QtWidgets.QRadioButton("B")
-            self.front_none_radio.setChecked(True)
-            front_layout.addWidget(self.front_none_radio)
-            front_layout.addWidget(self.front_f_radio)
-            front_layout.addWidget(self.front_b_radio)
-            front_group.setLayout(front_layout)
-
-            # Filtering Radio Buttons
-            filtering_group = QtWidgets.QGroupBox("Filtering:")
-            filtering_layout = QtWidgets.QVBoxLayout()
-            self.filter_blank_radio = QtWidgets.QRadioButton("(Blank)")
-            self.filter_underBar_radio = QtWidgets.QRadioButton("_")
-            self.filter_blank_radio.setChecked(True)
-            filtering_layout.addWidget(self.filter_blank_radio)
-            filtering_layout.addWidget(self.filter_underBar_radio)
-            filtering_group.setLayout(filtering_layout)
-
-            # Result
-            result_label = QtWidgets.QLabel("Result:")
-            self.result_edit = QtWidgets.QLineEdit("Bip001 TempBone 0")
-            self.result_edit.setReadOnly(True) # Make result read-only
-
-            # OK/Cancel Buttons
-            self.ok_button = QtWidgets.QPushButton("OK")
-            self.cancel_button = QtWidgets.QPushButton("Cancel")
-
-            # Arrange Widgets in Grid Layout
-            grid_layout.addWidget(base_name_label, 0, 0)
-            grid_layout.addWidget(self.base_name_edit, 0, 1)
-            grid_layout.addWidget(self.base_name_combo, 1, 1) # Dropdown below Base Name
-            grid_layout.addWidget(name_label, 2, 0)
-            grid_layout.addWidget(self.name_edit, 2, 1)
-
-            # Arrange Radio Button Groups
-            radio_button_layout.addWidget(side_group)
-            radio_button_layout.addWidget(front_group)
-            radio_button_layout.addWidget(filtering_group)
-
-            # Arrange Buttons
-            button_layout.addStretch()
-            button_layout.addWidget(self.ok_button)
-            button_layout.addWidget(self.cancel_button)
-
-            # Add layouts to main layout
-            main_layout.addLayout(grid_layout)
-            main_layout.addLayout(radio_button_layout)
-            main_layout.addWidget(result_label)
-            main_layout.addWidget(self.result_edit)
-            main_layout.addStretch()
-            main_layout.addLayout(button_layout)
-
-            # Connect signals
-            self.ok_button.clicked.connect(self.ok_clicked)
-            self.cancel_button.clicked.connect(self.cancel_clicked)
-            
-            # Connect all relevant UI changes to the update method
-            self.base_name_combo.currentTextChanged.connect(self.update_ui)
-            self.name_edit.textChanged.connect(self.update_ui)
-            self.side_none_radio.toggled.connect(self.update_ui)
-            self.side_l_radio.toggled.connect(self.update_ui)
-            self.side_r_radio.toggled.connect(self.update_ui)
-            self.front_none_radio.toggled.connect(self.update_ui)
-            self.front_f_radio.toggled.connect(self.update_ui)
-            self.front_b_radio.toggled.connect(self.update_ui)
-            self.filter_blank_radio.toggled.connect(self.update_ui)
-            self.filter_underBar_radio.toggled.connect(self.update_ui)
-            
-            self.update_ui()  # Initial update to set the result field
-            
-        def update_ui(self):
-            self.base_name_edit.setText(self.base_name_combo.currentText())
-            self.baseName = self.base_name_edit.text()
-            
-            if self.side_none_radio.isChecked():
-                self.sideName = ""
-            elif self.side_l_radio.isChecked():
-                self.sideName = "L"
-            elif self.side_r_radio.isChecked():
-                self.sideName = "R"
-            
-            if self.front_none_radio.isChecked():
-                self.frontBackName = ""
-            elif self.front_f_radio.isChecked():
-                self.frontBackName = "F"
-            elif self.front_b_radio.isChecked():
-                self.frontBackName = "B"
-            
-            RealName = self.name_edit.text() if self.name_edit.text() != "" else "TempBone"
-            
-            if self.filter_blank_radio.isChecked():
-                self.filteringChar = " "
-            elif self.filter_underBar_radio.isChecked():
-                self.filteringChar = "_"
-            
-            finalName = jal.name.combine(
-                inPartsDict={
-                    "Base":self.baseName, 
-                    "Type":"", 
-                    "Side":self.sideName, 
-                    "FrontBack":self.frontBackName,
-                    "RealName":RealName,
-                    "Index":"00"
-                }, 
-                inFilChar=self.filteringChar
-            )
-            self.result_edit.setText(finalName)
-            self.boneName = finalName
-        
-        def ok_clicked(self):
-            self.update_ui()
-            
-            existingBoneNum = 0
-            nameCheckBoneArray = [item for item in rt.objects if rt.classOf(item) == rt.BoneGeometry]
-            namePattern = jal.name.get_string(self.boneName) + self.filteringChar
-            for item in nameCheckBoneArray:
-                if (item.name.startswith(namePattern)):
-                    existingBoneNum += 1
-            
-            if existingBoneNum > 0:
-                QtWidgets.QMessageBox.warning(None, "Warning", "Same Name Bone Exist!")
-                self.boneNameSetted = False
-            else:
-                self.boneNameSetted = True
-                self.accept()
-        
-        def cancel_clicked(self):
-            self.boneNameSetted = False
-            self.reject()
         
     dialog = BoneNameDialog()
-    
-    # Show the dialog and store the result
     result = dialog.exec_()
     
     # Store dialog values in external variables

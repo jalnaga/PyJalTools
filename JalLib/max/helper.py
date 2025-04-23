@@ -147,7 +147,7 @@ class Helper:
         
         # 타겟 이름 생성
         if make_two:
-            targetName = self.name.add_sufix_to_real_name(tempName, self.get_name_by_type("Target"))
+            targetName = self.name.add_suffix_to_real_name(tempName, self.get_name_by_type("Target"))
         
         return [pointName, targetName]
     
@@ -224,7 +224,7 @@ class Helper:
                     rt.setProperty(targetPoint, "transform", rt.getProperty(item, "transform"))
                     
                     # 메인 포인트 생성
-                    genPint = self.create_point(
+                    genPoint = self.create_point(
                         pointName, 
                         size=helperSize, 
                         boxToggle=True, 
@@ -236,10 +236,10 @@ class Helper:
                     
                     # 배열에 추가
                     createdHelperArray.append(targetPoint)
-                    createdHelperArray.append(genPint)
+                    createdHelperArray.append(genPoint)
                 else:
                     # 단일 포인트 생성
-                    genPint = self.create_point(
+                    genPoint = self.create_point(
                         pointName, 
                         size=helperSize, 
                         boxToggle=boxToggle, 
@@ -247,12 +247,12 @@ class Helper:
                         pointColor=(14, 255, 2), 
                         pos=(0, 0, 0)
                     )
-                    rt.setProperty(genPint, "transform", rt.getProperty(item, "transform"))
-                    createdHelperArray.append(genPint)
+                    rt.setProperty(genPoint, "transform", rt.getProperty(item, "transform"))
+                    createdHelperArray.append(genPoint)
         else:
             # 선택된 객체가 없는 경우 기본 포인트 생성
-            genPint = rt.Point(wirecolor=rt.Color(14, 255, 2))
-            createdHelperArray.append(genPint)
+            genPoint = rt.Point(wirecolor=rt.Color(14, 255, 2))
+            createdHelperArray.append(genPoint)
         
         # 생성된 헬퍼들 선택
         rt.select(createdHelperArray)

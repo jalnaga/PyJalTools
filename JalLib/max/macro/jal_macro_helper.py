@@ -40,6 +40,99 @@ class HelperTypeSelDialog(QtWidgets.QDialog):
         self.changeHelperType = True
         self.accept()
 
+class ModifyHelperShapeDialog(QtWidgets.QDialog):
+    def __init__(self, parent=QtWidgets.QWidget.find(rt.windows.getMAXHWND())):
+        super(ModifyHelperShapeDialog, self).__init__(parent)
+        self.helperArray = []
+
+        self.setWindowTitle("Modify Helper Shape")
+
+        self.layout = QtWidgets.QVBoxLayout(self)
+
+        # Size and Add layout
+        sizeLayout = QtWidgets.QHBoxLayout()
+        addLayout = QtWidgets.QHBoxLayout()
+
+        sizeLabel = QtWidgets.QLabel("Size:")
+        self.size_spinbox = QtWidgets.QDoubleSpinBox()
+        self.size_spinbox.setValue(1.0) # Default value
+        self.size_spinbox.setSingleStep(0.1)
+        sizeLayout.addWidget(sizeLabel)
+        sizeLayout.addWidget(self.size_spinbox)
+
+        addLabel = QtWidgets.QLabel("Add:")
+        self.add_spinbox = QtWidgets.QDoubleSpinBox()
+        self.add_spinbox.setValue(0.0) # Default value
+        self.add_spinbox.setSingleStep(0.1)
+        addLayout.addWidget(addLabel)
+        addLayout.addWidget(self.add_spinbox)
+
+        # Radio button layout
+        shapeGroup = QtWidgets.QGroupBox("Shape:")
+        radioLayout = QtWidgets.QGridLayout()
+        self.radio_box = QtWidgets.QRadioButton("Box")
+        self.radio_cross = QtWidgets.QRadioButton("Cross")
+        self.radio_axis = QtWidgets.QRadioButton("Axis")
+        self.radio_center = QtWidgets.QRadioButton("Center")
+        self.radio_box.setChecked(True)  # Default selection
+        radioLayout.addWidget(self.radio_box, 0, 0)
+        radioLayout.addWidget(self.radio_cross, 0, 1)
+        radioLayout.addWidget(self.radio_axis, 1, 0)
+        radioLayout.addWidget(self.radio_center, 1, 1)
+        shapeGroup.setLayout(radioLayout)
+        
+        # OK and Cancel buttons (optional but recommended)
+        buttonLayout = QtWidgets.QHBoxLayout()
+        self.ok_button = QtWidgets.QPushButton("OK")
+        self.cancel_button = QtWidgets.QPushButton("Cancel")
+        buttonLayout.addWidget(self.ok_button)
+        buttonLayout.addWidget(self.cancel_button)
+        
+        self.layout.addLayout(sizeLayout)
+        self.layout.addLayout(addLayout)
+        self.layout.addWidget(shapeGroup)  # Add the group box to the layout instead of the raw radioLayout
+        self.layout.addLayout(buttonLayout)
+        
+        self.size_spinbox.valueChanged.connect(self.change_helper_size)
+        self.add_spinbox.valueChanged.connect(self.add_helper_size)
+        self.add_spinbox.editingFinished.connect(self.reset_add_spinbox)
+        
+        self.radio_box.toggled.connect(self.change_helper_shape)
+        self.radio_cross.toggled.connect(self.change_helper_shape)
+        self.radio_axis.toggled.connect(self.change_helper_shape)
+        self.radio_center.toggled.connect(self.change_helper_shape)
+        
+        self.ok_button.clicked.connect(self.accept)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def change_helper_size(self):
+        if len(self.helperArray) == 0:
+            return
+        for obj in self.helperArray:
+            jal.helper.set_size(obj, self.size_spinbox.value())
+    
+    def add_helper_size(self):
+        if len(self.helperArray) == 0:
+            return
+        for obj in self.helperArray:
+            jal.helper.add_size(obj, self.add_spinbox.value())
+    
+    def reset_add_spinbox(self):
+        self.add_spinbox.setValue(0.0)  # Reset the add spinbox to 0 after editing is finished
+    
+    def change_helper_shape(self):
+        if len(self.helperArray) == 0:
+            return
+        for obj in self.helperArray:
+            if self.radio_box.isChecked():
+                jal.helper.set_shape_to_box(obj)
+            elif self.radio_cross.isChecked():
+                jal.helper.set_shape_to_cross(obj)
+            elif self.radio_axis.isChecked():
+                jal.helper.set_shape_to_axis(obj)
+            elif self.radio_center.isChecked():
+                jal.helper.set_shape_to_center(obj)
+
 def jal_create_parentHelper():
     jal.helper.create_parent_helper()
 
@@ -56,7 +149,6 @@ def jal_create_helper():
     dialog.deleteLater()
     dialog = None  # Clear the reference to the dialog object
     gc.collect()  # Force garbage collection to free up memory
-    
 
 def jal_create_average_helper():
     sel_array = rt.getCurrentSelection()
@@ -128,12 +220,34 @@ def jal_create_two_helper():
     gc.collect()  # Force garbage collection to free up memory
 
 def jal_modify_helperShape():
-    pass
+    # Get current selection
+    selArray = rt.getCurrentSelection()
+    if not selArray or len(selArray) == 0:
+        rt.messageBox("Please select at least one helper object.")
+        return
+    helperArray = [item for item in selArray if rt.superClassOf(item) == rt.Helper]
+    if len(helperArray) == 0:
+        return
+
+    # Assuming the first selected object is the one to modify
+    helperObj = helperArray[0]
+
+    modDialog = ModifyHelperShapeDialog()
+
+    # Set initial values from the selected helper (if possible)
+    modDialog.size_spinbox.setValue(helperObj.size)
+    
+    modDialog.helperArray = helperArray
+
+    result = modDialog.exec_()
+
+    modDialog.deleteLater()
+    modDialog = None
+    gc.collect()
 
 # Register macroscripts
 macroScript_Category = "jalTools"
 
-'''
 rt.jal_create_parentHelper = jal_create_parentHelper
 rt.macros.new(
     macroScript_Category,
@@ -205,6 +319,3 @@ rt.macros.new(
     "jal_modify_helperShape",
     "jal_modify_helperShape()"
 )
-'''
-# jal_create_two_helper()
-jal_create_helper()
