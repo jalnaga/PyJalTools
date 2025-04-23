@@ -252,7 +252,7 @@ rt.jal_create_parentHelper = jal_create_parentHelper
 rt.macros.new(
     macroScript_Category,
     "jal_create_parentHelper",
-    "create Parent Helper",
+    "Create Parent Helper",
     "jal_create_parentHelper",
     "jal_create_parentHelper()"
 )
@@ -261,7 +261,7 @@ rt.jal_create_helper = jal_create_helper
 rt.macros.new(
     macroScript_Category,
     "jal_create_helper",
-    "create Helper",
+    "Create Helper",
     "jal_create_helper",
     "jal_create_helper()"
 )
@@ -270,7 +270,7 @@ rt.jal_create_average_helper = jal_create_average_helper
 rt.macros.new(
     macroScript_Category,
     "jal_create_average_helper",
-    "create Average Helper",
+    "Create Average Helper",
     "jal_create_average_helper",
     "jal_create_average_helper()"
 )
@@ -279,7 +279,7 @@ rt.jal_create_pos_average_helper = jal_create_pos_average_helper
 rt.macros.new(
     macroScript_Category,
     "jal_create_pos_average_helper",
-    "create Pos avrg. Helper",
+    "Create Pos avrg. Helper",
     "jal_create_pos_average_helper",
     "jal_create_pos_average_helper()"
 )
@@ -288,7 +288,7 @@ rt.jal_create_rot_average_helper = jal_create_rot_average_helper
 rt.macros.new(
     macroScript_Category,
     "jal_create_rot_average_helper",
-    "create Rot avrg. Helper",
+    "Create Rot avrg. Helper",
     "jal_create_rot_average_helper",
     "jal_create_rot_average_helper()"
 )
@@ -297,7 +297,7 @@ rt.jal_create_expHelper = jal_create_expHelper
 rt.macros.new(
     macroScript_Category,
     "jal_create_expHelper",
-    "create Exp Helper",
+    "Create Exp Helper",
     "jal_create_expHelper",
     "jal_create_expHelper()"
 )
@@ -306,7 +306,7 @@ rt.jal_create_two_helper = jal_create_two_helper
 rt.macros.new(
     macroScript_Category,
     "jal_create_two_helper",
-    "create Two Helper",
+    "Create Two Helper",
     "jal_create_two_helper",
     "jal_create_two_helper()"
 )
@@ -315,7 +315,7 @@ rt.jal_modify_helperShape = jal_modify_helperShape
 rt.macros.new(
     macroScript_Category,
     "jal_modify_helperShape",
-    "modify Helper shape",
+    "Modify Helper shape",
     "jal_modify_helperShape",
     "jal_modify_helperShape()"
 )
