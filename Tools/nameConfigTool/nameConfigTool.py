@@ -488,7 +488,6 @@ class NameConfigToolUI(QMainWindow):
             if success:
                 self.updatePartsList()
                 self.updatePreview()
-                QMessageBox.information(self, "알림", f"'{part_name}' NamePart가 추가되었습니다.")
             else:
                 QMessageBox.warning(self, "경고", "NamePart 추가에 실패했습니다.")
     
