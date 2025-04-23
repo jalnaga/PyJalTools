@@ -16,22 +16,20 @@ class TwistBone:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, name_service, anim_service, const_service, bip_service):
+    def __init__(self, nameService, animService, constService, bipService):
         """
         클래스 초기화.
         
         Args:
-            name_service: 이름 처리 서비스
-            anim_service: 애니메이션 서비스
-            helper_service: 헬퍼 객체 서비스
-            bone_service: 뼈대 서비스
-            const_service: 제약 서비스
-            bip_service: 바이페드 서비스
+            nameService: 이름 처리 서비스
+            animService: 애니메이션 서비스
+            constService: 제약 서비스
+            bipService: 바이페드 서비스
         """
-        self.name = name_service
-        self.anim = anim_service
-        self.const = const_service
-        self.bip = bip_service
+        self.name = nameService
+        self.anim = animService
+        self.const = constService
+        self.bip = bipService
         
         # 표현식 초기화
         self._init_expressions()

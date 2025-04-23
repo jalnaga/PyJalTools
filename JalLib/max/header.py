@@ -40,18 +40,18 @@ class Header:
 
         self.name = Name(configPath=self.nameConfigDir)
         self.anim = Anim()
-        
-        self.helper = Helper(name_service=self.name)
-        self.constraint = Constraint(name_service=self.name, helper_service=self.helper)
-        self.bone = Bone(name_service=self.name, anim_service=self.anim, helper_service=self.helper, constraint_service=self.constraint)
-        
-        self.mirror = Mirror(name_service=self.name, bone_service=self.bone)
+
+        self.helper = Helper(nameService=self.name)
+        self.constraint = Constraint(nameService=self.name, helperService=self.helper)
+        self.bone = Bone(nameService=self.name, animService=self.anim, helperService=self.helper, constraintService=self.constraint)
+
+        self.mirror = Mirror(nameService=self.name, boneService=self.bone)
         self.layer = Layer()
         self.align = Align()
-        self.sel = Select(name_service=self.name, bone_service=self.bone)
+        self.sel = Select(nameService=self.name, boneService=self.bone)
         self.link = Link()
-        
-        self.bip = Bip(name_service=self.name, bone_service=self.bone, anim_service=self.anim)
+
+        self.bip = Bip(animService=self.anim, nameService=self.name, boneService=self.bone)
         self.skin = Skin()
-        
-        self.twistBone = TwistBone(name_service=self.name, anim_service=self.anim, const_service=self.constraint, bip_service=self.bip)
+
+        self.twistBone = TwistBone(nameService=self.name, animService=self.anim, constService=self.constraint, bipService=self.bip)

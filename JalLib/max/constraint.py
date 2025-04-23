@@ -17,16 +17,16 @@ class Constraint:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, name_service, helper_service):
+    def __init__(self, nameService, helperService):
         """
         클래스 초기화.
         
         Args:
-            name_service: 이름 처리 서비스
-            helper_service: 헬퍼 객체 관련 서비스
+            nameService: 이름 처리 서비스
+            helperService: 헬퍼 객체 관련 서비스
         """
-        self.name = name_service
-        self.helper = helper_service
+        self.name = nameService
+        self.helper = helperService
     
     def collapse(self, inObj):
         """

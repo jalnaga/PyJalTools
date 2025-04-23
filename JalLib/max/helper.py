@@ -16,14 +16,14 @@ class Helper:
     pymxs 모듈을 통해 3ds Max의 기능을 직접 접근합니다.
     """
     
-    def __init__(self, name_service):
+    def __init__(self, nameService):
         """
         초기화 함수
         
         Args:
-            name_service: Name 서비스 인스턴스
+            nameService: Name 서비스 인스턴스
         """
-        self.name = name_service
+        self.name = nameService
     
     def create_point(self, inName, size=2, boxToggle=False, crossToggle=True, pointColor=(14, 255, 2), pos=(0, 0, 0)):
         """

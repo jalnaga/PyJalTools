@@ -16,16 +16,16 @@ class Mirror:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, name_service, bone_service):
+    def __init__(self, nameService, boneService):
         """
         클래스 초기화
         
         Args:
-            name_service: Name 서비스 인스턴스
-            bone_service: Bone 서비스 인스턴스
+            nameService: Name 서비스 인스턴스
+            boneService: Bone 서비스 인스턴스
         """
-        self.name = name_service
-        self.bone = bone_service
+        self.name = nameService
+        self.bone = boneService
     
     def mirror_matrix(self, mAxis="x", mFlip="x", tm=None, pivotTM=None):
         """

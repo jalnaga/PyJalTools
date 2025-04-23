@@ -16,18 +16,18 @@ class Bip:
     3ds Max의 기능들을 pymxs API를 통해 제어합니다.
     """
     
-    def __init__(self, anim_service, name_service, bone_service):
+    def __init__(self, animService, nameService, boneService):
         """
         클래스 초기화
         
         Args:
-            anim_service: Anim 서비스 인스턴스
-            name_service: Name 서비스 인스턴스
-            bone_service: Bone 서비스 인스턴스
+            animService: Anim 서비스 인스턴스
+            nameService: Name 서비스 인스턴스
+            boneService: Bone 서비스 인스턴스
         """
-        self.anim = anim_service
-        self.name = name_service
-        self.bone = bone_service
+        self.anim = animService
+        self.name = nameService
+        self.bone = boneService
     
     def get_bips(self):
         """
