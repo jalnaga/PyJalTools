@@ -19,6 +19,9 @@
             "descriptions": [
                 "Prefix"
             ],
+            "koreanDescriptions": [
+                "접두어"
+            ],
             "isDirection": false
         },
         {
@@ -27,6 +30,7 @@
             "weights": [],
             "type": "REALNAME",
             "descriptions": [],
+            "koreanDescriptions": [],
             "isDirection": false
         },
         {
@@ -35,6 +39,7 @@
             "weights": [],
             "type": "INDEX",
             "descriptions": [],
+            "koreanDescriptions": [],
             "isDirection": false
         },
         {
@@ -48,6 +53,9 @@
             "type": "SUFFIX",
             "descriptions": [
                 "Suffix"
+            ],
+            "koreanDescriptions": [
+                "접미어"
             ],
             "isDirection": false
         }

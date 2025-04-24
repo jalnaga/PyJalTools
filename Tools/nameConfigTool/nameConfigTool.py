@@ -105,14 +105,20 @@ class NamePartWidget(QWidget):
             self.valueCombo.addItem("인덱스")
             self.valueCombo.setEnabled(False)
         else:
-            # 사전 정의된 값과 설명을 드롭다운에 추가
+            # 사전 정의된 값, 설명, 한국어 설명을 드롭다운에 추가
             values = self.part.get_predefined_values()
             descriptions = self.part.get_descriptions()
+            korean_descriptions = self.part.get_korean_descriptions() # Get Korean descriptions
             
             for i, desc in enumerate(descriptions):
                 if i < len(values):
-                    # 설명과 값을 같이 표시 (설명(값) 형식)
-                    self.valueCombo.addItem(f"{desc} ({values[i]})", values[i])
+                    korean_desc = korean_descriptions[i] if i < len(korean_descriptions) else ""
+                    # 설명 (한국어 설명) (값) 형식으로 표시
+                    display_text = f"{desc}"
+                    if korean_desc:
+                        display_text += f" ({korean_desc})"
+                    display_text += f" ({values[i]})"
+                    self.valueCombo.addItem(display_text, values[i])
         
         # 위젯 배치
         layout.addWidget(nameLabel)
@@ -359,9 +365,9 @@ class NameConfigToolUI(QMainWindow):
         valuesGroup = QGroupBox("사전 정의 값")
         valuesLayout = QVBoxLayout(valuesGroup)
         
-        # 테이블로 값과 설명 편집
-        self.valuesTable = QTableWidget(0, 2)
-        self.valuesTable.setHorizontalHeaderLabels(["값", "설명"])
+        # 테이블로 값, 설명, 한국어 설명 편집
+        self.valuesTable = QTableWidget(0, 3) # 열 개수 3으로 변경
+        self.valuesTable.setHorizontalHeaderLabels(["값", "설명", "한국어 설명"]) # 헤더 추가
         self.valuesTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         
         # 버튼 그룹
@@ -514,12 +520,13 @@ class NameConfigToolUI(QMainWindow):
                 return
                 
             # 기본 타입으로 PREFIX 사용
-            # 기본 값과 설명 하나씩 추가
+            # 기본 값, 설명, 한국어 설명 하나씩 추가
             success = self.configObj.add_part(
                 part_name, 
                 NamePartType.PREFIX,
                 [f"V{len(self.configObj.name_parts) + 1}"],
-                [f"Value {len(self.configObj.name_parts) + 1}"]
+                [f"Value {len(self.configObj.name_parts) + 1}"],
+                [f"값 {len(self.configObj.name_parts) + 1}"] # 기본 한국어 설명 추가
             )
             
             if success:
@@ -744,18 +751,20 @@ class NameConfigToolUI(QMainWindow):
         
         values = part.get_predefined_values()
         descriptions = part.get_descriptions()
+        korean_descriptions = part.get_korean_descriptions() # 한국어 설명 가져오기
         
-        # 테이블에 값과 설명 추가
+        # 테이블에 값, 설명, 한국어 설명 추가
         for i, value in enumerate(values):
             self.valuesTable.insertRow(i)
             self.valuesTable.setItem(i, 0, QTableWidgetItem(value))
             
-            # 설명이 있으면 설정
-            description = ""
-            if i < len(descriptions):
-                description = descriptions[i]
-            
+            # 설명 설정
+            description = descriptions[i] if i < len(descriptions) else ""
             self.valuesTable.setItem(i, 1, QTableWidgetItem(description))
+            
+            # 한국어 설명 설정
+            korean_description = korean_descriptions[i] if i < len(korean_descriptions) else ""
+            self.valuesTable.setItem(i, 2, QTableWidgetItem(korean_description)) # 3번째 열에 추가
     
     def updatePartTypeUI(self):
         """NamePart 타입에 따라 UI 상태 업데이트"""
@@ -787,9 +796,11 @@ class NameConfigToolUI(QMainWindow):
         # 기본값 설정
         new_value = f"Value{row_count + 1}"
         new_desc = f"Description{row_count + 1}"
+        new_korean_desc = f"값{row_count + 1}" # 기본 한국어 설명 추가
         
         self.valuesTable.setItem(row_count, 0, QTableWidgetItem(new_value))
         self.valuesTable.setItem(row_count, 1, QTableWidgetItem(new_desc))
+        self.valuesTable.setItem(row_count, 2, QTableWidgetItem(new_korean_desc)) # 한국어 설명 추가
     
     def removeValue(self):
         """값 삭제"""
@@ -865,25 +876,28 @@ class NameConfigToolUI(QMainWindow):
                         part_order[idx] = new_name
                         self.configObj._update_part_order()
             
-            # 값 및 설명 변경 (RealName, Index 타입이 아닌 경우)
+            # 값, 설명, 한국어 설명 변경 (RealName, Index 타입이 아닌 경우)
             current_name = new_name if new_name and new_name != old_name and old_name not in self.configObj.required_parts else old_name
             current_part = self.configObj.get_part(current_name)
             
             if not current_part.is_realname() and not current_part.is_index():
                 values = []
                 descriptions = []
+                korean_descriptions = [] # 한국어 설명 리스트 추가
                 
                 for row in range(self.valuesTable.rowCount()):
                     value_item = self.valuesTable.item(row, 0)
                     desc_item = self.valuesTable.item(row, 1)
+                    korean_desc_item = self.valuesTable.item(row, 2) # 한국어 설명 아이템 가져오기
                     
                     if value_item and value_item.text():
                         values.append(value_item.text())
                         descriptions.append(desc_item.text() if desc_item else "")
+                        korean_descriptions.append(korean_desc_item.text() if korean_desc_item else "") # 한국어 설명 추가
                 
-                # 값 설정
+                # 값 설정 (한국어 설명 포함)
                 if values:
-                    current_part.set_predefined_values(values, descriptions)
+                    current_part.set_predefined_values(values, descriptions, korean_descriptions)
             
             # UI 업데이트
             self.updateUI()
