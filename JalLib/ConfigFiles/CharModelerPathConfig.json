@@ -1,0 +1,195 @@
+{
+    "paddingNum": 2,
+    "partOrder": [
+        "CharacterRole",
+        "Species",
+        "Gender",
+        "AssetType",
+        "RealName",
+        "Slot"
+    ],
+    "nameParts": [
+        {
+            "name": "CharacterRole",
+            "predefinedValues": [
+                "Mn",
+                "Nc",
+                "Nm",
+                "Bm"
+            ],
+            "weights": [
+                5,
+                10,
+                15,
+                20
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Main",
+                "NPC",
+                "Monster",
+                "Boss"
+            ],
+            "koreanDescriptions": [
+                "메인캐릭터",
+                "NPC",
+                "일반몬스터",
+                "보스몬스터"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "Species",
+            "predefinedValues": [
+                "KimDokja",
+                "LeeGilyeong",
+                "JeongHuiwon",
+                "LeeHyeonseong",
+                "CheonInho",
+                "YuJunghyeok",
+                "HanMyeongoh",
+                "YuSangah",
+                "AnnaCroft",
+                "Bihyeong",
+                "Biryu"
+            ],
+            "weights": [
+                5,
+                10,
+                15,
+                20,
+                25,
+                30,
+                35,
+                40,
+                45,
+                50,
+                55
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "KimDokja",
+                "LeeGilyeong",
+                "JeongHuiwon",
+                "LeeHyeonseong",
+                "CheonInho",
+                "YuJunghyeok",
+                "HanMyeongoh",
+                "YuSangah",
+                "AnnaCroft",
+                "Bihyeong",
+                "Biryu"
+            ],
+            "koreanDescriptions": [
+                "김독자",
+                "이길영",
+                "정희원",
+                "이현성",
+                "천인호",
+                "유중혁",
+                "한명오",
+                "유상아",
+                "안나 크로포트",
+                "비형",
+                "비류"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "Gender",
+            "predefinedValues": [
+                "M",
+                "F",
+                "N"
+            ],
+            "weights": [
+                5,
+                10,
+                15
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Male",
+                "Female",
+                "NonBinary"
+            ],
+            "koreanDescriptions": [
+                "남",
+                "녀",
+                "없음"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "AssetType",
+            "predefinedValues": [
+                "SK",
+                "MI",
+                "T"
+            ],
+            "weights": [
+                5,
+                10,
+                15
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Mesh",
+                "Material",
+                "Texture"
+            ],
+            "koreanDescriptions": [
+                "메쉬",
+                "매테리얼",
+                "텍스쳐"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "RealName",
+            "predefinedValues": [],
+            "weights": [],
+            "type": "REALNAME",
+            "descriptions": [],
+            "koreanDescriptions": [],
+            "isDirection": false
+        },
+        {
+            "name": "Slot",
+            "predefinedValues": [
+                "Hair",
+                "Face",
+                "Upper",
+                "Lower",
+                "Shoes",
+                "Glove"
+            ],
+            "weights": [
+                5,
+                10,
+                15,
+                20,
+                25,
+                30
+            ],
+            "type": "SUFFIX",
+            "descriptions": [
+                "Hair",
+                "Face",
+                "Upper",
+                "Lower",
+                "Shoes",
+                "Glove"
+            ],
+            "koreanDescriptions": [
+                "머리카락",
+                "얼굴",
+                "상의",
+                "하의",
+                "신발",
+                "장갑"
+            ],
+            "isDirection": false
+        }
+    ]
+}
