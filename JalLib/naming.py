@@ -420,11 +420,12 @@ class Naming:
         foundName = self.pick_name(inNamePartName, inStr)
         if foundName == "":
             return returnStr
+        partIndex = self.get_name_part_index(inNamePartName)
         foundIndex = nameArray.index(foundName)
         
         if partType == NamePartType.PREFIX:
             if foundIndex >= 0:
-                prevNameParts = self._nameParts[:foundIndex]
+                prevNameParts = self._nameParts[:partIndex]
                 prevNames = [self.pick_name(part.get_name(), inStr) for part in prevNameParts]
                 prevNamesInNameArray = nameArray[:foundIndex]
                 for prevName in prevNames:
@@ -435,7 +436,7 @@ class Naming:
         
         if partType == NamePartType.SUFFIX:
             if foundIndex >= 0:
-                nextNameParts = self._nameParts[foundIndex + 1:]
+                nextNameParts = self._nameParts[partIndex + 1:]
                 nextNames = [self.pick_name(part.get_name(), inStr) for part in nextNameParts]
                 nextNamesInNameArray = nameArray[foundIndex + 1:]
                 for nextName in nextNames:
