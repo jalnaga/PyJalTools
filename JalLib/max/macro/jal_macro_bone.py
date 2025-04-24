@@ -281,7 +281,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneOn",
     "Bone On Selection",
-    "jal_bone_on",
+    "Bone On Selection",
     "jal_bone_on()"
 )
 
@@ -290,7 +290,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneOff",
     "Bone Off Selection",
-    "jal_bone_off",
+    "Bone Off Selection",
     "jal_bone_off()"
 )
 
@@ -299,7 +299,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneLengthFreezeOn",
     "Bone Length Freeze On Selection",
-    "jal_bone_length_freeze_on",
+    "Bone Length Freeze On Selectionn",
     "jal_bone_length_freeze_on()"
 )
 
@@ -308,7 +308,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneLengthFreezeOff",
     "Bone Length Freeze Off Selection",
-    "jal_bone_length_freeze_off",
+    "Bone Length Freeze Off Selection",
     "jal_bone_length_freeze_off()"
 )
 
@@ -317,7 +317,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneFinOn",
     "Bone Fin On",
-    "jal_bone_fin_on",
+    "Bone Fin On",
     "jal_bone_fin_on()"
 )
 
@@ -326,7 +326,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneFinOff",
     "Bone Fin Off",
-    "jal_bone_fin_off",
+    "Bone Fin Off",
     "jal_bone_fin_off()"
 )
 
@@ -335,7 +335,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneResetScale",
     "Bone Reset Scale",
-    "jal_bone_reset_scale",
+    "Bone Reset Scale",
     "jal_bone_reset_scale()"
 )
 
@@ -344,7 +344,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneCreate",
     "Bone Create",
-    "jal_bone_create",
+    "Bone Create",
     "jal_bone_create()"
 )
 
@@ -353,6 +353,6 @@ rt.macros.new(
     macroScript_Category,
     "jal_boneNubCreate",
     "Bone Nub Create",
-    "jal_bone_nub_create",
+    "Bone Nub Create",
     "jal_bone_nub_create()"
 )

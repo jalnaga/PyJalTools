@@ -253,7 +253,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_create_parentHelper",
     "Create Parent Helper",
-    "jal_create_parentHelper",
+    "Create Parent Helper",
     "jal_create_parentHelper()"
 )
 
@@ -262,7 +262,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_create_helper",
     "Create Helper",
-    "jal_create_helper",
+    "Create Helper",
     "jal_create_helper()"
 )
 
@@ -271,7 +271,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_create_average_helper",
     "Create Average Helper",
-    "jal_create_average_helper",
+    "Create Average Helper",
     "jal_create_average_helper()"
 )
 
@@ -280,7 +280,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_create_pos_average_helper",
     "Create Pos avrg. Helper",
-    "jal_create_pos_average_helper",
+    "Create Pos avrg. Helper",
     "jal_create_pos_average_helper()"
 )
 
@@ -289,7 +289,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_create_rot_average_helper",
     "Create Rot avrg. Helper",
-    "jal_create_rot_average_helper",
+    "Create Rot avrg. Helper",
     "jal_create_rot_average_helper()"
 )
 
@@ -298,7 +298,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_create_expHelper",
     "Create Exp Helper",
-    "jal_create_expHelper",
+    "Create Exp Helper",
     "jal_create_expHelper()"
 )
 
@@ -307,7 +307,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_create_two_helper",
     "Create Two Helper",
-    "jal_create_two_helper",
+    "Create Two Helper",
     "jal_create_two_helper()"
 )
 
@@ -316,6 +316,6 @@ rt.macros.new(
     macroScript_Category,
     "jal_modify_helperShape",
     "Modify Helper shape",
-    "jal_modify_helperShape",
+    "Modify Helper shape",
     "jal_modify_helperShape()"
 )

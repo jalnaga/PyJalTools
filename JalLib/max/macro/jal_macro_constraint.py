@@ -81,7 +81,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_collapse_const",
     "Collapse Constraints",
-    "jal_collapse_const",
+    "Collapse Constraints",
     "jal_collapse_const()"
 )
 
@@ -90,7 +90,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_pos_const",
     "Constraint Position",
-    "jal_pos_const",
+    "Constraint Position",
     "jal_pos_const()"
 )
 
@@ -99,7 +99,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_ori_const",
     "Constraint Orientation",
-    "jal_ori_const",
+    "Constraint Orientation",
     "jal_ori_const()"
 )
 
@@ -108,7 +108,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_rot_script_const",
     "Constraint Rotation Script",
-    "jal_rot_script_const",
+    "Constraint Rotation Script",
     "jal_rot_script_const()"
 )
 
@@ -117,7 +117,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_lookat_const",
     "Constraint LookAt",
-    "jal_lookat_const",
+    "Constraint LookAt",
     "jal_lookat_const()"
 )
 
@@ -126,7 +126,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_lookat_flipless_const",
     "Constraint LookAt Flipless",
-    "jal_lookat_flipless_const",
+    "Constraint LookAt Flipless",
     "jal_lookat_flipless_const()"
 )
 
@@ -135,6 +135,6 @@ rt.macros.new(
     macroScript_Category,
     "jal_lookat_script_const",
     "Constraint LookAt Script",
-    "jal_lookat_script_const",
+    "Constraint LookAt Script",
     "jal_lookat_script_const()"
 )

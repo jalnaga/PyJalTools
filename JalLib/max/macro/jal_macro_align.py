@@ -105,7 +105,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_align_to_last",
     "Align to last",
-    "jal_align_to_last",
+    "Align to last",
     "jal_align_to_last()"
 )
 
@@ -114,7 +114,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_align_to_last_center",
     "Align to last center",
-    "jal_align_to_last_center",
+    "Align to last center",
     "jal_align_to_last_center()"
 )
 
@@ -123,7 +123,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_align_pos_only",
     "Align position only",
-    "jal_align_pos_only",
+    "Align position only",
     "jal_align_pos_only()"
 )
 
@@ -132,7 +132,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_align_rot_only",
     "Align rotation only",
-    "jal_align_rot_only",
+    "Align rotation only",
     "jal_align_rot_only()"
 )
 
@@ -141,7 +141,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_align_mirror_x",
     "Mirror X",
-    "jal_align_mirror_x",
+    "Mirror X",
     "jal_align_mirror_x()"
 )
 
@@ -150,6 +150,6 @@ rt.macros.new(
     macroScript_Category,
     "jal_align_mirror_y",
     "Mirror Y",
-    "jal_align_mirror_y",
+    "Mirror Y",
     "jal_align_mirror_y()"
 )

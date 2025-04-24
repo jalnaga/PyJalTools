@@ -23,7 +23,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_link_to_last",
     "Link to last",
-    "jal_link_to_last",
+    "Link to last",
     "jal_link_to_last()"
 )
 
@@ -32,7 +32,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_link_to_first",
     "Link to first",
-    "jal_link_to_first",
+    "Link to first",
     "jal_link_to_first()"
 )
 
@@ -41,7 +41,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_unLink",
     "Unlink",
-    "jal_unlink",
+    "Unlink",
     "jal_unlink()"
 )
 
@@ -50,6 +50,6 @@ rt.macros.new(
     macroScript_Category,
     "jal_unLink_children",
     "Unlink children",
-    "jal_unlink_children",
+    "Unlink children",
     "jal_unlink_children()"
 )

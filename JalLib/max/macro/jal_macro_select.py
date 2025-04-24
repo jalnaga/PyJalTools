@@ -41,7 +41,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_selFilter_all",
     "Selection filter All",
-    "jal_selFilter_all",
+    "Selection filter All",
     "jal_selFilter_all()"
 )
 
@@ -50,7 +50,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_selFilter_bone",
     "Selection filter Bone",
-    "jal_selFilter_bone", 
+    "Selection filter Bone", 
     "jal_selFilter_bone()"
 )
 
@@ -59,7 +59,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_selFilter_bip",
     "Selection filter Bip",
-    "jal_selFilter_bip",
+    "Selection filter Bip",
     "jal_selFilter_bip()"
 )
 
@@ -68,7 +68,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_selFilter_point",
     "Selection filter Point",
-    "jal_selFilter_point",
+    "Selection filter Point",
     "jal_selFilter_point()"
 )
 
@@ -77,7 +77,7 @@ rt.macros.new(
     macroScript_Category,
     "jal_selFilter_expTm",
     "Selection filter ExpTm",
-    "jal_selFilter_expTm",
+    "Selection filter ExpTm",
     "jal_selFilter_expTm()"
 )
 
@@ -86,6 +86,6 @@ rt.macros.new(
     macroScript_Category,
     "jal_selFilter_spline",
     "Selection filter Spline",
-    "jal_selFilter_spline",
+    "Selection filter Spline",
     "jal_selFilter_spline()"
 )
