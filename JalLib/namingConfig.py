@@ -10,6 +10,8 @@ import json
 import os
 import copy
 from typing import List, Dict, Any, Optional, Union
+import csv # Import the csv module
+
 
 # NamePart 클래스 임포트
 from JalLib.namePart import NamePart, NamePartType
@@ -385,6 +387,71 @@ class NamingConfig:
         part.set_predefined_values(values, descriptions, korean_descriptions) # Pass korean_descriptions
         
         return True
+    
+    def set_part_value_by_csv(self, part_name: str, csv_file_path: str) -> bool:
+        """
+        특정 NamePart의 사전 정의 값을 CSV 파일로 설정
+        CSV 파일 형식: value,description,koreanDescription (각 줄당)
+        
+        Args:
+            part_name: NamePart 이름
+            csv_file_path: CSV 파일 경로
+            
+        Returns:
+            설정 성공 여부 (True/False)
+        """
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
+            return False
+        
+        # REALNAME이나 INDEX 타입은 사전 정의 값 설정 불가
+        if part.is_realname() or part.is_index():
+            print(f"오류: {part_name} 부분은 {part.get_type().name} 타입이므로 사전 정의 값을 설정할 수 없습니다.")
+            return False
+        
+        # CSV 파일에서 값, 설명, 한국어 설명 읽기
+        values = []
+        descriptions = []
+        korean_descriptions = []
+        try:
+            with open(csv_file_path, 'r', encoding='utf-8', newline='') as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    if len(row) >= 3: # Ensure row has at least 3 columns
+                        value = row[0].strip()
+                        description = row[1].strip()
+                        korean_description = row[2].strip()
+                        if value: # Skip empty values
+                            values.append(value)
+                            descriptions.append(description if description else value) # Use value if description is empty
+                            korean_descriptions.append(korean_description if korean_description else value) # Use value if korean_description is empty
+                    elif len(row) == 2: # Handle case with value and description only
+                        value = row[0].strip()
+                        description = row[1].strip()
+                        if value:
+                            values.append(value)
+                            descriptions.append(description if description else value)
+                            korean_descriptions.append(value) # Use value as korean description
+                    elif len(row) == 1: # Handle case with value only
+                        value = row[0].strip()
+                        if value:
+                            values.append(value)
+                            descriptions.append(value)
+                            korean_descriptions.append(value)
+
+            if not values:
+                print(f"오류: CSV 파일 '{csv_file_path}'에서 유효한 값을 찾을 수 없습니다.")
+                return False
+
+            # 값, 설명, 한국어 설명 설정
+            return self.set_part_values(part_name, values, descriptions, korean_descriptions)
+        except FileNotFoundError:
+            print(f"오류: CSV 파일을 찾을 수 없습니다: {csv_file_path}")
+            return False
+        except Exception as e:
+            print(f"오류: CSV 파일을 읽는 중 오류 발생: {e}")
+            return False
     
     def add_part_value(self, part_name: str, value: str, 
                        description: Optional[str] = None, 

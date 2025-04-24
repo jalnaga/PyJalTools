@@ -1,0 +1,273 @@
+{
+    "paddingNum": 2,
+    "partOrder": [
+        "AssetType",
+        "CharacterRole",
+        "Species",
+        "Gender",
+        "AnimStatus",
+        "AnimMainCategory",
+        "RealName",
+        "Index",
+        "EndFoot"
+    ],
+    "nameParts": [
+        {
+            "name": "AssetType",
+            "predefinedValues": [
+                "A",
+                "AM"
+            ],
+            "weights": [
+                5,
+                10
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Animation",
+                "AnimMontage"
+            ],
+            "koreanDescriptions": [
+                "애니메이션",
+                "애님몽타주"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "CharacterRole",
+            "predefinedValues": [
+                "Mn",
+                "Nc",
+                "Nm",
+                "Bm"
+            ],
+            "weights": [
+                5,
+                10,
+                15,
+                20
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Main",
+                "NPC",
+                "Monster",
+                "Boss"
+            ],
+            "koreanDescriptions": [
+                "메인캐릭터",
+                "NPC",
+                "일반몬스터",
+                "보스몬스터"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "Species",
+            "predefinedValues": [
+                "KimDokja",
+                "LeeGilyeong",
+                "JeongHuiwon",
+                "LeeHyeonseong",
+                "CheonInho",
+                "YuJunghyeok",
+                "HanMyeongoh",
+                "YuSangah",
+                "AnnaCroft",
+                "Bihyeong",
+                "Biryu"
+            ],
+            "weights": [
+                5,
+                10,
+                15,
+                20,
+                25,
+                30,
+                35,
+                40,
+                45,
+                50,
+                55
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "KimDokja",
+                "LeeGilyeong",
+                "JeongHuiwon",
+                "LeeHyeonseong",
+                "CheonInho",
+                "YuJunghyeok",
+                "HanMyeongoh",
+                "YuSangah",
+                "AnnaCroft",
+                "Bihyeong",
+                "Biryu"
+            ],
+            "koreanDescriptions": [
+                "김독자",
+                "이길영",
+                "정희원",
+                "이현성",
+                "천인호",
+                "유중혁",
+                "한명오",
+                "유상아",
+                "안나 크로포트",
+                "비형",
+                "비류"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "Gender",
+            "predefinedValues": [
+                "M",
+                "F",
+                "N"
+            ],
+            "weights": [
+                5,
+                10,
+                15
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Male",
+                "Female",
+                "NonBinary"
+            ],
+            "koreanDescriptions": [
+                "남",
+                "녀",
+                "없음"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "AnimStatus",
+            "predefinedValues": [
+                "Battle",
+                "Neutral",
+                "Death"
+            ],
+            "weights": [
+                5,
+                10,
+                15
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "Battle",
+                "Neutral",
+                "Death"
+            ],
+            "koreanDescriptions": [
+                "전투",
+                "기본",
+                "죽음"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "AnimMainCategory",
+            "predefinedValues": [
+                "CommandSkill",
+                "ActiveSkill",
+                "Run",
+                "Idle",
+                "Draw",
+                "Sheath",
+                "Hit",
+                "Down",
+                "Knockdown",
+                "Airborne",
+                "TwistKnockdown",
+                "GetUp"
+            ],
+            "weights": [
+                5,
+                10,
+                15,
+                20,
+                25,
+                30,
+                35,
+                40,
+                45,
+                50,
+                55,
+                60
+            ],
+            "type": "PREFIX",
+            "descriptions": [
+                "CommandSkill",
+                "ActiveSkill",
+                "Run",
+                "Idle",
+                "Draw",
+                "Sheath",
+                "Hit",
+                "Down",
+                "Knockdown",
+                "Airborne",
+                "TwistKnockdown",
+                "GetUp"
+            ],
+            "koreanDescriptions": [
+                "커맨드 스킬",
+                "액티브 스킬",
+                "달리기",
+                "아이들",
+                "발도",
+                "납도",
+                "히트",
+                "다운",
+                "넉다운",
+                "에어본",
+                "트위스트 넉다운",
+                "기상"
+            ],
+            "isDirection": false
+        },
+        {
+            "name": "RealName",
+            "predefinedValues": [],
+            "weights": [],
+            "type": "REALNAME",
+            "descriptions": [],
+            "koreanDescriptions": [],
+            "isDirection": false
+        },
+        {
+            "name": "Index",
+            "predefinedValues": [],
+            "weights": [],
+            "type": "INDEX",
+            "descriptions": [],
+            "koreanDescriptions": [],
+            "isDirection": false
+        },
+        {
+            "name": "EndFoot",
+            "predefinedValues": [
+                "LFoot",
+                "RFoot"
+            ],
+            "weights": [
+                5,
+                10
+            ],
+            "type": "SUFFIX",
+            "descriptions": [
+                "Left Foot",
+                "Right Foot"
+            ],
+            "koreanDescriptions": [
+                "왼발",
+                "오른발"
+            ],
+            "isDirection": false
+        }
+    ]
+}

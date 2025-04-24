@@ -16,10 +16,12 @@ from JalLib.namingConfig import NamingConfig
 
 jalNaming = NamingConfig()
 
-configPath = os.path.normpath(r"D:\Dropbox\Programing\Python\PyJalTools\JalLib\max\ConfigFiles\3DSMaxNamingConfig.json")
+configPath = os.path.normpath(r"D:\Dropbox\Programing\Python\PyJalTools\JalLib\ConfigFiles\CharModelerNamingConfig.json")
 jalNaming.load(file_path=configPath)
 
-jalNaming.reorder_parts(["Base", "Type", "RealName", "Index", "Nub", "Side", "FrontBack"])
+csvPath = os.path.normpath(r"D:\Dropbox\Programing\Python\PyJalTools\tests\Species.csv")
+jalNaming.set_part_value_by_csv("Species", csvPath)
+print(jalNaming.get_part("Species").get_korean_descriptions())
 
-savePath = os.path.normpath(r"C:\Users\Admin\Desktop\3DSMaxNamingConfig.json")
+savePath = os.path.normpath(r"C:\Users\Admin\Desktop\CharModelerNamingConfig.json")
 jalNaming.save(file_path=savePath)
