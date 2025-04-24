@@ -160,7 +160,6 @@
         {
             "name": "Variation",
             "predefinedValues": [
-                "",
                 "A",
                 "B",
                 "C",
@@ -182,7 +181,6 @@
             ],
             "type": "SUFFIX",
             "descriptions": [
-                "None",
                 "A",
                 "B",
                 "C",
@@ -193,7 +191,6 @@
                 "H"
             ],
             "koreanDescriptions": [
-                "없음",
                 "A",
                 "B",
                 "C",
