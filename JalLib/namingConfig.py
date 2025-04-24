@@ -69,16 +69,16 @@ class NamingConfig:
         self.part_order = []
         
         # Prefix 부분 (PREFIX 타입)
-        prefixPart = NamePart("Prefix", NamePartType.PREFIX, ["Pr"], ["Prefix"])
+        prefixPart = NamePart("Prefix", NamePartType.PREFIX, ["Pr"], ["Prefix"], False, ["접두사"]) # Add korean descriptions
         
         # RealName 부분 (REALNAME 타입)
-        realNamePart = NamePart("RealName", NamePartType.REALNAME, [], [])
+        realNamePart = NamePart("RealName", NamePartType.REALNAME, [], [], False, []) # Add korean descriptions
         
         # Index 부분 (INDEX 타입)
-        indexPart = NamePart("Index", NamePartType.INDEX, [], [])
+        indexPart = NamePart("Index", NamePartType.INDEX, [], [], False, []) # Add korean descriptions
         
         # Suffix 부분 (SUFFIX 타입)
-        suffixPart = NamePart("Suffix", NamePartType.SUFFIX, ["Su"], ["Suffix"])
+        suffixPart = NamePart("Suffix", NamePartType.SUFFIX, ["Su"], ["Suffix"], False, ["접미사"]) # Add korean descriptions
         
         # 기본 순서대로 설정
         self.name_parts = [prefixPart, realNamePart, indexPart, suffixPart]
@@ -177,7 +177,8 @@ class NamingConfig:
         return None
     
     def add_part(self, name: str, part_type: NamePartType = NamePartType.UNDEFINED, 
-                 values: Optional[List[str]] = None, descriptions: Optional[List[str]] = None) -> bool:
+                 values: Optional[List[str]] = None, descriptions: Optional[List[str]] = None,
+                 korean_descriptions: Optional[List[str]] = None) -> bool: # Add korean_descriptions parameter
         """
         새 NamePart 객체 추가
         
@@ -186,6 +187,7 @@ class NamingConfig:
             part_type: NamePart 타입 (기본값: UNDEFINED)
             values: 사전 정의된 값 목록 (기본값: None)
             descriptions: 값에 대한 설명 목록 (기본값: None, 값과 동일하게 설정됨)
+            korean_descriptions: 값에 대한 한국어 설명 목록 (기본값: None, 값과 동일하게 설정됨) # Add korean_descriptions doc
             
         Returns:
             추가 성공 여부 (True/False)
@@ -200,7 +202,7 @@ class NamingConfig:
             return False
         
         # 새 NamePart 객체 생성 - NamePart 클래스의 생성자 활용
-        new_part = NamePart(name, part_type, values or [], descriptions)
+        new_part = NamePart(name, part_type, values or [], descriptions, False, korean_descriptions) # Pass korean_descriptions
         
         # 리스트에 추가
         self.name_parts.append(new_part)
@@ -350,7 +352,9 @@ class NamingConfig:
         
         return part.get_type()
     
-    def set_part_values(self, part_name: str, values: List[str], descriptions: Optional[List[str]] = None) -> bool:
+    def set_part_values(self, part_name: str, values: List[str], 
+                        descriptions: Optional[List[str]] = None, 
+                        korean_descriptions: Optional[List[str]] = None) -> bool: # Add korean_descriptions parameter
         """
         특정 NamePart의 사전 정의 값 설정
         
@@ -358,6 +362,7 @@ class NamingConfig:
             part_name: NamePart 이름
             values: 설정할 사전 정의 값 리스트
             descriptions: 설정할 설명 목록 (기본값: None, 값과 같은 설명 사용)
+            korean_descriptions: 설정할 한국어 설명 목록 (기본값: None, 값과 같은 설명 사용) # Add korean_descriptions doc
             
         Returns:
             설정 성공 여부 (True/False)
@@ -377,27 +382,13 @@ class NamingConfig:
             return False
         
         # 값 설정
-        part.set_predefined_values(values)
-        
-        # 설명 설정 - 설명이 제공되지 않았다면 값을 설명으로 사용
-        if descriptions is None:
-            descriptions = values.copy()
-        
-        # 값과 설명의 길이가 다르면 조정
-        if len(descriptions) != len(values):
-            # 설명이 적으면 값으로 채우기
-            if len(descriptions) < len(values):
-                descriptions.extend(values[len(descriptions):])
-            # 설명이 많으면 잘라내기
-            else:
-                descriptions = descriptions[:len(values)]
-        
-        # 설명 설정
-        part.set_descriptions(descriptions)
+        part.set_predefined_values(values, descriptions, korean_descriptions) # Pass korean_descriptions
         
         return True
     
-    def add_part_value(self, part_name: str, value: str, description: Optional[str] = None) -> bool:
+    def add_part_value(self, part_name: str, value: str, 
+                       description: Optional[str] = None, 
+                       korean_description: Optional[str] = None) -> bool: # Add korean_description parameter
         """
         특정 NamePart에 사전 정의 값 추가
         
@@ -405,6 +396,7 @@ class NamingConfig:
             part_name: NamePart 이름
             value: 추가할 사전 정의 값
             description: 추가할 값의 설명 (기본값: None, 값과 같은 설명 사용)
+            korean_description: 추가할 값의 한국어 설명 (기본값: None, 값과 같은 설명 사용) # Add korean_description doc
             
         Returns:
             추가 성공 여부 (True/False)
@@ -428,8 +420,12 @@ class NamingConfig:
         if description is None:
             description = value
             
+        # korean_description이 없으면 값을 설명으로 사용
+        if korean_description is None:
+            korean_description = value
+            
         # NamePart 클래스의 add_predefined_value 메소드 직접 활용
-        return part.add_predefined_value(value, description)
+        return part.add_predefined_value(value, description, korean_description) # Pass korean_description
     
     def remove_part_value(self, part_name: str, value: str) -> bool:
         """
@@ -494,13 +490,15 @@ class NamingConfig:
             descriptions.extend([""] * (len(values) - len(descriptions)))
         elif len(descriptions) > len(values):
             descriptions = descriptions[:len(values)]
-            
-        # 각 값에 대한 설명 설정
+        
+        # 각 값에 대한 설명 설정 (NamePart.set_description 사용)
+        success = True
         for i, value in enumerate(values):
-            part.set_description(value, descriptions[i])
-            
-        return True
-    
+            if not part.set_description(value, descriptions[i]):
+                success = False # 실패 시 기록 (이론상 발생하지 않음)
+                
+        return success
+
     def get_part_descriptions(self, part_name: str) -> List[str]:
         """
         특정 NamePart의 설명 목록 가져오기
@@ -517,23 +515,61 @@ class NamingConfig:
             return []
         
         return part.get_descriptions()
-    
-    def get_part_values(self, part_name: str) -> List[str]:
+
+    def set_part_korean_descriptions(self, part_name: str, korean_descriptions: List[str]) -> bool:
         """
-        특정 NamePart의 사전 정의 값 목록 가져오기
+        특정 NamePart의 한국어 설명 목록 설정
+        
+        Args:
+            part_name: NamePart 이름
+            korean_descriptions: 설정할 한국어 설명 목록
+            
+        Returns:
+            설정 성공 여부 (True/False)
+        """
+        part = self.get_part(part_name)
+        if not part:
+            print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
+            return False
+        
+        # REALNAME이나 INDEX 타입은 설명 설정 불가
+        if part.is_realname() or part.is_index():
+            print(f"오류: {part_name} 부분은 {part.get_type().name} 타입이므로 한국어 설명을 설정할 수 없습니다.")
+            return False
+        
+        # NamePart 클래스 메소드 활용하여 설명 설정
+        values = part.get_predefined_values()
+        
+        # 길이 맞추기
+        if len(korean_descriptions) < len(values):
+            korean_descriptions.extend([""] * (len(values) - len(korean_descriptions)))
+        elif len(korean_descriptions) > len(values):
+            korean_descriptions = korean_descriptions[:len(values)]
+            
+        # 각 값에 대한 한국어 설명 설정 (NamePart.set_korean_description 사용)
+        success = True
+        for i, value in enumerate(values):
+            if not part.set_korean_description(value, korean_descriptions[i]):
+                success = False # 실패 시 기록 (이론상 발생하지 않음)
+                
+        return success
+
+    def get_part_korean_descriptions(self, part_name: str) -> List[str]:
+        """
+        특정 NamePart의 한국어 설명 목록 가져오기
         
         Args:
             part_name: NamePart 이름
             
         Returns:
-            사전 정의 값 목록
+            한국어 설명 목록
         """
         part = self.get_part(part_name)
         if not part:
             print(f"오류: '{part_name}' NamePart가 존재하지 않습니다.")
             return []
         
-        return part.get_predefined_values()
+        return part.get_korean_descriptions()
     
     def get_prefix_parts(self) -> List[NamePart]:
         """
@@ -694,7 +730,10 @@ class NamingConfig:
             print(f"설정 적용 중 오류 발생: {e}")
             return False
     
-    def insert_part(self, name: str, part_type: NamePartType, position: int) -> bool:
+    def insert_part(self, name: str, part_type: NamePartType, position: int,
+                    values: Optional[List[str]] = None, 
+                    descriptions: Optional[List[str]] = None,
+                    korean_descriptions: Optional[List[str]] = None) -> bool: # Add value/description parameters
         """
         특정 위치에 새 NamePart 삽입
         
@@ -702,6 +741,9 @@ class NamingConfig:
             name: 삽입할 NamePart 이름
             part_type: NamePart 타입
             position: 삽입할 위치 (인덱스)
+            values: 사전 정의된 값 목록 (기본값: None) # Add doc
+            descriptions: 값에 대한 설명 목록 (기본값: None) # Add doc
+            korean_descriptions: 값에 대한 한국어 설명 목록 (기본값: None) # Add doc
             
         Returns:
             삽입 성공 여부 (True/False)
@@ -720,8 +762,8 @@ class NamingConfig:
             print(f"오류: 위치가 유효하지 않습니다. 0에서 {len(self.name_parts)} 사이의 값이어야 합니다.")
             return False
         
-        # 새 NamePart 생성
-        new_part = NamePart(name, [], {}, part_type)
+        # 새 NamePart 생성 (값과 설명 포함)
+        new_part = NamePart(name, part_type, values or [], descriptions, False, korean_descriptions) # Pass values/descriptions
         
         # 지정된 위치에 삽입
         self.name_parts.insert(position, new_part)

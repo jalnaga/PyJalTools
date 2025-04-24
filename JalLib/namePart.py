@@ -31,7 +31,7 @@ class NamePart:
     이름과 해당 부분에 대한 사전 선언된 값들을 관리합니다.
     """
     
-    def __init__(self, inName="", inType=NamePartType.UNDEFINED, inPredefinedValues=None, inDescriptions=None, inIsDirection=False):
+    def __init__(self, inName="", inType=NamePartType.UNDEFINED, inPredefinedValues=None, inDescriptions=None, inIsDirection=False, inKoreanDescriptions=None):
         """
         NamePart 클래스 초기화
         
@@ -40,21 +40,28 @@ class NamePart:
             inPredefinedValues: 사전 선언된 값 목록 (기본값: None, 빈 리스트로 초기화)
             inType: NamePart의 타입 (NamePartType 열거형 값)
             inDescriptions: 사전 선언된 값들의 설명 목록 (기본값: None, 빈 리스트로 초기화)
+            inIsDirection: 방향성 여부 (기본값: False)
+            inKoreanDescriptions: 사전 선언된 값들의 한국어 설명 목록 (기본값: None, 빈 리스트로 초기화)
         """
         self._name = inName
         self._predefinedValues = inPredefinedValues if inPredefinedValues is not None else []
         self._weights = []
         self._type = inType
         self._descriptions = inDescriptions if inDescriptions is not None else [""] * len(self._predefinedValues)
+        self._koreanDescriptions = inKoreanDescriptions if inKoreanDescriptions is not None else [""] * len(self._predefinedValues) # Add korean descriptions
         self._isDirection = inIsDirection if inIsDirection is True else False  # 방향성 여부 (기본값: False)
         
-        # 길이 일치 확인
+        # 길이 일치 확인 (Descriptions)
         if len(self._descriptions) < len(self._predefinedValues):
-            # 설명이 부족한 경우 빈 문자열로 채움
             self._descriptions.extend([""] * (len(self._predefinedValues) - len(self._descriptions)))
         elif len(self._descriptions) > len(self._predefinedValues):
-            # 설명이 더 많은 경우 초과분 제거
             self._descriptions = self._descriptions[:len(self._predefinedValues)]
+
+        # 길이 일치 확인 (Korean Descriptions)
+        if len(self._koreanDescriptions) < len(self._predefinedValues):
+            self._koreanDescriptions.extend([""] * (len(self._predefinedValues) - len(self._koreanDescriptions)))
+        elif len(self._koreanDescriptions) > len(self._predefinedValues):
+            self._koreanDescriptions = self._koreanDescriptions[:len(self._predefinedValues)]
         
         # 타입에 따른 기본 값 설정
         self._initialize_type_defaults()
@@ -66,11 +73,13 @@ class NamePart:
             # Index 타입은 숫자만 처리하므로 predefined values는 사용하지 않음
             self._predefinedValues = []
             self._descriptions = []
+            self._koreanDescriptions = [] # Clear korean descriptions
             self._weights = []
         elif self._type == NamePartType.REALNAME:
             # RealName 타입은 predefined values를 사용하지 않음
             self._predefinedValues = []
             self._descriptions = []
+            self._koreanDescriptions = [] # Clear korean descriptions
             self._weights = []
     
     def _update_weights(self):
@@ -164,13 +173,14 @@ class NamePart:
         """
         return self._type == NamePartType.INDEX
     
-    def add_predefined_value(self, inValue, inDescription=""):
+    def add_predefined_value(self, inValue, inDescription="", inKoreanDescription=""):
         """
         사전 선언된 값 목록에 새 값을 추가합니다.
         
         Args:
             inValue: 추가할 값
             inDescription: 추가할 값에 대한 설명 (기본값: 빈 문자열)
+            inKoreanDescription: 추가할 값에 대한 한국어 설명 (기본값: 빈 문자열)
             
         Returns:
             추가 성공 여부 (이미 존재하는 경우 False)
@@ -182,6 +192,7 @@ class NamePart:
         if inValue not in self._predefinedValues:
             self._predefinedValues.append(inValue)
             self._descriptions.append(inDescription)
+            self._koreanDescriptions.append(inKoreanDescription) # Add korean description
             self._update_weights()  # 가중치 자동 업데이트
             return True
         return False
@@ -200,19 +211,21 @@ class NamePart:
             index = self._predefinedValues.index(inValue)
             self._predefinedValues.remove(inValue)
             self._descriptions.pop(index)
+            self._koreanDescriptions.pop(index) # Remove korean description
             if index < len(self._weights):
                 self._weights.pop(index)
             self._update_weights()  # 가중치 자동 업데이트
             return True
         return False
     
-    def set_predefined_values(self, inValues, inDescriptions=None):
+    def set_predefined_values(self, inValues, inDescriptions=None, inKoreanDescriptions=None):
         """
         사전 선언된 값 목록을 설정합니다.
         
         Args:
             inValues: 설정할 값 목록
             inDescriptions: 설정할 값들의 설명 목록 (기본값: None, 빈 문자열로 초기화)
+            inKoreanDescriptions: 설정할 값들의 한국어 설명 목록 (기본값: None, 빈 문자열로 초기화)
         """
         # REALNAME이나 INDEX 타입인 경우 predefined values를 사용하지 않음
         if self._type == NamePartType.REALNAME or self._type == NamePartType.INDEX:
@@ -230,6 +243,17 @@ class NamePart:
                 self._descriptions = self._descriptions[:len(self._predefinedValues)]
         else:
             self._descriptions = [""] * len(self._predefinedValues)
+
+        # 한국어 설명 세팅
+        if inKoreanDescriptions:
+            self._koreanDescriptions = inKoreanDescriptions.copy()
+            # 길이 일치 확인
+            if len(self._koreanDescriptions) < len(self._predefinedValues):
+                self._koreanDescriptions.extend([""] * (len(self._predefinedValues) - len(self._koreanDescriptions)))
+            elif len(self._koreanDescriptions) > len(self._predefinedValues):
+                self._koreanDescriptions = self._koreanDescriptions[:len(self._predefinedValues)]
+        else:
+            self._koreanDescriptions = [""] * len(self._predefinedValues)
         
         # 가중치 자동 업데이트
         self._update_weights()
@@ -292,6 +316,7 @@ class NamePart:
             
         self._predefinedValues.clear()
         self._descriptions.clear()
+        self._koreanDescriptions.clear() # Clear korean descriptions
         self._weights.clear()  # 가중치도 초기화
     
     # 가중치 매핑 관련 메서드들
@@ -468,6 +493,87 @@ class NamePart:
             (값, 설명) 튜플의 리스트
         """
         return list(zip(self._predefinedValues, self._descriptions))
+
+    # 추가: 한국어 설명 관련 메서드들
+    
+    def set_korean_description(self, inValue, inKoreanDescription):
+        """
+        특정 predefined value의 한국어 설명을 설정합니다.
+        
+        Args:
+            inValue: 설명을 설정할 값
+            inKoreanDescription: 설정할 한국어 설명
+            
+        Returns:
+            설정 성공 여부 (값이 존재하지 않는 경우 False)
+        """
+        if inValue in self._predefinedValues:
+            index = self._predefinedValues.index(inValue)
+            self._koreanDescriptions[index] = inKoreanDescription
+            return True
+        return False
+    
+    def get_korean_description_by_value(self, inValue):
+        """
+        특정 predefined value의 한국어 설명을 반환합니다.
+        
+        Args:
+            inValue: 설명을 가져올 값
+            
+        Returns:
+            해당 값의 한국어 설명, 값이 존재하지 않으면 빈 문자열
+        """
+        if inValue in self._predefinedValues:
+            index = self._predefinedValues.index(inValue)
+            return self._koreanDescriptions[index]
+        return ""
+    
+    def get_korean_descriptions(self):
+        """
+        모든 한국어 설명을 반환합니다.
+        
+        Returns:
+            한국어 설명 목록
+        """
+        return self._koreanDescriptions.copy()
+    
+    def get_value_by_korean_description(self, inKoreanDescription):
+        """
+        특정 한국어 설명에 해당하는 값을 반환합니다.
+        
+        Args:
+            inKoreanDescription: 찾을 한국어 설명
+            
+        Returns:
+            해당 설명의 값, 없으면 빈 문자열
+        """
+        if inKoreanDescription in self._koreanDescriptions:
+            index = self._koreanDescriptions.index(inKoreanDescription)
+            return self._predefinedValues[index]
+        return ""
+    
+    def get_value_with_korean_description(self, inIndex):
+        """
+        지정된 인덱스의 값과 한국어 설명을 튜플로 반환합니다.
+        
+        Args:
+            inIndex: 값의 인덱스
+            
+        Returns:
+            (값, 한국어 설명) 튜플, 인덱스가 범위를 벗어나면 (None, None)
+        """
+        if 0 <= inIndex < len(self._predefinedValues):
+            return (self._predefinedValues[inIndex], self._koreanDescriptions[inIndex])
+        return (None, None)
+    
+    def get_values_with_korean_descriptions(self):
+        """
+        모든 값과 한국어 설명의 튜플 리스트를 반환합니다.
+        
+        Returns:
+            (값, 한국어 설명) 튜플의 리스트
+        """
+        return list(zip(self._predefinedValues, self._koreanDescriptions))
     
     def is_direction(self):
         """
@@ -491,6 +597,7 @@ class NamePart:
             "weights": self._weights.copy(),  # 가중치를 리스트 형태로 직접 전달
             "type": self._type.name if hasattr(self._type, 'name') else str(self._type),
             "descriptions": self._descriptions.copy(),
+            "koreanDescriptions": self._koreanDescriptions.copy(), # Add korean descriptions
             "isDirection": self._isDirection
         }
     
@@ -518,7 +625,8 @@ class NamePart:
                 part_type,  # 두 번째 인자로 타입 전달
                 inData.get("predefinedValues", []),  # 세 번째 인자로 predefinedValues 전달
                 inData.get("descriptions", []),  # 네 번째 인자로 descriptions 전달
-                inData.get("isDirection", False)  # 다섯 번째 인자로 isDirection 전달
+                inData.get("isDirection", False),  # 다섯 번째 인자로 isDirection 전달
+                inData.get("koreanDescriptions", []) # 여섯 번째 인자로 koreanDescriptions 전달
             )
             
             return result
