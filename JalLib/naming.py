@@ -591,6 +591,63 @@ class Naming:
         
         return returnDict
     
+    def convert_to_description(self, inStr):
+        """
+        문자열 이름을 설명으로 변환
+        
+        Args:
+            inStr: 변환할 이름 문자열
+            
+        Returns:
+            설명 문자열 (예: "b_P_L_Arm")
+        """
+        nameDic = self.convert_to_dictionary(inStr)
+        descriptionDic = {}
+        filteringChar = self._get_filtering_char(inStr)
+        descName = inStr
+        if nameDic:
+            for namePartName, value in nameDic.items():
+                namePart = self.get_name_part(namePartName)
+                desc = namePart.get_description_by_value(value)
+
+                if desc == "" and value != "":
+                    desc = value
+
+                descriptionDic[namePartName] = desc # Store in dictionary for later use
+
+            descName = self.combine(descriptionDic, filteringChar)
+        
+        return descName
+    
+    def convert_to_korean_description(self, inStr):
+        """
+        문자열 이름을 한국어 설명으로 변환
+        
+        Args:
+            inStr: 변환할 이름 문자열
+            
+        Returns:
+            한국어 설명 문자열 (예: "팔_왼쪽_팔")
+        """
+        nameDic = self.convert_to_dictionary(inStr)
+        korDescDic = {}
+        filteringChar = self._get_filtering_char(inStr)
+        korDescName = inStr
+        if nameDic:
+            for namePartName, value in nameDic.items():
+                namePart = self.get_name_part(namePartName)
+                desc = namePart.get_description_by_value(value)
+                korDesc = namePart.get_korean_description_by_value(value)
+
+                if korDesc == "" and desc != "":
+                    korDesc = desc
+
+                korDescDic[namePartName] = korDesc # Store in dictionary for later use
+
+            korDescName = self.combine(korDescDic, filteringChar)
+        
+        return korDescName
+    
     def has_name_part(self, inPart, inStr):
         """
         문자열에 특정 namePart가 포함되어 있는지 확인
