@@ -16,4 +16,4 @@ from JalLib.perforce import Perforce
 
 jalP4 = Perforce(workspace="DongseokKim_DevStorage")
 # Specify a changelist when deleting files
-jalP4.revert_changelist("14964")
+jalP4.upload_files([r"E:\DevStorage_root\DevStorage\Tools\PyJalTools\JalLib\ConfigFiles\namingConfig.json", r"E:\DevStorage_root\DevStorage\Tools\dfqee.py"], inDescription="우하하하하!")

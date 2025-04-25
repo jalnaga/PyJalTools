@@ -655,3 +655,81 @@ class Perforce:
                 self.delete_changelist(change['id'])
         
         return True
+
+    def upload_files(self, inFiles, inDescription=None, inWorkSpace=None):
+        """
+        지정한 파일들을 Perforce에 Submit 합니다.
+        
+        만약 파일들이 Depot에 존재하지 않으면 Add, 존재하면 Chekcout을 수행합니다.
+        
+        Parameters:
+            inFiles (list): 업로드할 파일 경로 리스트
+            inWorkSpace (str, optional): 작업할 워크스페이스 이름
+        
+        Returns:
+            bool: 성공 여부
+        """
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return False
+        
+        if not inFiles:
+            print("업로드할 파일이 지정되지 않았습니다.")
+            return False
+        
+        # 문자열로 단일 경로가 주어진 경우 리스트로 변환
+        if isinstance(inFiles, str):
+            inFiles = [inFiles]
+            
+        # 새 체인지리스트 생성
+        description = inDescription if inDescription else f"Auto-upload for {len(inFiles)} files"
+        new_changelist_info = self.create_new_changelist(inDescription=description)
+        if not new_changelist_info:
+            print("Failed to create a new changelist for file upload.")
+            return False
+            
+        target_changelist = new_changelist_info['id']
+        
+        # 파일들이 이미 디포에 있는지 확인
+        files_to_add = []
+        files_to_edit = []
+        
+        for file_path in inFiles:
+            # 파일 상태 확인 (디포에 있는지 여부)
+            fstat_result = self._run_command(['fstat', file_path])
+            
+            if 'no such file' in fstat_result.lower() or not fstat_result:
+                # 디포에 없는 파일 - 추가 대상
+                files_to_add.append(file_path)
+            else:
+                # 디포에 있는 파일 - 체크아웃 대상
+                files_to_edit.append(file_path)
+        
+        # 파일 추가 (있는 경우)
+        if files_to_add:
+            add_command = ['add', '-c', target_changelist]
+            add_command.extend(files_to_add)
+            self._run_command(add_command)
+        
+        # 파일 체크아웃 (있는 경우)
+        if files_to_edit:
+            edit_command = ['edit', '-c', target_changelist]
+            edit_command.extend(files_to_edit)
+            self._run_command(edit_command)
+        
+        # 체인지리스트에 파일이 제대로 추가되었는지 확인
+        files_in_changelist = self.get_changelist_files(target_changelist)
+        
+        if not files_in_changelist:
+            # 파일 추가에 실패한 경우 빈 체인지리스트 삭제
+            self.delete_changelist(target_changelist)
+            print("파일을 체인지리스트에 추가하는 데 실패했습니다.")
+            return False
+            
+        print(f"파일 {len(files_in_changelist)}개가 체인지리스트 {target_changelist}에 추가되었습니다.")
+        return True
