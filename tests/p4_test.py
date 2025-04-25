@@ -15,4 +15,4 @@ reload_jallib_modules()
 from JalLib.perforce import Perforce
 
 jalP4 = Perforce()
-print(jalP4.get_local_workspaces())
+print(jalP4.get_all_clients())

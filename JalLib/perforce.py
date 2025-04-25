@@ -8,6 +8,7 @@ class Perforce:
         self.server = server if server else os.environ.get('P4PORT', "PC-BUILD:1666") # 환경 변수 우선 사용
         self.user = user if user else os.environ.get('P4USER', "Dev") # 환경 변수 우선 사용
         self.workspace = workspace if workspace else os.environ.get('P4CLIENT')
+        self.workSpaceRoot = None
         
         os.environ['P4USER'] = self.user
         os.environ['P4PORT'] = self.server
@@ -23,16 +24,29 @@ class Perforce:
         
     def _initialize_connection(self):
         """Perforce 연결을 초기화합니다."""
+        result = None
         try:
             # 서버 연결 확인 (info 명령은 가볍고 빠르게 실행됨)
             result = subprocess.run(['p4', 'info'], 
                                    capture_output=True, 
                                    text=True, 
                                    encoding="utf-8")
+            
+            workSpaceRootPathResult = subprocess.run(
+                ['p4', '-F', '%clientRoot%', '-ztag', 'info'],
+                capture_output=True, 
+                text=True, 
+                encoding="utf-8"
+            ).stdout.strip()
+            self.workSpaceRoot = os.path.normpath(workSpaceRootPathResult)
+            print(f"workSpaceRoot: {self.workSpaceRoot}")
+            
             if result.returncode != 0:
                 print(f"Perforce 초기화 중 경고: {result.stderr}")
         except Exception as e:
             print(f"Perforce 초기화 실패: {e}")
+        
+        return result.stdout.strip()
         
     def _run_command(self, command_args):
         """Perforce 명령을 실행하고 결과를 반환합니다."""
@@ -72,3 +86,25 @@ class Perforce:
                 local_clients.append(client)
 
         return local_clients
+    
+    def set_workspace(self, workspace):
+        # 주어진 워크스페이스로 전환합니다.
+        localWorkSpaces = self.get_local_workspaces()
+        if workspace not in localWorkSpaces:
+            raise ValueError(f"워크스페이스 '{workspace}'는 로컬 워크스페이스 목록에 없습니다.")
+        self.workspace = workspace
+        os.environ['P4CLIENT'] = self.workspace
+        
+        # 클라이언트 정보 확인
+        result = self._run_command(['client', '-o'])
+        return result
+    
+    def sync(self, workspace=None):
+        # 주어진 워크스페이스를 동기화합니다.
+        if workspace:
+            self.workspace = workspace
+            os.environ['P4CLIENT'] = self.workspace
+        
+        # 동기화 명령 실행
+        result = self._run_command(['sync'])
+        return result
