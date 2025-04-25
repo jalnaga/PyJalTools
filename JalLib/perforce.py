@@ -154,14 +154,16 @@ class Perforce:
         """
         # 주어진 워크스페이스로 전환합니다.
         localWorkSpaces = self.get_local_workspaces()
-        if workspace not in localWorkSpaces:
-            raise ValueError(f"워크스페이스 '{inWorkspace}'는 로컬 워크스페이스 목록에 없습니다.")
+        if inWorkspace not in localWorkSpaces:
+            try:
+                raise ValueError(f"워크스페이스 '{inWorkspace}'는 로컬 워크스페이스 목록에 없습니다.")
+            except ValueError:
+                return False
+        
         self.workspace = inWorkspace
         os.environ['P4CLIENT'] = self.workspace
         
-        # 클라이언트 정보 확인
-        result = self._run_command(['client', '-o'])
-        return result
+        return True
     
     def sync(self, inWorkSpace=None, inPath=None):
         """
@@ -179,6 +181,24 @@ class Perforce:
             self.workspace = inWorkSpace
             os.environ['P4CLIENT'] = self.workspace
         
+        if not (self.set_workspace(inWorkSpace)):
+            try:
+                raise ValueError(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+            except ValueError:
+                return False
+        
         # 동기화 명령 실행
-        result = self._run_command(['sync'])
-        return result
+        sync_command = ['sync']
+        
+        if inPath:
+            if os.path.exists(inPath):
+                # 로컬에 존재하는 경로가 주어진 경우 해당 경로만 동기화
+                sync_command.append(inPath)
+            else:
+                try:
+                    raise ValueError(f"지정된 경로 '{inPath}'가 로컬에 존재하지 않습니다.")
+                except ValueError:
+                    return False
+        
+        self._run_command(sync_command)
+        return True
