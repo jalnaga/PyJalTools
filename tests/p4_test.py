@@ -16,8 +16,4 @@ from JalLib.perforce import Perforce
 
 jalP4 = Perforce(workspace="DongseokKim_DevStorage")
 # Specify a changelist when deleting files
-jalP4.sync(inPaths=[
-    r"E:\DevStorage_root\DevStorage\Tools\PyJalTools\JalLib\max\ConfigFiles\3DSMaxNamingConfig.json",
-    r"E:\DevStorage_root\DevStorage\Tools\PyJalTools\JalLib\ConfigFiles\CharAnimNamingConfig.json",
-    r"E:\DevStorage_root\DevStorage\Tools\PyJalTools\JalLib\ConfigFiles\CharAnimPathConfig.json"
-    ])
+jalP4.revert_changelist("14964")

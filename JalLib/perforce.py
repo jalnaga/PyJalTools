@@ -321,7 +321,7 @@ class Perforce:
         print(f"Failed to create changelist. Error: {create_result.stderr}") # Log error if creation failed
         return None
 
-    def checkout_files(self, inFiles, inWorkSpace=None, inChangelist=None):
+    def checkout_files(self, inFiles, inChangelist=None, inWorkSpace=None):
         """
         지정한 파일들을 체크아웃하고 특정 체인지 리스트에 추가합니다.
         
@@ -361,12 +361,12 @@ class Perforce:
         
         result = self._run_command(edit_command)
         
-        if len(self.get_changelist_files(inChangelist)) == 0:
-            self.delete_changelist(inChangelist)
+        if len(self.get_changelist_files(target_changelist)) == 0:
+            self.delete_changelist(target_changelist)
         
         return True
         
-    def add_files(self, inFiles, inWorkSpace=None, inChangelist=None):
+    def add_files(self, inFiles, inChangelist=None, inWorkSpace=None):
         """
         지정한 파일들을 Perforce에 추가합니다.
         
@@ -406,8 +406,8 @@ class Perforce:
         
         result = self._run_command(add_command)
         
-        if len(self.get_changelist_files(inChangelist)) == 0:
-            self.delete_changelist(inChangelist)
+        if len(self.get_changelist_files(target_changelist)) == 0:
+            self.delete_changelist(target_changelist)
         
         return True
         
