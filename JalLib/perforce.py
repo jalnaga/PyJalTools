@@ -23,6 +23,7 @@ class Perforce:
         self.user = user if user else os.environ.get('P4USER', "Dev") # 환경 변수 우선 사용
         self.workspace = workspace if workspace else os.environ.get('P4CLIENT')
         self.workSpaceRoot = None
+        self.localHostName = socket.gethostname()
         
         os.environ['P4USER'] = self.user
         os.environ['P4PORT'] = self.server
@@ -97,7 +98,7 @@ class Perforce:
             str: 로컬 머신의 호스트 이름
         """
         # 현재 로컬 머신의 호스트 이름을 반환합니다.
-        return socket.gethostname()
+        return self.localHostName
 
     def get_all_clients(self):
         """
@@ -129,12 +130,11 @@ class Perforce:
         Returns:
             list: 로컬 머신의 워크스페이스 이름 리스트
         """
-        local_hostname = self.get_local_hostname()
         all_clients = self.get_all_clients()
         local_clients = []
 
         for client in all_clients:
-            if client.startswith(local_hostname):
+            if client.startswith(self.localHostName):
                 local_clients.append(client)
 
         return local_clients
@@ -201,4 +201,398 @@ class Perforce:
                     return False
         
         self._run_command(sync_command)
+        return True
+        
+    def get_changelists(self, inWorkSpace=None):
+        """
+        특정 워크스페이스의 pending 상태 체인지 리스트를 가져옵니다.
+        
+        Parameters:
+            inWorkSpace (str, optional): 체인지 리스트를 가져올 워크스페이스 이름
+            
+        Returns:
+            list: 체인지 리스트 정보 딕셔너리의 리스트
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return []
+            
+        # 체인지 리스트 명령 실행
+        changes_command = ['changes']
+        
+        # 항상 pending 상태만 가져오도록 설정
+        changes_command.extend(['-s', 'pending'])
+            
+        if self.workspace:
+            changes_command.extend(['-c', self.workspace])
+            
+        result = self._run_command(changes_command)
+        changes = []
+        
+        for line in result.splitlines():
+            if line.startswith('Change'):
+                parts = line.split()
+                if len(parts) >= 5:
+                    change_id = parts[1]
+                    
+                    # 설명 부분 추출
+                    desc_start = line.find("'")
+                    desc_end = line.rfind("'")
+                    description = line[desc_start+1:desc_end] if desc_start != -1 and desc_end != -1 else ""
+                    
+                    changes.append({
+                        'id': change_id,
+                        'description': description
+                    })
+                    
+        return changes
+        
+    def create_new_changelist(self, inDescription="Created by pyjallib", inWorkSpace=None):
+        """
+        새로운 체인지 리스트를 생성합니다.
+        
+        Parameters:
+            inDescription (str): 체인지 리스트 설명
+            inWorkSpace (str, optional): 체인지 리스트를 생성할 워크스페이스 이름
+            
+        Returns:
+            dict: 생성된 체인지 리스트 정보 {'id': str, 'description': str} 또는 실패 시 None
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return None
+            
+        # 체인지 리스트 생성 명령 실행
+        change_command = ['change', '-o']
+        result = self._run_command(change_command)
+        
+        # 체인지 스펙 수정
+        modified_spec = []
+        for line in result.splitlines():
+            if line.startswith('Description:'):
+                modified_spec.append(line)
+                # Add the new description, handling potential multi-line descriptions correctly
+                for desc_line in inDescription.splitlines():
+                    modified_spec.append(f"\t{desc_line}")
+                # Skip the default empty tab line if present
+                # This assumes the default spec has an empty line after Description:
+                # If not, this logic might need adjustment based on actual 'p4 change -o' output
+                # We'll rely on the loop structure to handle subsequent lines correctly.
+                continue # Move to the next line in the original spec
+            # Only append lines that are not part of the old description placeholder
+            # This logic assumes the default description is just a placeholder like '<enter description here>'
+            # or similar, often on a single line after 'Description:'.
+            # A more robust approach might be needed if the default spec is complex.
+            if not (line.startswith('\t') and 'Description:' in modified_spec[-1]):
+                 modified_spec.append(line)
+
+        # 수정된 체인지 스펙으로 체인지 리스트 생성
+        create_result = subprocess.run(['p4', 'change', '-i'],
+                                     input='\n'.join(modified_spec),
+                                     capture_output=True,
+                                     text=True,
+                                     encoding="utf-8")
+
+        # 결과에서 체인지 리스트 ID 추출
+        if create_result.returncode == 0 and create_result.stdout:
+            output = create_result.stdout.strip()
+            # 예: "Change 12345 created."
+            if 'Change' in output and 'created' in output:
+                parts = output.split()
+                if len(parts) >= 2:
+                    change_id = parts[1]
+                    return {'id': change_id, 'description': inDescription} # Return dictionary
+
+        print(f"Failed to create changelist. Error: {create_result.stderr}") # Log error if creation failed
+        return None
+
+    def checkout_files(self, inFiles, inWorkSpace=None, inChangelist=None):
+        """
+        지정한 파일들을 체크아웃하고 특정 체인지 리스트에 추가합니다.
+        
+        Parameters:
+            inFiles (list): 체크아웃할 파일 경로 리스트
+            inChangelist (str, optional): 파일을 추가할 체인지 리스트 ID
+            inWorkSpace (str, optional): 작업할 워크스페이스 이름
+            
+        Returns:
+            bool: 성공 여부
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return False
+            
+        if not inFiles:
+            return False
+            
+        # 체크아웃 명령 실행
+        edit_command = ['edit']
+        
+        target_changelist = inChangelist
+        if not target_changelist:
+            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-checkout for {len(inFiles)} files", inWorkSpace=inWorkSpace)
+            if not new_changelist_info:
+                print("Failed to create a new changelist for checkout.")
+                return False
+            target_changelist = new_changelist_info['id']
+
+        edit_command.extend(['-c', target_changelist])
+        edit_command.extend(inFiles)
+        
+        result = self._run_command(edit_command)
+        
+        if len(self.get_changelist_files(inChangelist, inWorkSpace=inWorkSpace)) == 0:
+            self.delete_changelist(inChangelist, inWorkspace=inWorkSpace)
+        
+        return True
+        
+    def add_files(self, inFiles, inWorkSpace=None, inChangelist=None):
+        """
+        지정한 파일들을 Perforce에 추가합니다.
+        
+        Parameters:
+            inFiles (list): 추가할 파일 경로 리스트
+            inChangelist (str, optional): 파일을 추가할 체인지 리스트 ID
+            inWorkSpace (str, optional): 작업할 워크스페이스 이름
+            
+        Returns:
+            bool: 성공 여부
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return False
+            
+        if not inFiles:
+            return False
+            
+        # 파일 추가 명령 실행
+        add_command = ['add']
+        
+        target_changelist = inChangelist
+        if not target_changelist:
+            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-add for {len(inFiles)} files", inWorkSpace=inWorkSpace)
+            if not new_changelist_info:
+                print("Failed to create a new changelist for add.")
+                return False
+            target_changelist = new_changelist_info['id']
+
+        add_command.extend(['-c', target_changelist])
+        add_command.extend(inFiles)
+        
+        result = self._run_command(add_command)
+        
+        if len(self.get_changelist_files(inChangelist, inWorkSpace=inWorkSpace)) == 0:
+            self.delete_changelist(inChangelist, inWorkspace=inWorkSpace)
+        
+        return True
+        
+    def delete_files(self, inFiles, inWorkSpace=None, inChangelist=None):
+        """
+        지정한 파일들을 Perforce에서 삭제합니다.
+
+        Parameters:
+            inFiles (list): 삭제할 파일 경로 리스트
+            inChangelist (str, optional): 파일 삭제를 추가할 체인지 리스트 ID
+            inWorkSpace (str, optional): 작업할 워크스페이스 이름
+
+        Returns:
+            bool: 성공 여부
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return False
+
+        if not inFiles:
+            return False
+
+        # 파일 삭제 명령 실행
+        delete_command = ['delete']
+
+        target_changelist = inChangelist
+        if not target_changelist:
+            # If no changelist is specified, create a new one
+            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-delete for {len(inFiles)} files", inWorkSpace=inWorkSpace)
+            if not new_changelist_info:
+                print("Failed to create a new changelist for delete.")
+                return False
+            target_changelist = new_changelist_info['id']
+
+        delete_command.extend(['-c', target_changelist])
+        delete_command.extend(inFiles)
+
+        result = self._run_command(delete_command)
+        
+        if len(self.get_changelist_files(inChangelist, inWorkSpace=inWorkSpace)) == 0:
+            self.delete_changelist(inChangelist, inWorkspace=inWorkSpace)
+            
+        return True
+
+    def revert_changelist(self, inChangelist, inWorkSpace=None):
+        """
+        특정 체인지 리스트의 모든 변경 사항을 되돌립니다 (revert).
+
+        Parameters:
+            inChangelist (str): 되돌릴 체인지 리스트 ID
+            inWorkSpace (str, optional): 작업할 워크스페이스 이름
+
+        Returns:
+            bool: 성공 여부
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return False
+
+        if not inChangelist:
+            print("Error: Changelist ID must be provided for revert operation.")
+            return False
+
+        # Revert 명령 실행
+        revert_command = ['revert', '-c', inChangelist, '//...'] # Revert all files in the changelist
+
+        result = self._run_command(revert_command)
+        # p4 revert might not return an error code even if nothing was reverted.
+        # We'll assume success if the command ran. More robust checking might involve parsing 'result'.
+        print(f"Revert result for CL {inChangelist}:\n{result}")
+        self._run_command(['change', '-d', inChangelist])
+        return True
+
+    def submit_changelist(self, inChangelist, inWorkSpace=None, inDescription=None):
+        """
+        특정 체인지 리스트를 서버에 제출합니다.
+
+        Parameters:
+            inChangelist (str): 제출할 체인지 리스트 ID
+            inDescription (str, optional): 제출 설명 (없으면 체인지 리스트의 기존 설명 사용)
+            inWorkSpace (str, optional): 작업할 워크스페이스 이름
+
+        Returns:
+            bool: 성공 여부
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return False
+
+        if not inChangelist:
+            return False
+
+        if inDescription:
+            # 체인지 리스트 스펙 가져오기
+            change_spec = self._run_command(['change', '-o', inChangelist])
+
+            # 설명 수정
+            modified_spec = []
+            description_lines_skipped = False
+            for line in change_spec.splitlines():
+                if line.startswith('Description:'):
+                    modified_spec.append(line)
+                    # Add the new description, handling potential multi-line descriptions correctly
+                    for desc_line in inDescription.splitlines():
+                        modified_spec.append(f"\t{desc_line}")
+                    description_lines_skipped = True # Start skipping old description lines
+                    continue
+
+                # Skip old description lines (indented lines after Description:)
+                if description_lines_skipped:
+                    if line.startswith('\t') or line.strip() == '':
+                        continue # Skip indented lines or empty lines within the old description
+                    else:
+                        description_lines_skipped = False # Reached the next field
+
+                if not description_lines_skipped:
+                    modified_spec.append(line)
+
+            # 수정된 스펙 적용
+            spec_update = subprocess.run(['p4', 'change', '-i'],
+                                       input='\n'.join(modified_spec),
+                                       capture_output=True,
+                                       text=True,
+                                       encoding="utf-8")
+
+            if spec_update.returncode != 0:
+                print(f"Error updating changelist spec for {inChangelist}: {spec_update.stderr}")
+                return False
+
+        # 체인지 리스트 제출
+        submit_result = self._run_command(['submit', '-c', inChangelist])
+        # Add more robust checking based on submit_result if needed
+        print(f"Submit result for CL {inChangelist}:\n{submit_result}")
+        # A simple check: did the output contain 'submitted'?
+        if 'submitted' in submit_result or 'empty' in submit_result: # Handle empty submits too
+             return True
+        else:
+             # Check stderr as well if available via _run_command modification
+             print(f"Submit command for CL {inChangelist} might have failed.")
+             return False
+
+    def get_changelist_files(self, inChangelist, inWorkSpace=None):
+        """
+        체인지 리스트에 포함된 파일 목록을 가져옵니다.
+        
+        Parameters:
+            inChangelist (str): 체인지 리스트 ID
+            inWorkSpace (str, optional): 작업할 워크스페이스 이름
+            
+        Returns:
+            list: 파일 정보 딕셔너리의 리스트
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return []
+            
+        opened_result = self._run_command(['opened', '-c', inChangelist])
+        files = []
+        
+        for line in opened_result.splitlines():
+            if '#' in line:
+                file_path = line.split('#')[0].strip()
+                action = line.split('for ')[1].split(' ')[0] if 'for ' in line else ''
+                
+                files.append(file_path)
+                
+        return files
+    
+    def delete_changelist(self, inChangelist, inWorkspace=None):
+        """
+        빈 체인지 리스트를 삭제합니다.
+        
+        Parameters:
+            inChangelist (str): 삭제할 체인지 리스트 ID
+            inWorkspace (str, optional): 작업할 워크스페이스 이름
+            
+        Returns:
+            bool: 성공 여부
+        """
+        if inWorkspace and not self.set_workspace(inWorkspace):
+            return False
+            
+        if not inChangelist:
+            print("Error: Changelist ID must be provided for delete operation.")
+            return False
+        
+        # 체인지 리스트의 파일 목록을 확인합니다
+        files = self.get_changelist_files(inChangelist, inWorkSpace=inWorkspace)
+        if files:
+            print(f"Error: Changelist {inChangelist} is not empty. It contains {len(files)} files.")
+            return False
+            
+        # 빈 체인지 리스트를 삭제합니다
+        delete_result = self._run_command(['change', '-d', inChangelist])
+        
+        if 'deleted' in delete_result:
+            return True
+        else:
+            return False
+
+    def delete_empty_changelists(self, inWorkSpace=None):
+        """
+        빈 체인지 리스트를 삭제합니다.
+        
+        Parameters:
+            inWorkSpace (str, optional): 작업할 워크스페이스 이름
+            
+        Returns:
+            bool: 성공 여부
+        """
+        if inWorkSpace and not self.set_workspace(inWorkSpace):
+            return False
+        
+        # 모든 체인지 리스트 가져오기
+        changes = self.get_changelists(inWorkSpace=inWorkSpace)
+        
+        for change in changes:
+            if len(self.get_changelist_files(change['id'], inWorkSpace=inWorkSpace)) == 0:
+                self.delete_changelist(change['id'], inWorkspace=inWorkSpace)
+        
         return True
