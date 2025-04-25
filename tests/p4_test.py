@@ -14,11 +14,10 @@ reload_jallib_modules()
 
 from JalLib.perforce import Perforce
 
-jalP4 = Perforce()
-jalP4.add_files([r"E:\DevStorage_root\DevStorage\Tools\qwer.txt"], inWorkSpace="DongseokKim_DevStorage")
-changeList = jalP4.get_changelists(inWorkSpace="DongseokKim_DevStorage")
-print(f"Change List: {changeList}")
-changeListID = changeList[0]["id"]
-print(f"Target CL ID: {changeListID}")
-filePath = jalP4.get_changelist_files(changeListID, inWorkSpace="DongseokKim_DevStorage")
-print(f"File Path: {filePath}")
+jalP4 = Perforce(workspace="DongseokKim_DevStorage")
+# Specify a changelist when deleting files
+jalP4.sync(inPaths=[
+    r"E:\DevStorage_root\DevStorage\Tools\PyJalTools\JalLib\max\ConfigFiles\3DSMaxNamingConfig.json",
+    r"E:\DevStorage_root\DevStorage\Tools\PyJalTools\JalLib\ConfigFiles\CharAnimNamingConfig.json",
+    r"E:\DevStorage_root\DevStorage\Tools\PyJalTools\JalLib\ConfigFiles\CharAnimPathConfig.json"
+    ])

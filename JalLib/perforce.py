@@ -22,7 +22,7 @@ class Perforce:
         self.server = server if server else os.environ.get('P4PORT', "PC-BUILD:1666") # 환경 변수 우선 사용
         self.user = user if user else os.environ.get('P4USER', "Dev") # 환경 변수 우선 사용
         self.workspace = workspace if workspace else os.environ.get('P4CLIENT')
-        self.workSpaceRoot = None
+        self.workspaceRoot = None
         self.localHostName = socket.gethostname()
         
         os.environ['P4USER'] = self.user
@@ -63,8 +63,7 @@ class Perforce:
                 text=True, 
                 encoding="utf-8"
             ).stdout.strip()
-            self.workSpaceRoot = os.path.normpath(workSpaceRootPathResult)
-            print(f"workSpaceRoot: {self.workSpaceRoot}")
+            self.workspaceRoot = os.path.normpath(workSpaceRootPathResult)
             
             if result.returncode != 0:
                 print(f"Perforce 초기화 중 경고: {result.stderr}")
@@ -155,51 +154,57 @@ class Perforce:
         # 주어진 워크스페이스로 전환합니다.
         localWorkSpaces = self.get_local_workspaces()
         if inWorkspace not in localWorkSpaces:
-            try:
-                raise ValueError(f"워크스페이스 '{inWorkspace}'는 로컬 워크스페이스 목록에 없습니다.")
-            except ValueError:
-                return False
+            print(f"워크스페이스 '{inWorkspace}'는 로컬 워크스페이스 목록에 없습니다.")
+            return False
         
         self.workspace = inWorkspace
         os.environ['P4CLIENT'] = self.workspace
         
         return True
     
-    def sync(self, inWorkSpace=None, inPath=None):
+    def sync(self, inWorkSpace=None, inPaths=None):
         """
         Perforce 워크스페이스를 최신 버전으로 동기화합니다.
         
         Parameters:
             inWorkSpace (str, optional): 동기화할 워크스페이스 이름
-            inPath (str, optional): 동기화할 특정 경로
+            inPaths (str or list, optional): 동기화할 특정 경로 또는 경로 목록
             
         Returns:
-            str: 동기화 결과 문자열
+            bool: 동기화 성공 여부
         """
         # 주어진 워크스페이스를 동기화합니다.
-        if inWorkSpace:
-            self.workspace = inWorkSpace
-            os.environ['P4CLIENT'] = self.workspace
-        
-        if not (self.set_workspace(inWorkSpace)):
-            try:
-                raise ValueError(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
-            except ValueError:
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
                 return False
         
         # 동기화 명령 실행
         sync_command = ['sync']
         
-        if inPath:
-            if os.path.exists(inPath):
-                # 로컬에 존재하는 경로가 주어진 경우 해당 경로만 동기화
-                sync_command.append(inPath)
-            else:
-                try:
-                    raise ValueError(f"지정된 경로 '{inPath}'가 로컬에 존재하지 않습니다.")
-                except ValueError:
-                    return False
-        
+        if inPaths:
+            # 문자열로 단일 경로가 주어진 경우 리스트로 변환
+            if isinstance(inPaths, str):
+                inPaths = [inPaths]
+                
+            valid_paths = []
+            for path in inPaths:
+                if os.path.exists(path):
+                    valid_paths.append(path)
+                else:
+                    print(f"경고: 지정된 경로 '{path}'가 로컬에 존재하지 않습니다.")
+            
+            if not valid_paths:
+                print("유효한 경로가 없어 동기화를 진행할 수 없습니다.")
+                return False
+                
+            # 유효한 경로들을 모두 동기화 명령에 추가
+            sync_command.extend(valid_paths)
+    
         self._run_command(sync_command)
         return True
         
@@ -213,8 +218,14 @@ class Perforce:
         Returns:
             list: 체인지 리스트 정보 딕셔너리의 리스트
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return []
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return []
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return []
             
         # 체인지 리스트 명령 실행
         changes_command = ['changes']
@@ -257,8 +268,14 @@ class Perforce:
         Returns:
             dict: 생성된 체인지 리스트 정보 {'id': str, 'description': str} 또는 실패 시 None
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return None
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return None
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return None
             
         # 체인지 리스트 생성 명령 실행
         change_command = ['change', '-o']
@@ -316,8 +333,14 @@ class Perforce:
         Returns:
             bool: 성공 여부
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return False
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return False
             
         if not inFiles:
             return False
@@ -327,7 +350,7 @@ class Perforce:
         
         target_changelist = inChangelist
         if not target_changelist:
-            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-checkout for {len(inFiles)} files", inWorkSpace=inWorkSpace)
+            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-checkout for {len(inFiles)} files")
             if not new_changelist_info:
                 print("Failed to create a new changelist for checkout.")
                 return False
@@ -338,8 +361,8 @@ class Perforce:
         
         result = self._run_command(edit_command)
         
-        if len(self.get_changelist_files(inChangelist, inWorkSpace=inWorkSpace)) == 0:
-            self.delete_changelist(inChangelist, inWorkspace=inWorkSpace)
+        if len(self.get_changelist_files(inChangelist)) == 0:
+            self.delete_changelist(inChangelist)
         
         return True
         
@@ -355,8 +378,14 @@ class Perforce:
         Returns:
             bool: 성공 여부
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return False
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return False
             
         if not inFiles:
             return False
@@ -366,7 +395,7 @@ class Perforce:
         
         target_changelist = inChangelist
         if not target_changelist:
-            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-add for {len(inFiles)} files", inWorkSpace=inWorkSpace)
+            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-add for {len(inFiles)} files")
             if not new_changelist_info:
                 print("Failed to create a new changelist for add.")
                 return False
@@ -377,12 +406,12 @@ class Perforce:
         
         result = self._run_command(add_command)
         
-        if len(self.get_changelist_files(inChangelist, inWorkSpace=inWorkSpace)) == 0:
-            self.delete_changelist(inChangelist, inWorkspace=inWorkSpace)
+        if len(self.get_changelist_files(inChangelist)) == 0:
+            self.delete_changelist(inChangelist)
         
         return True
         
-    def delete_files(self, inFiles, inWorkSpace=None, inChangelist=None):
+    def delete_files(self, inFiles, inChangelist=None, inWorkSpace=None):
         """
         지정한 파일들을 Perforce에서 삭제합니다.
 
@@ -394,8 +423,14 @@ class Perforce:
         Returns:
             bool: 성공 여부
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return False
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return False
 
         if not inFiles:
             return False
@@ -406,7 +441,7 @@ class Perforce:
         target_changelist = inChangelist
         if not target_changelist:
             # If no changelist is specified, create a new one
-            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-delete for {len(inFiles)} files", inWorkSpace=inWorkSpace)
+            new_changelist_info = self.create_new_changelist(inDescription=f"Auto-delete for {len(inFiles)} files")
             if not new_changelist_info:
                 print("Failed to create a new changelist for delete.")
                 return False
@@ -417,8 +452,8 @@ class Perforce:
 
         result = self._run_command(delete_command)
         
-        if len(self.get_changelist_files(inChangelist, inWorkSpace=inWorkSpace)) == 0:
-            self.delete_changelist(inChangelist, inWorkspace=inWorkSpace)
+        if len(self.get_changelist_files(target_changelist)) == 0:
+            self.delete_changelist(target_changelist)
             
         return True
 
@@ -433,8 +468,14 @@ class Perforce:
         Returns:
             bool: 성공 여부
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return False
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return False
 
         if not inChangelist:
             print("Error: Changelist ID must be provided for revert operation.")
@@ -450,7 +491,7 @@ class Perforce:
         self._run_command(['change', '-d', inChangelist])
         return True
 
-    def submit_changelist(self, inChangelist, inWorkSpace=None, inDescription=None):
+    def submit_changelist(self, inChangelist, inDescription=None, inWorkSpace=None):
         """
         특정 체인지 리스트를 서버에 제출합니다.
 
@@ -462,8 +503,14 @@ class Perforce:
         Returns:
             bool: 성공 여부
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return False
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return False
 
         if not inChangelist:
             return False
@@ -493,6 +540,8 @@ class Perforce:
 
                 if not description_lines_skipped:
                     modified_spec.append(line)
+            
+            print(modified_spec)
 
             # 수정된 스펙 적용
             spec_update = subprocess.run(['p4', 'change', '-i'],
@@ -505,17 +554,9 @@ class Perforce:
                 print(f"Error updating changelist spec for {inChangelist}: {spec_update.stderr}")
                 return False
 
-        # 체인지 리스트 제출
-        submit_result = self._run_command(['submit', '-c', inChangelist])
-        # Add more robust checking based on submit_result if needed
-        print(f"Submit result for CL {inChangelist}:\n{submit_result}")
-        # A simple check: did the output contain 'submitted'?
-        if 'submitted' in submit_result or 'empty' in submit_result: # Handle empty submits too
-             return True
-        else:
-             # Check stderr as well if available via _run_command modification
-             print(f"Submit command for CL {inChangelist} might have failed.")
-             return False
+        self._run_command(['submit', '-c', inChangelist])
+        self.delete_empty_changelists()
+        return True
 
     def get_changelist_files(self, inChangelist, inWorkSpace=None):
         """
@@ -528,8 +569,14 @@ class Perforce:
         Returns:
             list: 파일 정보 딕셔너리의 리스트
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return []
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return []
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return []
             
         opened_result = self._run_command(['opened', '-c', inChangelist])
         files = []
@@ -543,7 +590,7 @@ class Perforce:
                 
         return files
     
-    def delete_changelist(self, inChangelist, inWorkspace=None):
+    def delete_changelist(self, inChangelist, inWorkSpace=None):
         """
         빈 체인지 리스트를 삭제합니다.
         
@@ -554,15 +601,21 @@ class Perforce:
         Returns:
             bool: 성공 여부
         """
-        if inWorkspace and not self.set_workspace(inWorkspace):
-            return False
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return False
             
         if not inChangelist:
             print("Error: Changelist ID must be provided for delete operation.")
             return False
         
         # 체인지 리스트의 파일 목록을 확인합니다
-        files = self.get_changelist_files(inChangelist, inWorkSpace=inWorkspace)
+        files = self.get_changelist_files(inChangelist)
         if files:
             print(f"Error: Changelist {inChangelist} is not empty. It contains {len(files)} files.")
             return False
@@ -585,14 +638,20 @@ class Perforce:
         Returns:
             bool: 성공 여부
         """
-        if inWorkSpace and not self.set_workspace(inWorkSpace):
-            return False
+        if inWorkSpace == None:
+            if self.workspace == None:
+                print(f"워크스페이스가 없습니다.")
+                return False
+        else:
+            if not self.set_workspace(inWorkSpace):
+                print(f"워크스페이스 '{inWorkSpace}'는 로컬 워크스페이스 목록에 없습니다.")
+                return False
         
         # 모든 체인지 리스트 가져오기
-        changes = self.get_changelists(inWorkSpace=inWorkSpace)
+        changes = self.get_changelists()
         
         for change in changes:
-            if len(self.get_changelist_files(change['id'], inWorkSpace=inWorkSpace)) == 0:
-                self.delete_changelist(change['id'], inWorkspace=inWorkSpace)
+            if len(self.get_changelist_files(change['id'])) == 0:
+                self.delete_changelist(change['id'])
         
         return True
